@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import { RouterLink } from "vue-router";
 </script>
 
 <template>
@@ -12,10 +12,12 @@
         </div>
         <div class="footer-section">
           <h3>Quick Links</h3>
-          <p><a href="#home">Home</a></p>
-          <p><a href="#about">About Us</a></p>
-          <p><a href="#services">Services</a></p>
-          <p><a href="#blog">Blog</a></p>
+          <p><RouterLink to="/">Home</RouterLink></p>
+          <p><RouterLink to="/about">About Us</RouterLink></p>
+          <p><RouterLink to="/services">Services</RouterLink></p>
+          <p><RouterLink to="/events">Events</RouterLink></p>
+          <p><RouterLink to="/blog">Blog</RouterLink></p>
+          <p><RouterLink to="/store">Store</RouterLink></p>
         </div>
         <div class="footer-section">
           <h3>Contact</h3>
