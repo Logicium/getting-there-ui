@@ -8,25 +8,48 @@ import { RouterLink } from "vue-router";
       <div class="footer-content">
         <div class="footer-section">
           <h3>Getting There</h3>
-          <p>Empowering you to achieve your goals with proven strategies and resources.</p>
+          <p>Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change.</p>
+          <div class="credentials">
+            <span class="credential-badge">🏆 Accredited</span>
+            <span class="credential-badge">🔒 HIPAA Compliant</span>
+          </div>
         </div>
         <div class="footer-section">
-          <h3>Quick Links</h3>
-          <p><RouterLink to="/">Home</RouterLink></p>
-          <p><RouterLink to="/about">About Us</RouterLink></p>
-          <p><RouterLink to="/services">Services</RouterLink></p>
-          <p><RouterLink to="/events">Events</RouterLink></p>
-          <p><RouterLink to="/blog">Blog</RouterLink></p>
-          <p><RouterLink to="/store">Store</RouterLink></p>
+          <h3>Services</h3>
+          <p><RouterLink to="/about">Mindset Coaching</RouterLink></p>
+          <p><RouterLink to="/about">Goal Setting Support</RouterLink></p>
+          <p><RouterLink to="/about">Emotional Resilience</RouterLink></p>
+          <p><RouterLink to="/events">Group Workshops</RouterLink></p>
+          <p><RouterLink to="/videos">Resource Library</RouterLink></p>
         </div>
         <div class="footer-section">
-          <h3>Contact</h3>
-          <p><a href="mailto:gettingthere@gthere.net">gettingthere@gthere.net</a></p>
+          <h3>Resources</h3>
+          <p><RouterLink to="/blog">Wellness Blog</RouterLink></p>
+          <p><RouterLink to="/store">Self-Help Books</RouterLink></p>
+          <p><RouterLink to="/videos">Video Library</RouterLink></p>
+          <p><RouterLink to="/events">Upcoming Events</RouterLink></p>
+        </div>
+        <div class="footer-section">
+          <h3>Support</h3>
+          <p><a href="mailto:support@gthere.net">Get Help Today</a></p>
+          <p><a href="tel:+1-800-WELLNESS">Crisis Support</a></p>
+          <div class="emergency-note">
+            <p><small>🚨 If you're in crisis, please contact emergency services or the National Suicide Prevention Lifeline: 988</small></p>
+          </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2025 Getting There. All rights reserved.</p>
-        <p>We are continuously upgrading our site. Expect exciting changes soon.</p>
+        <div class="footer-legal">
+          <p>&copy; 2025 Getting There. All rights reserved.</p>
+          <div class="legal-links">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+            <a href="/accessibility">Accessibility</a>
+          </div>
+        </div>
+        <div class="footer-disclaimer">
+          <p><small>Getting There provides educational resources and support. We are not a substitute for professional medical or mental health treatment. Please consult with qualified healthcare providers for clinical concerns.</small></p>
+        </div>
       </div>
     </div>
   </footer>
@@ -37,8 +60,7 @@ import { RouterLink } from "vue-router";
 footer {
   background: var(--text-dark);
   color: white;
-  padding: 3rem 0 2rem;
-  text-align: center;
+  padding: 4rem 0 2rem;
 }
 
 .container {
@@ -50,14 +72,21 @@ footer {
 .footer-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 3rem;
+  margin-bottom: 3rem;
 }
 
 .footer-section h3 {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: white;
+  font-family: 'Playfair Display', serif;
+}
+
+.footer-section p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
 }
 
 .footer-section a {
@@ -70,9 +99,92 @@ footer {
   color: var(--accent-color);
 }
 
+.credentials {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.credential-badge {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.emergency-note {
+  background: rgba(231, 111, 81, 0.2);
+  padding: 1rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  border-left: 4px solid var(--warning-color);
+}
+
+.emergency-note p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 2rem;
+}
+
+.footer-legal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.legal-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.legal-links a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.legal-links a:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.footer-disclaimer {
   opacity: 0.7;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-legal {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .legal-links {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .credentials {
+    justify-content: center;
+  }
 }
 </style>

@@ -1,11 +1,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cabin:ital,wght@0,400..700;1,400..700&family=Chivo:ital,wght@0,100..900;1,100..900&family=Comfortaa:wght@300..700&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Cormorant:ital,wght@0,300..700;1,300..700&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=League+Spartan:wght@100..900&family=Lexend:wght@100..900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Readex+Pro:wght@160..700&family=Urbanist:ital,wght@0,100..900;1,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import './shared-styles.css';
 
+/*#app{*/
+/*  font-family: "Outfit", sans-serif;*/
+/*}*/
+
 #app{
-  font-family: "Outfit", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
-/* Override gradient from shared styles */
 :root {
-  --gradient: linear-gradient(135deg, #43b692 0%, #099773 100%);
+  /* Therapy-inspired color palette */
+  --primary-color: #4a7c59;        /* Sage green - calming, trustworthy */
+  --secondary-color: #3d6b4a;      /* Deeper sage */
+  --accent-color: #f4a261;         /* Warm terracotta accent */
+  --success-color: #6b9080;        /* Soft green success */
+  --warning-color: #e76f51;        /* Warm coral for attention */
+
+  /* Neutral therapy tones */
+  --text-dark: #2c2c2c;            /* Warm dark gray instead of harsh black */
+  --text-light: #6b7280;           /* Muted gray for secondary text */
+  --text-lighter: #9ca3af;         /* Even lighter gray */
+
+  /* Calm background colors */
+  --bg-light: #faf9f7;             /* Warm cream background */
+  --bg-secondary: #f5f3f0;         /* Slightly darker cream */
+  --bg-sage: #f0f4f1;              /* Very light sage */
+  --white: #ffffff;
+
+  /* Therapeutic gradients */
+  --gradient: linear-gradient(135deg, #4a7c59 0%, #6b9080 50%, #8db896 100%);
+  --gradient-warm: linear-gradient(135deg, #f4a261 0%, #e76f51 100%);
+  --gradient-neutral: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%);
+
+  /* Additional therapy colors */
+  --lavender: #e6e6fa;             /* Calming lavender */
+  --soft-blue: #b8d4e3;            /* Gentle blue */
+  --warm-beige: #f7f3e9;           /* Warm beige */
+
+  /* Premium/subscription colors */
+  --premium-gold: #d4a574;         /* Muted gold instead of bright */
+
+  /* Shadow and border colors */
+  --shadow-light: rgba(74, 124, 89, 0.1);
+  --shadow-medium: rgba(74, 124, 89, 0.15);
+  --border-light: rgba(74, 124, 89, 0.2);
 }

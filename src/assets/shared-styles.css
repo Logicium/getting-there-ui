@@ -1,16 +1,4 @@
 /* Shared Variables */
-:root {
-  --primary-color: #2563eb;
-  --secondary-color: #1e40af;
-  --accent-color: #f59e0b;
-  --premium-gold: #fbbf24;
-  --success-color: #10b981;
-  --text-dark: #1f2937;
-  --text-light: #6b7280;
-  --bg-light: #f9fafb;
-  --white: #ffffff;
-  --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
 
 /* Hero Sections */
 .hero-section {
