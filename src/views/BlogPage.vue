@@ -245,16 +245,6 @@ onMounted(() => {
       </div>
 
       <div class="sidebar-wellness-section">
-        <h3>Crisis Resources</h3>
-        <div class="crisis-resource">
-          <h4>🚨 Emergency Support</h4>
-          <p>If you're in crisis, please reach out immediately:</p>
-          <a href="tel:988" class="crisis-link">988 - Suicide & Crisis Lifeline</a>
-          <a href="tel:911" class="crisis-link">911 - Emergency Services</a>
-        </div>
-      </div>
-
-      <div class="sidebar-wellness-section">
         <h3>Popular Wellness Topics</h3>
         <ul class="wellness-topics-list">
           <li><a href="#">Managing Daily Anxiety <span class="topic-count">12 articles</span></a></li>

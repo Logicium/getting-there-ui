@@ -26,8 +26,9 @@ onMounted(() => {
     const counters = document.querySelectorAll('.stat-number');
 
     counters.forEach(counter => {
-      const target = parseInt(counter.textContent.replace(/\D/g, ''));
-      const suffix = counter.textContent.replace(/\d/g, '');
+      const textContent = counter.textContent || '0';
+      const target = parseInt(textContent.replace(/\D/g, ''));
+      const suffix = textContent.replace(/\d/g, '');
       let current = 0;
       const increment = target / 50;
 
