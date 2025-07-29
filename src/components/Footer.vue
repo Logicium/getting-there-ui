@@ -29,14 +29,6 @@ import { RouterLink } from "vue-router";
           <p><RouterLink to="/videos">Video Library</RouterLink></p>
           <p><RouterLink to="/events">Upcoming Events</RouterLink></p>
         </div>
-        <div class="footer-section">
-          <h3>Support</h3>
-          <p><a href="mailto:support@gthere.net">Get Help Today</a></p>
-          <p><a href="tel:+1-800-WELLNESS">Crisis Support</a></p>
-          <div class="emergency-note">
-            <p><small>🚨 If you're in crisis, please contact emergency services or the National Suicide Prevention Lifeline: 988</small></p>
-          </div>
-        </div>
       </div>
       <div class="footer-bottom">
         <div class="footer-legal">
