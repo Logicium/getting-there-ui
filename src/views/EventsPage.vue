@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 // Filter functionality
 const currentFilter = ref('all');
 
-function setFilter(filter) {
+function setFilter(filter: string) {
     currentFilter.value = filter;
     filterEvents();
 }
@@ -14,11 +14,12 @@ function filterEvents() {
     const eventCards = document.querySelectorAll('.event-card');
 
     eventCards.forEach(card => {
-        const category = card.dataset.category;
+        const htmlCard = card as HTMLElement;
+        const category = htmlCard.dataset.category;
         if (filter === 'all' || category === filter) {
-            card.style.display = 'block';
+            htmlCard.style.display = 'block';
         } else {
-            card.style.display = 'none';
+            htmlCard.style.display = 'none';
         }
     });
 }
@@ -26,12 +27,16 @@ function filterEvents() {
 // Sort events by date
 function sortEventsByDate() {
     const grid = document.getElementById('eventsGrid');
+    if (!grid) return;
+
     const events = Array.from(document.querySelectorAll('.event-card'));
 
     events.sort((a, b) => {
-        const dateA = new Date(a.dataset.date);
-        const dateB = new Date(b.dataset.date);
-        return dateA - dateB;
+        const htmlA = a as HTMLElement;
+        const htmlB = b as HTMLElement;
+        const dateA = new Date(htmlA.dataset.date || '');
+        const dateB = new Date(htmlB.dataset.date || '');
+        return dateA.getTime() - dateB.getTime();
     });
 
     events.forEach(event => grid.appendChild(event));

@@ -82,7 +82,7 @@ onMounted(() => {
           <a href="#services" class="cta-button">Start Your Journey</a>
         </div>
         <div class="hero-images">
-          <img src="/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg" alt="People achieving goals" class="hero-image active">
+          <img src="/gthere1.jpg" alt="People achieving goals" class="hero-image active">
           <img src="/fortytwo-1xMG-yqR2GM-unsplash.jpg" alt="Success and motivation" class="hero-image">
           <img src="/hrant-khachatryan-V9sHuZ11lmk-unsplash.jpg" alt="Goal achievement" class="hero-image">
         </div>

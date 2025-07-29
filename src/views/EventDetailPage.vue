@@ -6,17 +6,17 @@ const route = useRoute();
 const eventId = ref(route.params.id);
 
 // FAQ Toggle
-function toggleFAQ(element) {
+function toggleFAQ(element: HTMLElement) {
     const faqItem = element.parentElement;
-    const isActive = faqItem.classList.contains('active');
-    
+    const isActive = faqItem?.classList.contains('active');
+
     // Close all FAQ items
     document.querySelectorAll('.faq-item').forEach(item => {
         item.classList.remove('active');
     });
-    
+
     // Open clicked item if it wasn't active
-    if (!isActive) {
+    if (!isActive && faqItem) {
         faqItem.classList.add('active');
     }
 }
@@ -39,12 +39,12 @@ function addToCalendar() {
     // Create Google Calendar URL
     const startDate = event.start.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
     const endDate = event.end.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    
+
     const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate}/${endDate}&location=${encodeURIComponent(event.location)}&details=${encodeURIComponent(event.description)}`;
-    
+
     // Create Outlook URL
     const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(event.title)}&startdt=${event.start}&enddt=${event.end}&location=${encodeURIComponent(event.location)}&body=${encodeURIComponent(event.description)}`;
-    
+
     // Show options
     const choice = confirm('Add to Google Calendar? (OK for Google, Cancel for Outlook)');
     if (choice) {
@@ -108,7 +108,7 @@ onMounted(() => {
                 <div class="event-status-badge">Available - Limited Spots</div>
                 <h1>Master Goal Setting Workshop</h1>
                 <p class="event-subtitle">A comprehensive 2-day intensive workshop designed to transform how you approach and achieve your most important goals</p>
-                
+
                 <div class="event-quick-info">
                     <div class="quick-info-item">
                         <div class="quick-info-icon">📅</div>
@@ -146,10 +146,10 @@ onMounted(() => {
                     <div class="price">$299</div>
                     <p class="price-subtitle">Early bird pricing ends April 1st</p>
                 </div>
-                
+
                 <button class="register-btn" @click="handleRegistration">Register Now</button>
                 <button class="calendar-btn" @click="addToCalendar">📅 Add to Calendar</button>
-                
+
                 <ul class="registration-features">
                     <li>2-day comprehensive workshop</li>
                     <li>Personal goal-setting workbook</li>
@@ -167,9 +167,9 @@ onMounted(() => {
             <div class="content-section fade-in">
                 <h2>About This Workshop</h2>
                 <p>Join us for an transformative 2-day journey that will revolutionize how you approach goal setting and achievement. This intensive workshop combines cutting-edge research in psychology and neuroscience with practical, actionable strategies you can implement immediately.</p>
-                
+
                 <p>Whether you're looking to advance your career, improve your health, strengthen relationships, or pursue personal passions, this workshop will give you the tools and mindset to turn your dreams into reality. You'll leave with a clear, actionable plan and the confidence to achieve what matters most to you.</p>
-                
+
                 <p>Our proven methodology has helped thousands of participants achieve breakthrough results. Don't just set goals—master the art and science of achieving them.</p>
             </div>
 
@@ -231,9 +231,9 @@ onMounted(() => {
             <div class="content-section fade-in">
                 <h2>What You'll Learn</h2>
                 <p><strong>Day 1 focuses on foundation building:</strong> You'll discover the psychological principles that separate successful goal achievers from dreamers, learn advanced goal-setting frameworks, and begin crafting your personal success blueprint.</p>
-                
+
                 <p><strong>Day 2 is all about implementation:</strong> We'll dive deep into obstacle management, accountability systems, and creating sustainable habits that support your goals. You'll leave with a concrete 90-day action plan.</p>
-                
+
                 <p>Key learning outcomes include:</p>
                 <ul style="margin: 1rem 0; padding-left: 2rem; color: var(--text-light);">
                     <li>Advanced goal-setting methodologies beyond SMART goals</li>
@@ -247,9 +247,9 @@ onMounted(() => {
 
             <div class="content-section fade-in">
                 <h2>Frequently Asked Questions</h2>
-                
+
                 <div class="faq-item">
-                    <div class="faq-question" @click="toggleFAQ($event.currentTarget)">
+                    <div class="faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
                         What should I bring to the workshop?
                         <span class="faq-toggle">▼</span>
                     </div>
@@ -259,7 +259,7 @@ onMounted(() => {
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question" @click="toggleFAQ($event.currentTarget)">
+                    <div class="faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
                         Is this workshop suitable for beginners?
                         <span class="faq-toggle">▼</span>
                     </div>
@@ -269,7 +269,7 @@ onMounted(() => {
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question" @click="toggleFAQ($event.currentTarget)">
+                    <div class="faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
                         What's included in the price?
                         <span class="faq-toggle">▼</span>
                     </div>
@@ -279,7 +279,7 @@ onMounted(() => {
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question" @click="toggleFAQ($event.currentTarget)">
+                    <div class="faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
                         What's your cancellation policy?
                         <span class="faq-toggle">▼</span>
                     </div>
@@ -307,14 +307,14 @@ onMounted(() => {
                     <p>700 14th Street<br>Denver, CO 80202</p>
                     <p>Conference Room A-1</p>
                 </div>
-                
+
                 <div class="map-container" id="mapContainer">
                     <div class="map-placeholder">
                         <p>🗺️ Interactive Map</p>
                         <p style="font-size: 0.9rem;">Loading map...</p>
                     </div>
                 </div>
-                
+
                 <a href="https://www.google.com/maps/dir//Denver+Convention+Center,+700+14th+St,+Denver,+CO+80202" target="_blank" class="directions-btn">Get Directions</a>
             </div>
 

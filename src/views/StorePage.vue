@@ -2,7 +2,15 @@
 import { onMounted, ref } from 'vue';
 
 // Cart state
-const cart = ref([]);
+interface CartItem {
+    id: string;
+    bookId: string;
+    title: string;
+    format: string;
+    price: number;
+}
+
+const cart = ref<CartItem[]>([]);
 const cartCount = ref(0);
 
 // Book data
@@ -88,27 +96,29 @@ const bookData = {
 };
 
 // Filter functionality
-function filterProducts(category) {
+function filterProducts(category: string) {
     const productCards = document.querySelectorAll('.product-card');
     productCards.forEach(card => {
-        const cardCategory = card.dataset.category;
+        const htmlCard = card as HTMLElement;
+        const cardCategory = htmlCard.dataset.category || '';
         if (category === 'all' || cardCategory.includes(category)) {
-            card.style.display = 'block';
+            htmlCard.style.display = 'block';
         } else {
-            card.style.display = 'none';
+            htmlCard.style.display = 'none';
         }
     });
 }
 
 // Add to cart functionality
-function addToCart(bookId, button) {
-    const productCard = button.closest('.product-card');
-    const selectedFormat = productCard.querySelector('.format-option.selected');
-    const bookTitle = productCard.querySelector('.product-title').textContent;
-    const format = selectedFormat.dataset.format;
-    const price = parseFloat(selectedFormat.dataset.price);
+function addToCart(bookId: string, button: HTMLElement) {
+    const productCard = button.closest('.product-card') as HTMLElement;
+    const selectedFormat = productCard.querySelector('.format-option.selected') as HTMLElement;
+    const bookTitleElement = productCard.querySelector('.product-title');
+    const bookTitle = bookTitleElement ? bookTitleElement.textContent || '' : '';
+    const format = selectedFormat.dataset.format || '';
+    const price = parseFloat(selectedFormat.dataset.price || '0');
 
-    const cartItem = {
+    const cartItem: CartItem = {
         id: bookId + '-' + format,
         bookId: bookId,
         title: bookTitle,
@@ -127,11 +137,11 @@ function addToCart(bookId, button) {
     }
 }
 
-function showAddedToCartFeedback(button) {
+function showAddedToCartFeedback(button: HTMLElement) {
     const originalText = button.textContent;
     button.textContent = 'Added! ✓';
     button.style.background = 'var(--success-color)';
-    
+
     setTimeout(() => {
         button.textContent = originalText;
         button.style.background = 'var(--primary-color)';
@@ -145,6 +155,8 @@ function updateCartUI() {
     const emptyCart = document.getElementById('emptyCart');
     const cartTotal = document.getElementById('cartTotal');
 
+    if (!cartItems || !cartFooter || !emptyCart || !cartTotal) return;
+
     if (cart.value.length === 0) {
         emptyCart.style.display = 'block';
         cartFooter.style.display = 'none';
@@ -152,10 +164,10 @@ function updateCartUI() {
     } else {
         emptyCart.style.display = 'none';
         cartFooter.style.display = 'block';
-        
+
         let cartHTML = '';
         let total = 0;
-        
+
         cart.value.forEach((item, index) => {
             total += item.price;
             cartHTML += `
@@ -170,47 +182,55 @@ function updateCartUI() {
                 </div>
             `;
         });
-        
+
         cartItems.innerHTML = cartHTML;
         cartTotal.textContent = `$${total.toFixed(2)}`;
     }
 }
 
-function removeFromCart(index) {
+function removeFromCart(index: number) {
     cart.value.splice(index, 1);
     updateCartUI();
 }
 
 function openCart() {
-    document.getElementById('cartSidebar').classList.add('open');
-    document.getElementById('cartOverlay').classList.add('active');
+    const cartSidebar = document.getElementById('cartSidebar');
+    const cartOverlay = document.getElementById('cartOverlay');
+
+    if (cartSidebar) cartSidebar.classList.add('open');
+    if (cartOverlay) cartOverlay.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeCart() {
-    document.getElementById('cartSidebar').classList.remove('open');
-    document.getElementById('cartOverlay').classList.remove('active');
+    const cartSidebar = document.getElementById('cartSidebar');
+    const cartOverlay = document.getElementById('cartOverlay');
+
+    if (cartSidebar) cartSidebar.classList.remove('open');
+    if (cartOverlay) cartOverlay.classList.remove('active');
     document.body.style.overflow = 'auto';
 }
 
 function checkout() {
     if (cart.value.length === 0) return;
-    
+
     const total = cart.value.reduce((sum, item) => sum + item.price, 0);
     alert(`Checkout functionality would integrate with payment processor here.\n\nOrder Summary:\n${cart.value.map(item => `• ${item.title} (${item.format}) - $${item.price.toFixed(2)}`).join('\n')}\n\nTotal: $${total.toFixed(2)}\n\nThis would redirect to secure payment with Stripe, PayPal, or similar service.`);
 }
 
 // Book preview functionality
-function showBookPreview(bookId) {
-    const book = bookData[bookId];
+function showBookPreview(bookId: string) {
+    const book = bookData[bookId as keyof typeof bookData];
     if (!book) return;
 
     const modal = document.getElementById('bookModal');
     const modalTitle = document.getElementById('modalBookTitle');
     const modalContent = document.getElementById('modalBookContent');
 
+    if (!modal || !modalTitle || !modalContent) return;
+
     modalTitle.textContent = book.title;
-    
+
     let specsHTML = '';
     for (const [key, value] of Object.entries(book.specs)) {
         specsHTML += `
@@ -227,7 +247,7 @@ function showBookPreview(bookId) {
             <h3>${book.title}</h3>
             <p><strong>by ${book.author}</strong></p>
             <p>${book.fullDescription}</p>
-            
+
             <div class="book-specs">
                 <h4>Book Details</h4>
                 ${specsHTML}
@@ -240,7 +260,8 @@ function showBookPreview(bookId) {
 }
 
 function closeBookPreview() {
-    document.getElementById('bookModal').classList.remove('active');
+    const modal = document.getElementById('bookModal');
+    if (modal) modal.classList.remove('active');
     document.body.style.overflow = 'auto';
 }
 
@@ -248,38 +269,45 @@ function closeBookPreview() {
 onMounted(() => {
     // Format selection
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.format-option')) {
-            const formatOption = e.target.closest('.format-option');
-            const productCard = formatOption.closest('.product-card');
-            
-            // Remove selected class from siblings
-            productCard.querySelectorAll('.format-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            // Add selected class to clicked option
-            formatOption.classList.add('selected');
+        const target = e.target as HTMLElement;
+        if (target && target.closest) {
+            const formatOption = target.closest('.format-option') as HTMLElement;
+            if (formatOption) {
+                const productCard = formatOption.closest('.product-card') as HTMLElement;
+                if (productCard) {
+                    // Remove selected class from siblings
+                    productCard.querySelectorAll('.format-option').forEach(option => {
+                        option.classList.remove('selected');
+                    });
+
+                    // Add selected class to clicked option
+                    formatOption.classList.add('selected');
+                }
+            }
         }
     });
 
     // Filter buttons
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(this: HTMLElement) {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            
-            const filter = this.dataset.filter;
+
+            const filter = this.dataset.filter || 'all';
             filterProducts(filter);
         });
     });
 
     // Close modals when clicking outside
-    document.getElementById('bookModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeBookPreview();
-        }
-    });
+    const bookModal = document.getElementById('bookModal');
+    if (bookModal) {
+        bookModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBookPreview();
+            }
+        });
+    }
 
     // Escape key to close modals
     document.addEventListener('keydown', function(e) {
@@ -316,7 +344,7 @@ onMounted(() => {
         <div class="store-hero-content">
             <h1>Dr. Sarah Mitchell's Books</h1>
             <p>Discover transformational insights through our carefully crafted collection of books on goal achievement, personal development, and psychological wellness.</p>
-            
+
             <div class="author-intro">
                 <h3>About the Author</h3>
                 <p>Dr. Sarah Mitchell (Sue) holds a PhD in Psychology and has over 20 years of experience helping individuals achieve their goals. Her research-based approach combines scientific rigor with practical application, making complex psychological concepts accessible and actionable.</p>
@@ -347,15 +375,15 @@ onMounted(() => {
     </section>
 
     <main class="store-content">
-        
+
         <section class="products-section">
             <h2 class="section-title fade-in">
                 📖 Available Books
                 <div class="section-divider"></div>
             </h2>
-            
+
             <div class="products-grid" id="productsGrid">
-                
+
                 <div class="product-card fade-in" data-category="bestseller psychology goals">
                     <div class="product-image">
                         <div class="bestseller-badge">Bestseller</div>
@@ -365,7 +393,7 @@ onMounted(() => {
                         <h3 class="product-title">The Goal Achiever's Mind: Psychology of Success</h3>
                         <p class="product-author">by Dr. Sarah Mitchell</p>
                         <p class="product-description">Discover the psychological principles that separate high achievers from dreamers. This comprehensive guide combines cutting-edge research with practical strategies for sustainable success.</p>
-                        
+
                         <div class="product-format">
                             <div class="format-option selected" data-format="digital" data-price="19.99">
                                 <div class="format-title">Digital Edition</div>
@@ -378,9 +406,9 @@ onMounted(() => {
                                 <div class="format-delivery">3-5 business days</div>
                             </div>
                         </div>
-                        
+
                         <div class="product-footer">
-                            <button class="add-to-cart-btn" @click="addToCart('goal-achiever', $event.target)">Add to Cart</button>
+                            <button class="add-to-cart-btn" @click="addToCart('goal-achiever', $event.target as HTMLElement)">Add to Cart</button>
                             <button class="quick-view-btn" @click="showBookPreview('goal-achiever')">Preview</button>
                         </div>
                     </div>
@@ -395,7 +423,7 @@ onMounted(() => {
                         <h3 class="product-title">Emotional Resilience: Thriving Through Life's Challenges</h3>
                         <p class="product-author">by Dr. Sarah Mitchell</p>
                         <p class="product-description">Learn to build unshakeable emotional resilience with evidence-based techniques from psychology and neuroscience. Navigate setbacks with grace and emerge stronger.</p>
-                        
+
                         <div class="product-format">
                             <div class="format-option selected" data-format="digital" data-price="22.99">
                                 <div class="format-title">Digital Edition</div>
@@ -408,9 +436,9 @@ onMounted(() => {
                                 <div class="format-delivery">3-5 business days</div>
                             </div>
                         </div>
-                        
+
                         <div class="product-footer">
-                            <button class="add-to-cart-btn" @click="addToCart('emotional-resilience', $event.target)">Add to Cart</button>
+                            <button class="add-to-cart-btn" @click="addToCart('emotional-resilience', $event.target as HTMLElement)">Add to Cart</button>
                             <button class="quick-view-btn" @click="showBookPreview('emotional-resilience')">Preview</button>
                         </div>
                     </div>
@@ -425,7 +453,7 @@ onMounted(() => {
                         <h3 class="product-title">From Dreams to Reality: The Complete Goal-Setting Guide</h3>
                         <p class="product-author">by Dr. Sarah Mitchell</p>
                         <p class="product-description">A step-by-step system for turning your biggest dreams into achievable goals. Includes worksheets, templates, and real-world case studies from successful goal achievers.</p>
-                        
+
                         <div class="product-format">
                             <div class="format-option selected" data-format="digital" data-price="24.99">
                                 <div class="format-title">Digital Edition</div>
@@ -438,9 +466,9 @@ onMounted(() => {
                                 <div class="format-delivery">3-5 business days</div>
                             </div>
                         </div>
-                        
+
                         <div class="product-footer">
-                            <button class="add-to-cart-btn" @click="addToCart('dreams-reality', $event.target)">Add to Cart</button>
+                            <button class="add-to-cart-btn" @click="addToCart('dreams-reality', $event.target as HTMLElement)">Add to Cart</button>
                             <button class="quick-view-btn" @click="showBookPreview('dreams-reality')">Preview</button>
                         </div>
                     </div>
@@ -452,7 +480,7 @@ onMounted(() => {
                         <h3 class="product-title">The Mindful Achiever: Balance and Success</h3>
                         <p class="product-author">by Dr. Sarah Mitchell</p>
                         <p class="product-description">Integrate mindfulness practices with goal achievement to create sustainable success without burnout. Learn to maintain balance while pursuing ambitious objectives.</p>
-                        
+
                         <div class="product-format">
                             <div class="format-option selected" data-format="digital" data-price="21.99">
                                 <div class="format-title">Digital Edition</div>
@@ -465,9 +493,9 @@ onMounted(() => {
                                 <div class="format-delivery">3-5 business days</div>
                             </div>
                         </div>
-                        
+
                         <div class="product-footer">
-                            <button class="add-to-cart-btn" @click="addToCart('mindful-achiever', $event.target)">Add to Cart</button>
+                            <button class="add-to-cart-btn" @click="addToCart('mindful-achiever', $event.target as HTMLElement)">Add to Cart</button>
                             <button class="quick-view-btn" @click="showBookPreview('mindful-achiever')">Preview</button>
                         </div>
                     </div>
@@ -479,7 +507,7 @@ onMounted(() => {
                         <h3 class="product-title">Breaking Through: Overcoming Mental Barriers to Success</h3>
                         <p class="product-author">by Dr. Sarah Mitchell</p>
                         <p class="product-description">Identify and overcome the mental barriers that keep you stuck. This practical guide helps you reprogram limiting beliefs and develop an unstoppable mindset.</p>
-                        
+
                         <div class="product-format">
                             <div class="format-option selected" data-format="digital" data-price="20.99">
                                 <div class="format-title">Digital Edition</div>
@@ -492,9 +520,9 @@ onMounted(() => {
                                 <div class="format-delivery">3-5 business days</div>
                             </div>
                         </div>
-                        
+
                         <div class="product-footer">
-                            <button class="add-to-cart-btn" @click="addToCart('breaking-through', $event.target)">Add to Cart</button>
+                            <button class="add-to-cart-btn" @click="addToCart('breaking-through', $event.target as HTMLElement)">Add to Cart</button>
                             <button class="quick-view-btn" @click="showBookPreview('breaking-through')">Preview</button>
                         </div>
                     </div>
@@ -509,7 +537,7 @@ onMounted(() => {
                         <h3 class="product-title">The 90-Day Transformation: Rapid Goal Achievement System</h3>
                         <p class="product-author">by Dr. Sarah Mitchell</p>
                         <p class="product-description">Achieve significant progress in just 90 days with this intensive goal achievement system. Includes daily exercises, progress tracking tools, and accountability frameworks.</p>
-                        
+
                         <div class="product-format">
                             <div class="format-option selected" data-format="digital" data-price="27.99">
                                 <div class="format-title">Digital Edition</div>
@@ -522,9 +550,9 @@ onMounted(() => {
                                 <div class="format-delivery">3-5 business days</div>
                             </div>
                         </div>
-                        
+
                         <div class="product-footer">
-                            <button class="add-to-cart-btn" @click="addToCart('90-day-transformation', $event.target)">Add to Cart</button>
+                            <button class="add-to-cart-btn" @click="addToCart('90-day-transformation', $event.target as HTMLElement)">Add to Cart</button>
                             <button class="quick-view-btn" @click="showBookPreview('90-day-transformation')">Preview</button>
                         </div>
                     </div>
@@ -542,7 +570,7 @@ onMounted(() => {
             <h3 class="cart-title">Shopping Cart</h3>
             <button class="close-cart" @click="closeCart">&times;</button>
         </div>
-        
+
         <div class="cart-items" id="cartItems">
             <div class="empty-cart" id="emptyCart">
                 <div class="empty-cart-icon">🛒</div>
@@ -550,7 +578,7 @@ onMounted(() => {
                 <p>Add some books to get started!</p>
             </div>
         </div>
-        
+
         <div class="cart-footer" id="cartFooter" style="display: none;">
             <div class="cart-total">
                 <span>Total: </span>

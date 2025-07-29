@@ -26,6 +26,7 @@ onMounted(() => {
         const counters = document.querySelectorAll('.stat-number');
 
         counters.forEach(counter => {
+            if (!counter.textContent) return;
             const target = parseInt(counter.textContent.replace(/\D/g, ''));
             const suffix = counter.textContent.replace(/\d/g, '');
             let current = 0;
@@ -53,7 +54,10 @@ onMounted(() => {
         });
     });
 
-    heroObserver.observe(document.querySelector('.about-hero'));
+    const heroElement = document.querySelector('.about-hero');
+    if (heroElement) {
+        heroObserver.observe(heroElement);
+    }
 });
 </script>
 

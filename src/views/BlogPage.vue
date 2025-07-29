@@ -10,22 +10,27 @@ function filterArticles() {
     const articles = document.querySelectorAll('.article-card');
 
     articles.forEach(article => {
-        const title = article.querySelector('.article-title').textContent.toLowerCase();
-        const excerpt = article.querySelector('.article-excerpt').textContent.toLowerCase();
-        const category = article.dataset.category;
+        const titleElement = article.querySelector('.article-title');
+        const excerptElement = article.querySelector('.article-excerpt');
+
+        if (!titleElement || !titleElement.textContent || !excerptElement || !excerptElement.textContent) return;
+
+        const title = titleElement.textContent.toLowerCase();
+        const excerpt = excerptElement.textContent.toLowerCase();
+        const category = (article as HTMLElement).dataset.category;
 
         const matchesSearch = title.includes(searchTerm) || excerpt.includes(searchTerm);
         const matchesFilter = currentFilter.value === 'all' || category === currentFilter.value;
 
         if (matchesSearch && matchesFilter) {
-            article.style.display = 'grid';
+            (article as HTMLElement).style.display = 'grid';
         } else {
-            article.style.display = 'none';
+            (article as HTMLElement).style.display = 'none';
         }
     });
 }
 
-function setFilter(category) {
+function setFilter(category: string) {
     currentFilter.value = category;
     filterArticles();
 }
@@ -51,9 +56,11 @@ onMounted(() => {
 
     // Smooth scrolling
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
+        anchor.addEventListener('click', function(this: HTMLAnchorElement, e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const href = this.getAttribute('href');
+            if (!href) return;
+            const target = document.querySelector(href);
             if (target) {
                 target.scrollIntoView({
                     behavior: 'smooth',

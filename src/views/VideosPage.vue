@@ -2,19 +2,19 @@
 import { onMounted, ref } from 'vue';
 
 // Filter functionality
-const filterButtons = ref([]);
-const videoCards = ref([]);
+const filterButtons = ref<HTMLElement[]>([]);
+const videoCards = ref<HTMLElement[]>([]);
 const searchInput = ref('');
 const currentFilter = ref('all');
 
 function filterVideos(category = currentFilter.value, searchTerm = searchInput.value) {
     videoCards.value.forEach(card => {
-        const cardCategory = card.dataset.category;
-        const cardTitle = card.dataset.title;
-        
+        const cardCategory = card.dataset.category || '';
+        const cardTitle = card.dataset.title || '';
+
         const matchesCategory = category === 'all' || cardCategory.includes(category);
         const matchesSearch = searchTerm === '' || cardTitle.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         if (matchesCategory && matchesSearch) {
             card.style.display = 'block';
         } else {
@@ -23,7 +23,7 @@ function filterVideos(category = currentFilter.value, searchTerm = searchInput.v
     });
 }
 
-function setFilter(filter) {
+function setFilter(filter: string) {
     currentFilter.value = filter;
     filterVideos(filter, searchInput.value);
 }
@@ -33,8 +33,17 @@ function handleSearch() {
 }
 
 // Video player functionality
-function playVideo(videoId) {
-    const videoData = {
+function playVideo(videoId: string) {
+    interface VideoData {
+        [key: string]: {
+            title: string;
+            presenter: string;
+            description: string;
+            duration: string;
+        };
+    }
+
+    const videoData: VideoData = {
         'choosing-happiness': {
             title: 'Choosing Happiness: A Daily Practice',
             presenter: 'Dr. Sarah Mitchell',
@@ -54,21 +63,29 @@ function playVideo(videoId) {
             duration: '22:45'
         }
     };
-    
+
     const video = videoData[videoId];
     if (!video) return;
-    
-    document.getElementById('modalTitle').textContent = video.title;
-    document.getElementById('modalDescription').textContent = video.description;
-    document.getElementById('modalPresenter').textContent = `Presented by ${video.presenter}`;
-    
+
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalPresenter = document.getElementById('modalPresenter');
     const videoModal = document.getElementById('videoModal');
+
+    if (!modalTitle || !modalDescription || !modalPresenter || !videoModal) return;
+
+    modalTitle.textContent = video.title;
+    modalDescription.textContent = video.description;
+    modalPresenter.textContent = `Presented by ${video.presenter}`;
+
     videoModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeVideoModal() {
     const videoModal = document.getElementById('videoModal');
+    if (!videoModal) return;
+
     videoModal.classList.remove('active');
     document.body.style.overflow = 'auto';
 }
@@ -80,12 +97,16 @@ function openSubscriptionModal() {
 
 function showSubscriptionModal() {
     const subscriptionModal = document.getElementById('subscriptionModal');
+    if (!subscriptionModal) return;
+
     subscriptionModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeSubscriptionModal() {
     const subscriptionModal = document.getElementById('subscriptionModal');
+    if (!subscriptionModal) return;
+
     subscriptionModal.classList.remove('active');
     document.body.style.overflow = 'auto';
 }
@@ -99,17 +120,19 @@ function handleSubscription() {
 function simulatePremiumAccess() {
     // This would check actual subscription status in a real implementation
     const isPremiumUser = false; // Set to true to test premium access
-    
+
     if (isPremiumUser) {
         // Allow access to premium content
         document.querySelectorAll('.watch-btn.premium').forEach(btn => {
-            btn.classList.remove('premium');
-            btn.textContent = 'Watch Now';
-            btn.style.cursor = 'pointer';
+            const htmlBtn = btn as HTMLElement;
+            htmlBtn.classList.remove('premium');
+            htmlBtn.textContent = 'Watch Now';
+            htmlBtn.style.cursor = 'pointer';
         });
-        
+
         document.querySelectorAll('.premium-badge').forEach(badge => {
-            badge.style.display = 'none';
+            const htmlBadge = badge as HTMLElement;
+            htmlBadge.style.display = 'none';
         });
     }
 }
@@ -117,38 +140,47 @@ function simulatePremiumAccess() {
 // Initialize
 onMounted(() => {
     // Get references to DOM elements
-    filterButtons.value = document.querySelectorAll('.filter-btn');
-    videoCards.value = document.querySelectorAll('.video-card');
-    
+    filterButtons.value = Array.from(document.querySelectorAll('.filter-btn')).map(el => el as HTMLElement);
+    videoCards.value = Array.from(document.querySelectorAll('.video-card')).map(el => el as HTMLElement);
+
     // Set up event listeners for filter buttons
     filterButtons.value.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(this: HTMLElement) {
             filterButtons.value.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            
-            const filter = this.dataset.filter;
+
+            const filter = this.dataset.filter || 'all';
             setFilter(filter);
         });
     });
-    
-    // Set up search input event listener
-    document.getElementById('videoSearch').addEventListener('input', function() {
-        searchInput.value = this.value;
-        handleSearch();
-    });
-    
-    // Close modals when clicking outside
-    document.getElementById('videoModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeVideoModal();
-        }
-    });
 
-    document.getElementById('subscriptionModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeSubscriptionModal();
-        }
-    });
+    // Set up search input event listener
+    const videoSearch = document.getElementById('videoSearch') as HTMLInputElement;
+    if (videoSearch) {
+        videoSearch.addEventListener('input', function(this: HTMLInputElement) {
+            searchInput.value = this.value;
+            handleSearch();
+        });
+    }
+
+    // Close modals when clicking outside
+    const videoModal = document.getElementById('videoModal');
+    if (videoModal) {
+        videoModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideoModal();
+            }
+        });
+    }
+
+    const subscriptionModal = document.getElementById('subscriptionModal');
+    if (subscriptionModal) {
+        subscriptionModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSubscriptionModal();
+            }
+        });
+    }
 
     // Escape key to close modals
     document.addEventListener('keydown', function(e) {
@@ -175,7 +207,7 @@ onMounted(() => {
     document.querySelectorAll('.fade-in').forEach(el => {
         observer.observe(el);
     });
-    
+
     simulatePremiumAccess();
 });
 </script>
@@ -242,7 +274,7 @@ onMounted(() => {
     </section>
 
     <main class="videos-content">
-        
+
         <!-- Free Videos Section -->
         <section class="video-section">
             <h2 class="section-title fade-in">
@@ -250,7 +282,7 @@ onMounted(() => {
                 <div class="section-divider"></div>
             </h2>
             <div class="videos-grid" id="freeVideos">
-                
+
                 <div class="video-card fade-in" data-category="free motivation" data-title="choosing happiness mindset positive thinking">
                     <div class="video-thumbnail" @click="playVideo('choosing-happiness')">
                         <div class="free-badge">FREE</div>
@@ -312,7 +344,7 @@ onMounted(() => {
                 <div class="section-divider"></div>
             </h2>
             <div class="videos-grid" id="premiumVideos">
-                
+
                 <div class="video-card fade-in" data-category="premium wellness" data-title="coping with loss grief healing emotional wellness">
                     <div class="video-thumbnail" @click="showSubscriptionModal">
                         <div class="premium-badge">⭐ PREMIUM</div>
@@ -441,10 +473,10 @@ onMounted(() => {
     <div class="subscription-modal" id="subscriptionModal">
         <div class="subscription-content">
             <button class="close-modal" @click="closeSubscriptionModal" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            
+
             <h2>Unlock Premium Content</h2>
             <p>Get unlimited access to our complete library of transformational videos, including exclusive presentations on sensitive topics like grief, advanced goal-setting systems, and expert-level strategies.</p>
-            
+
             <div class="pricing-card">
                 <div class="price">$19<span style="font-size: 1rem;">/month</span></div>
                 <div class="price-period">7-day free trial, cancel anytime</div>
@@ -457,7 +489,7 @@ onMounted(() => {
                     <li>Certificate of completion</li>
                 </ul>
             </div>
-            
+
             <div class="subscription-buttons">
                 <button class="subscribe-now-btn" @click="handleSubscription">Start Free Trial</button>
                 <button class="close-subscription" @click="closeSubscriptionModal">Maybe Later</button>
