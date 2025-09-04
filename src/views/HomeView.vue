@@ -72,7 +72,7 @@ onMounted(() => {
       <div class="hero-content">
         <div class="hero-text">
           <div class="hero-badge">Starting our practice</div>
-          <h1>Your journey to emotional wellness starts here</h1>
+          <h1>Your journey to Getting There starts here</h1>
           <p>Professional guidance and proven strategies to help you navigate life's challenges, build resilience, and achieve lasting positive change.</p>
           <div class="hero-cta">
             <router-link to="/events" class="cta-primary">Start Your Journey</router-link>
