@@ -13,7 +13,6 @@ import { RouterLink } from "vue-router";
         <li><RouterLink to="/events">Workshops</RouterLink></li>
         <li><RouterLink to="/blog">Blog</RouterLink></li>
         <li><RouterLink to="/store">Books</RouterLink></li>
-        <li><a href="mailto:support@gthere.net" class="contact-btn">Get Support</a></li>
       </ul>
     </nav>
   </header>

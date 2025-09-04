@@ -1,5 +1,14 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import ThoughtIcon from '@/components/icons/ThoughtIcon.vue';
+import FallingStarIcon from '@/components/icons/FallingStarIcon.vue';
+import HandDrawnPlantIcon from '@/components/icons/HandDrawnPlantIcon.vue';
+import PlantIcon from '@/components/icons/PlantIcon.vue';
+import PostItsIcon from '@/components/icons/PostItsIcon.vue';
+import PuzzleIcon from '@/components/icons/PuzzleIcon.vue';
+import IdeaIcon from '@/components/icons/IdeaIcon.vue';
+import GrowthIcon from "@/components/icons/GrowthIcon.vue";
+import ArrowIcon from "@/components/icons/ArrowIcon.vue";
 
 onMounted(() => {
   // Image rotation for hero section
@@ -168,19 +177,19 @@ onMounted(() => {
         <div class="steps-grid">
           <div class="step-card">
             <div class="step-number">1</div>
-            <div class="step-icon">📋</div>
+            <div class="step-icon"><PostItsIcon /></div>
             <h3>Assessment</h3>
             <p>Take our brief questionnaire to help us understand your goals and current challenges.</p>
           </div>
           <div class="step-card">
             <div class="step-number">2</div>
-            <div class="step-icon">🤝</div>
+            <div class="step-icon"><PuzzleIcon /></div>
             <h3>Personalized Plan</h3>
             <p>Receive a customized roadmap with strategies tailored to your specific needs and situation.</p>
           </div>
           <div class="step-card">
             <div class="step-number">3</div>
-            <div class="step-icon">📈</div>
+            <div class="step-icon"><ArrowIcon/></div>
             <h3>Progress Together</h3>
             <p>Work through your plan with ongoing support, resources, and regular check-ins to track progress.</p>
           </div>
@@ -194,25 +203,25 @@ onMounted(() => {
         <h2 class="section-title fade-in">Ways We Can Help</h2>
         <div class="services-grid">
           <div class="service-card fade-in">
-            <div class="service-icon">💭</div>
+            <div class="service-icon"><ThoughtIcon /></div>
             <h3>Mindset Coaching</h3>
             <p>Transform limiting beliefs and develop a growth mindset that empowers you to overcome obstacles and achieve your goals.</p>
             <a href="/about" class="service-link">Learn More →</a>
           </div>
           <div class="service-card fade-in">
-            <div class="service-icon">🎯</div>
+            <div class="service-icon"><FallingStarIcon /></div>
             <h3>Goal Setting</h3>
             <p>Create clear, actionable goals with proven frameworks that turn your dreams into achievable milestones.</p>
             <a href="/about" class="service-link">Learn More →</a>
           </div>
           <div class="service-card fade-in">
-            <div class="service-icon">🧠</div>
+            <div class="service-icon"><HandDrawnPlantIcon /></div>
             <h3>Emotional Resilience</h3>
             <p>Build the mental strength to navigate challenges, manage stress, and bounce back from setbacks with confidence.</p>
             <a href="/about" class="service-link">Learn More →</a>
           </div>
           <div class="service-card fade-in">
-            <div class="service-icon">🌱</div>
+            <div class="service-icon"><PlantIcon /></div>
             <h3>Personal Growth</h3>
             <p>Discover your authentic self and develop the skills needed for continuous personal and professional development.</p>
             <a href="/about" class="service-link">Learn More →</a>
@@ -623,6 +632,13 @@ onMounted(() => {
 .step-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.step-icon svg {
+  width: 6rem;
+  height: 6rem;
 }
 
 .step-card h3 {
@@ -683,7 +699,13 @@ onMounted(() => {
 .service-icon {
   font-size: 3rem;
   margin-bottom: 1.5rem;
-  display: block;
+  display: flex;
+  justify-content: center;
+}
+
+.service-icon svg {
+  width: 6rem;
+  height: 6rem;
 }
 
 .service-card h3 {
