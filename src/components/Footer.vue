@@ -10,8 +10,8 @@ import { RouterLink } from "vue-router";
           <h3>Getting There</h3>
           <p>Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change.</p>
           <div class="credentials">
-            <span class="credential-badge">🏆 Accredited</span>
-            <span class="credential-badge">🔒 HIPAA Compliant</span>
+            <span class="credential-badge">🌱 Wellness Focus</span>
+            <span class="credential-badge">💚 Compassionate Care</span>
           </div>
         </div>
         <div class="footer-section">
@@ -107,19 +107,6 @@ footer {
   font-weight: 600;
 }
 
-.emergency-note {
-  background: rgba(231, 111, 81, 0.2);
-  padding: 1rem;
-  border-radius: 10px;
-  margin-top: 1rem;
-  border-left: 4px solid var(--warning-color);
-}
-
-.emergency-note p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-}
-
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 2rem;
@@ -179,4 +166,5 @@ footer {
     justify-content: center;
   }
 }
+
 </style>

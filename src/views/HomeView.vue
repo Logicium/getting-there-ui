@@ -28,23 +28,6 @@ onMounted(() => {
     setInterval(rotateHeroImages, 6000);
   }, 3000);
 
-  // Testimonial rotation
-  let currentTestimonialIndex = 0;
-  const testimonials = document.querySelectorAll('.testimonial-item');
-
-  function rotateTestimonials() {
-    if (testimonials.length > 1) {
-      testimonials[currentTestimonialIndex]?.classList.remove('active');
-      currentTestimonialIndex = (currentTestimonialIndex + 1) % testimonials.length;
-      testimonials[currentTestimonialIndex]?.classList.add('active');
-    }
-  }
-
-  // Start testimonial rotation
-  setTimeout(() => {
-    setInterval(rotateTestimonials, 8000);
-  }, 2000);
-
   // Smooth scroll animation for fade-in elements
   const observerOptions = {
     threshold: 0.1,
@@ -88,7 +71,7 @@ onMounted(() => {
     <section class="hero" id="home">
       <div class="hero-content">
         <div class="hero-text">
-          <div class="hero-badge">Trusted by 10,000+ people</div>
+          <div class="hero-badge">Starting our practice</div>
           <h1>Your journey to emotional wellness starts here</h1>
           <p>Professional guidance and proven strategies to help you navigate life's challenges, build resilience, and achieve lasting positive change.</p>
           <div class="hero-cta">
@@ -102,11 +85,11 @@ onMounted(() => {
             </div>
             <div class="trust-item">
               <span class="trust-icon">👨‍⚕️</span>
-              <span>Licensed Professionals</span>
+              <span>Compassionate Care</span>
             </div>
             <div class="trust-item">
               <span class="trust-icon">⭐</span>
-              <span>4.9/5 Rating</span>
+              <span>Evidence-Based</span>
             </div>
           </div>
         </div>
@@ -115,56 +98,6 @@ onMounted(() => {
             <img src="/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg" alt="Happy client achieving goals" class="hero-image active">
             <img src="/fortytwo-1xMG-yqR2GM-unsplash.jpg" alt="Success and motivation" class="hero-image">
             <img src="/hrant-khachatryan-V9sHuZ11lmk-unsplash.jpg" alt="Goal achievement celebration" class="hero-image">
-          </div>
-          <div class="floating-elements">
-            <div class="float-element float-1">💚</div>
-            <div class="float-element float-2">🌱</div>
-            <div class="float-element float-3">✨</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Client Faces Section -->
-    <section class="client-faces fade-in">
-      <div class="container">
-        <h3>Join thousands who found their path to wellness</h3>
-        <div class="faces-grid">
-          <div class="face-item">
-            <div class="face-placeholder">
-              <span>👩‍💼</span>
-            </div>
-            <p>"Life-changing experience"</p>
-          </div>
-          <div class="face-item">
-            <div class="face-placeholder">
-              <span>👨‍🎓</span>
-            </div>
-            <p>"Finally found clarity"</p>
-          </div>
-          <div class="face-item">
-            <div class="face-placeholder">
-              <span>👩‍🏫</span>
-            </div>
-            <p>"Overcame my anxiety"</p>
-          </div>
-          <div class="face-item">
-            <div class="face-placeholder">
-              <span>👨‍💻</span>
-            </div>
-            <p>"Built lasting confidence"</p>
-          </div>
-          <div class="face-item">
-            <div class="face-placeholder">
-              <span>👩‍⚕️</span>
-            </div>
-            <p>"Transformed my mindset"</p>
-          </div>
-          <div class="face-item">
-            <div class="face-placeholder">
-              <span>👨‍🎨</span>
-            </div>
-            <p>"Found my purpose"</p>
           </div>
         </div>
       </div>
@@ -230,54 +163,6 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section class="testimonials fade-in">
-      <div class="container">
-        <h2 class="section-title">What Our Clients Say</h2>
-        <div class="testimonials-container">
-          <div class="testimonial-item active">
-            <div class="testimonial-content">
-              <div class="quote-mark">"</div>
-              <p>"Getting There helped me break through years of self-doubt. The personalized approach and ongoing support made all the difference in my journey to emotional wellness."</p>
-              <div class="testimonial-author">
-                <div class="author-avatar">👩‍💼</div>
-                <div class="author-info">
-                  <h4>Sarah M.</h4>
-                  <span>Marketing Director</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="testimonial-item">
-            <div class="testimonial-content">
-              <div class="quote-mark">"</div>
-              <p>"The strategies I learned transformed how I handle stress and set goals. I finally feel in control of my life and confident about my future."</p>
-              <div class="testimonial-author">
-                <div class="author-avatar">👨‍🎓</div>
-                <div class="author-info">
-                  <h4>Michael R.</h4>
-                  <span>Graduate Student</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="testimonial-item">
-            <div class="testimonial-content">
-              <div class="quote-mark">"</div>
-              <p>"I was struggling with anxiety and lack of direction. The supportive environment and practical tools helped me build lasting confidence and find my purpose."</p>
-              <div class="testimonial-author">
-                <div class="author-avatar">👩‍🏫</div>
-                <div class="author-info">
-                  <h4>Lisa K.</h4>
-                  <span>Teacher</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Resources Preview Section -->
     <section class="resources-preview">
       <div class="container">
@@ -307,8 +192,8 @@ onMounted(() => {
             <div class="visual-element"></div>
             <div class="visual-element"></div>
             <div class="visual-text">
-              <h3>92% Success Rate</h3>
-              <p>Evidence-based approaches</p>
+              <h3>Evidence-Based</h3>
+              <p>Research-backed approaches</p>
             </div>
           </div>
         </div>
@@ -323,7 +208,7 @@ onMounted(() => {
           <p>Take the first step towards emotional wellness and personal growth. Our compassionate team is here to support you every step of the way.</p>
           <div class="cta-buttons">
             <router-link to="/events" class="cta-primary">Begin Your Journey</router-link>
-            <a href="mailto:support@gthere.net" class="cta-secondary">Talk to Someone Today</a>
+<!--            <a href="mailto:support@gthere.net" class="cta-secondary">Get Started Today</a>-->
           </div>
           <div class="cta-assurance">
             <span>🔒 Completely confidential</span>
@@ -495,93 +380,9 @@ onMounted(() => {
   opacity: 1;
 }
 
-.floating-elements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.float-element {
-  position: absolute;
-  font-size: 2rem;
-  animation: gentleFloat 6s ease-in-out infinite;
-}
-
-.float-1 {
-  top: 10%;
-  right: 10%;
-  animation-delay: 0s;
-}
-
-.float-2 {
-  bottom: 20%;
-  left: 10%;
-  animation-delay: 2s;
-}
-
-.float-3 {
-  top: 60%;
-  right: 20%;
-  animation-delay: 4s;
-}
-
 @keyframes gentleFloat {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
-}
-
-/* Client Faces Section */
-.client-faces {
-  padding: 4rem 0;
-  background: white;
-  text-align: center;
-}
-
-.client-faces h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 2rem;
-  color: var(--text-dark);
-}
-
-.faces-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.face-item {
-  text-align: center;
-}
-
-.face-placeholder {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--bg-sage);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  margin: 0 auto 1rem;
-  border: 3px solid var(--primary-color);
-  transition: all 0.3s ease;
-}
-
-.face-placeholder:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px var(--shadow-light);
-}
-
-.face-item p {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  font-style: italic;
 }
 
 /* How It Works Section */
@@ -730,91 +531,6 @@ onMounted(() => {
 
 .service-link:hover {
   color: var(--secondary-color);
-}
-
-/* Testimonials Section */
-.testimonials {
-  padding: 6rem 0;
-  background: var(--bg-sage);
-}
-
-.testimonials-container {
-  position: relative;
-  max-width: 800px;
-  margin: 0 auto;
-  height: 300px;
-}
-
-.testimonial-item {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s ease;
-}
-
-.testimonial-item.active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.testimonial-content {
-  background: white;
-  padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 15px 40px var(--shadow-light);
-  text-align: center;
-  position: relative;
-}
-
-.quote-mark {
-  font-size: 4rem;
-  color: var(--primary-color);
-  opacity: 0.3;
-  position: absolute;
-  top: 1rem;
-  left: 2rem;
-  font-family: 'Playfair Display', serif;
-}
-
-.testimonial-content p {
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: var(--text-dark);
-  margin-bottom: 2rem;
-  font-style: italic;
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.author-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--bg-sage);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  border: 2px solid var(--primary-color);
-}
-
-.author-info h4 {
-  color: var(--text-dark);
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.author-info span {
-  color: var(--text-light);
-  font-size: 0.9rem;
 }
 
 /* Resources Preview Section */
@@ -1034,11 +750,6 @@ onMounted(() => {
 
   .trust-indicators {
     justify-content: center;
-  }
-
-  .faces-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
   }
 
   .steps-grid {
