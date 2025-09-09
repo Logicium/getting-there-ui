@@ -5,11 +5,14 @@ import { RouterLink } from "vue-router";
 <template>
   <header>
     <nav>
-      <div class="logo">Getting There</div>
+      <div class="logoWrap">
+        <div class="image logo"/>
+        Getting There
+      </div>
       <ul class="nav-links">
         <li><RouterLink to="/">Home</RouterLink></li>
         <li><RouterLink to="/about">About</RouterLink></li>
-        <li><RouterLink to="/videos">Resources</RouterLink></li>
+        <li><RouterLink to="/videos">Videos</RouterLink></li>
         <li><RouterLink to="/events">Workshops</RouterLink></li>
         <li><RouterLink to="/blog">Blog</RouterLink></li>
         <li><RouterLink to="/store">Books</RouterLink></li>
@@ -41,7 +44,16 @@ nav {
   padding: 0 2rem;
 }
 
-.logo {
+.logo{
+  height: 50px;
+  width: 150px;
+  background-image: url('public/Gemini_Generated_Image_pw80a7pw80a7pw80.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.logoWrap {
+  display: flex;
   font-size: 1.8rem;
   font-weight: 700;
   background: var(--gradient);

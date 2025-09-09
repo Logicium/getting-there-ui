@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import ThoughtIcon from '@/components/icons/ThoughtIcon.vue';
 import FallingStarIcon from '@/components/icons/FallingStarIcon.vue';
 import HandDrawnPlantIcon from '@/components/icons/HandDrawnPlantIcon.vue';
@@ -9,8 +9,63 @@ import PuzzleIcon from '@/components/icons/PuzzleIcon.vue';
 import IdeaIcon from '@/components/icons/IdeaIcon.vue';
 import GrowthIcon from "@/components/icons/GrowthIcon.vue";
 import ArrowIcon from "@/components/icons/ArrowIcon.vue";
+import VideoIcon from "@/components/icons/VideoIcon.vue";
+import BookIcon from "@/components/icons/BookIcon.vue";
+import ChalkboardIcon from "@/components/icons/ChalkboardIcon.vue";
+import PenIcon from "@/components/icons/PenIcon.vue";
+
+// Interface for the hero section data
+interface HeroSection {
+  id: number;
+  title: string;
+  description: string;
+  tag: string;
+}
+
+// Interface for the home page data
+interface HomePageData {
+  data: {
+    id: number;
+    documentId: string;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+    herosection: HeroSection;
+  };
+  meta: Record<string, any>;
+}
+
+// State for the hero section data
+const heroData = ref<HeroSection | null>(null);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+
+// Function to fetch hero section data from CMS
+const fetchHeroData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const response = await fetch('http://localhost:1337/api/home-page?populate=*');
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    }
+
+    const data: HomePageData = await response.json();
+    heroData.value = data.data.herosection;
+  } catch (err) {
+    console.error('Error fetching hero data:', err);
+    error.value = err instanceof Error ? err.message : 'An unknown error occurred';
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 onMounted(() => {
+  // Fetch hero data from CMS
+  fetchHeroData();
+
   // Image rotation for hero section
   let currentImageIndex = 0;
   const heroImages = document.querySelectorAll('.hero-image');
@@ -69,11 +124,21 @@ onMounted(() => {
   <main>
     <!-- Hero Section -->
     <section class="hero" id="home">
-      <div class="hero-content">
+      <div v-if="isLoading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading content...</p>
+      </div>
+
+      <div v-else-if="error" class="error-container">
+        <p>{{ error }}</p>
+        <button @click="fetchHeroData" class="retry-button">Retry</button>
+      </div>
+
+      <div v-else-if="heroData" class="hero-content">
         <div class="hero-text">
-          <div class="hero-badge">Starting our practice</div>
-          <h1>Your journey to Getting There starts here</h1>
-          <p>Professional guidance and proven strategies to help you navigate life's challenges, build resilience, and achieve lasting positive change.</p>
+          <div class="hero-badge">{{ heroData.tag }}</div>
+          <h1>{{ heroData.title }}</h1>
+          <p>{{ heroData.description }}</p>
           <div class="hero-cta">
             <router-link to="/events" class="cta-primary">Start Your Journey</router-link>
             <router-link to="/about" class="cta-secondary">Learn How It Works</router-link>
@@ -133,7 +198,7 @@ onMounted(() => {
     <!-- Services Section -->
     <section class="services" id="services">
       <div class="container">
-        <h2 class="section-title fade-in">Ways We Can Help</h2>
+        <h2 class="section-title fade-in">Ways We Can Get You There</h2>
         <div class="services-grid">
           <div class="service-card fade-in">
             <div class="service-icon"><ThoughtIcon /></div>
@@ -170,19 +235,19 @@ onMounted(() => {
           <div class="resources-text fade-in">
             <h2>Explore Our Resources</h2>
             <div class="resource-item">
-              <div class="resource-icon">🎥</div>
+              <div class="resource-icon"><VideoIcon/></div>
               <span><strong>Video Library</strong> - Expert-led sessions on mental wellness topics</span>
             </div>
             <div class="resource-item">
-              <div class="resource-icon">📚</div>
+              <div class="resource-icon"><BookIcon/></div>
               <span><strong>Guided Workbooks</strong> - Step-by-step exercises for personal growth</span>
             </div>
             <div class="resource-item">
-              <div class="resource-icon">🎪</div>
+              <div class="resource-icon"><ChalkboardIcon/></div>
               <span><strong>Live Workshops</strong> - Interactive group sessions and support</span>
             </div>
             <div class="resource-item">
-              <div class="resource-icon">📝</div>
+              <div class="resource-icon"><PenIcon/></div>
               <span><strong>Daily Insights</strong> - Practical tips for emotional wellness</span>
             </div>
             <router-link to="/videos" class="resources-cta">Explore Resources</router-link>
@@ -204,16 +269,10 @@ onMounted(() => {
     <section class="cta-section">
       <div class="container">
         <div class="cta-content fade-in">
-          <h2>Ready to start your wellness journey?</h2>
-          <p>Take the first step towards emotional wellness and personal growth. Our compassionate team is here to support you every step of the way.</p>
+          <h2>Ready to start your journey?</h2>
           <div class="cta-buttons">
-            <router-link to="/events" class="cta-primary">Begin Your Journey</router-link>
+            <router-link to="/events" class="cta-primary">Let's Go There</router-link>
 <!--            <a href="mailto:support@gthere.net" class="cta-secondary">Get Started Today</a>-->
-          </div>
-          <div class="cta-assurance">
-            <span>🔒 Completely confidential</span>
-            <span>💙 Compassionate support</span>
-            <span>🎯 Personalized approach</span>
           </div>
         </div>
       </div>
@@ -571,6 +630,7 @@ onMounted(() => {
 }
 
 .resource-icon {
+  min-width: 40px;
   width: 40px;
   height: 40px;
   background: var(--primary-color);
@@ -729,6 +789,56 @@ onMounted(() => {
 .fade-in.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Loading and Error States */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 2rem;
+  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--bg-light);
+  border-top: 5px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container p {
+  color: var(--warning-color);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
 }
 
 /* Mobile Responsiveness */

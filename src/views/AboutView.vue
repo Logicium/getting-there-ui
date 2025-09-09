@@ -98,12 +98,12 @@ onMounted(() => {
 
     <!-- Our Story Section -->
     <section class="section">
-      <h2 class="section-title fade-in">Our Story</h2>
+      <h2 class="section-title fade-in">How We Got Here</h2>
       <div class="story-content">
         <div class="story-text slide-in-left">
-          <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective mental health support. We began as a small practice in Colorado, born from Dr. Sarah Mitchell's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
+          <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective mental health support. We began as a small practice in Colorado, born from Dr. Sue Nesbitt's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
 
-          <p>Our founder, Dr. Mitchell, recognized that many people were struggling not with clinical mental illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
+          <p>Our founder, Dr. Nesbitt, recognized that many people were struggling not with clinical mental illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
 
           <p>What started as weekend workshops in community centers has grown into a comprehensive wellness platform. Today, we serve thousands through our digital resources, in-person workshops, and personalized coaching programs. Our approach combines the rigor of clinical psychology with the accessibility of modern wellness practices.</p>
 
