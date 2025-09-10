@@ -13,6 +13,9 @@ import VideoIcon from "@/components/icons/VideoIcon.vue";
 import BookIcon from "@/components/icons/BookIcon.vue";
 import ChalkboardIcon from "@/components/icons/ChalkboardIcon.vue";
 import PenIcon from "@/components/icons/PenIcon.vue";
+import InfoCard from "@/components/cards/InfoCard.vue";
+import ServiceCard from "@/components/cards/ServiceCard.vue";
+import ResourceCard from "@/components/cards/ResourceCard.vue";
 
 // Interface for the hero section data
 interface HeroSection {
@@ -20,6 +23,60 @@ interface HeroSection {
   title: string;
   description: string;
   tag: string;
+  imagecarousel: null | any;
+}
+
+// Interface for info card in How It Works section
+interface InfoCard {
+  id: number;
+  title: string;
+  description: string;
+  icon: null | any;
+}
+
+// Interface for How It Works section
+interface HowItWorks {
+  id: number;
+  title: string;
+  infocards: InfoCard[];
+}
+
+// Interface for service card in Services section
+interface ServiceCard {
+  id: number;
+  title: string;
+  description: string;
+  icon: null | any;
+}
+
+// Interface for Services section
+interface ServicesComponent {
+  id: number;
+  title: string;
+  servicecards: ServiceCard[];
+}
+
+// Interface for resource card in Resources section
+interface ResourceCard {
+  id: number;
+  title: string;
+  description: string;
+  icon: null | any;
+}
+
+// Interface for Resources section
+interface ResourcesComponent {
+  id: number;
+  title: string;
+  image: null | any;
+  resourcecards: ResourceCard[];
+}
+
+// Interface for CTA section
+interface CTAComponent {
+  id: number;
+  actiontext: string;
+  buttontext: string;
 }
 
 // Interface for the home page data
@@ -31,22 +88,51 @@ interface HomePageData {
     updatedAt: string;
     publishedAt: string;
     herosection: HeroSection;
+    howitworks: HowItWorks;
+    servicescomponent: ServicesComponent;
+    resourcescomponent: ResourcesComponent;
+    ctacomponent: CTAComponent;
   };
   meta: Record<string, any>;
 }
 
-// State for the hero section data
+// State for all sections data
 const heroData = ref<HeroSection | null>(null);
+const howItWorksData = ref<HowItWorks | null>(null);
+const servicesData = ref<ServicesComponent | null>(null);
+const resourcesData = ref<ResourcesComponent | null>(null);
+const ctaData = ref<CTAComponent | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
-// Function to fetch hero section data from CMS
-const fetchHeroData = async () => {
+// Function to observe fade-in elements
+const observeFadeElements = () => {
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, observerOptions);
+
+  // Observe all fade-in elements
+  document.querySelectorAll('.fade-in').forEach(el => {
+    observer.observe(el);
+  });
+};
+
+// Function to fetch all sections data from CMS
+const fetchPageData = async () => {
   isLoading.value = true;
   error.value = null;
 
   try {
-    const response = await fetch('http://localhost:1337/api/home-page?populate=*');
+    const response = await fetch(`${import.meta.env.VITE_CMS_URL}/api/home-page?populate=all`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
@@ -54,8 +140,18 @@ const fetchHeroData = async () => {
 
     const data: HomePageData = await response.json();
     heroData.value = data.data.herosection;
+    howItWorksData.value = data.data.howitworks;
+    console.log(data.data.howitworks);
+    servicesData.value = data.data.servicescomponent;
+    resourcesData.value = data.data.resourcescomponent;
+    ctaData.value = data.data.ctacomponent;
+
+    // Wait for the DOM to update with the new data
+    setTimeout(() => {
+      observeFadeElements();
+    }, 100);
   } catch (err) {
-    console.error('Error fetching hero data:', err);
+    console.error('Error fetching page data:', err);
     error.value = err instanceof Error ? err.message : 'An unknown error occurred';
   } finally {
     isLoading.value = false;
@@ -63,8 +159,8 @@ const fetchHeroData = async () => {
 };
 
 onMounted(() => {
-  // Fetch hero data from CMS
-  fetchHeroData();
+  // Fetch all page data from CMS
+  fetchPageData();
 
   // Image rotation for hero section
   let currentImageIndex = 0;
@@ -83,24 +179,8 @@ onMounted(() => {
     setInterval(rotateHeroImages, 6000);
   }, 3000);
 
-  // Smooth scroll animation for fade-in elements
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, observerOptions);
-
-  // Observe all fade-in elements
-  document.querySelectorAll('.fade-in').forEach(el => {
-    observer.observe(el);
-  });
+  // Initial observation of fade-in elements that might already be in the DOM
+  observeFadeElements();
 
   // Header scroll effect
   window.addEventListener('scroll', () => {
@@ -131,7 +211,7 @@ onMounted(() => {
 
       <div v-else-if="error" class="error-container">
         <p>{{ error }}</p>
-        <button @click="fetchHeroData" class="retry-button">Retry</button>
+        <button @click="fetchPageData" class="retry-button">Retry</button>
       </div>
 
       <div v-else-if="heroData" class="hero-content">
@@ -169,87 +249,51 @@ onMounted(() => {
     </section>
 
     <!-- How It Works Section -->
-    <section class="how-it-works fade-in">
+    <section v-if="howItWorksData" class="how-it-works">
       <div class="container">
-        <h2 class="section-title">How Getting There Works</h2>
+        <h2 class="section-title fade-in">{{ howItWorksData.title }}</h2>
         <div class="steps-grid">
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <div class="step-icon"><PostItsIcon /></div>
-            <h3>Assessment</h3>
-            <p>Take our brief questionnaire to help us understand your goals and current challenges.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <div class="step-icon"><PuzzleIcon /></div>
-            <h3>Personalized Plan</h3>
-            <p>Receive a customized roadmap with strategies tailored to your specific needs and situation.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <div class="step-icon"><ArrowIcon/></div>
-            <h3>Progress Together</h3>
-            <p>Work through your plan with ongoing support, resources, and regular check-ins to track progress.</p>
-          </div>
+          <InfoCard
+            v-for="(card, index) in howItWorksData.infocards"
+            :key="card.id"
+            :title="card.title"
+            :description="card.description"
+            :step-number="index + 1"
+            :icon-index="index"
+          />
         </div>
       </div>
     </section>
 
     <!-- Services Section -->
-    <section class="services" id="services">
+    <section v-if="servicesData" class="services" id="services">
       <div class="container">
-        <h2 class="section-title fade-in">Ways We Can Get You There</h2>
+        <h2 class="section-title fade-in">{{ servicesData.title }}</h2>
         <div class="services-grid">
-          <div class="service-card fade-in">
-            <div class="service-icon"><ThoughtIcon /></div>
-            <h3>Mindset Coaching</h3>
-            <p>Transform limiting beliefs and develop a growth mindset that empowers you to overcome obstacles and achieve your goals.</p>
-            <a href="/about" class="service-link">Learn More →</a>
-          </div>
-          <div class="service-card fade-in">
-            <div class="service-icon"><FallingStarIcon /></div>
-            <h3>Goal Setting</h3>
-            <p>Create clear, actionable goals with proven frameworks that turn your dreams into achievable milestones.</p>
-            <a href="/about" class="service-link">Learn More →</a>
-          </div>
-          <div class="service-card fade-in">
-            <div class="service-icon"><HandDrawnPlantIcon /></div>
-            <h3>Emotional Resilience</h3>
-            <p>Build the mental strength to navigate challenges, manage stress, and bounce back from setbacks with confidence.</p>
-            <a href="/about" class="service-link">Learn More →</a>
-          </div>
-          <div class="service-card fade-in">
-            <div class="service-icon"><PlantIcon /></div>
-            <h3>Personal Growth</h3>
-            <p>Discover your authentic self and develop the skills needed for continuous personal and professional development.</p>
-            <a href="/about" class="service-link">Learn More →</a>
-          </div>
+          <ServiceCard 
+            v-for="(card, index) in servicesData.servicecards" 
+            :key="card.id"
+            :title="card.title"
+            :description="card.description"
+            :icon-index="index"
+          />
         </div>
       </div>
     </section>
 
     <!-- Resources Preview Section -->
-    <section class="resources-preview">
+    <section v-if="resourcesData" class="resources-preview">
       <div class="container">
         <div class="resources-content">
           <div class="resources-text fade-in">
-            <h2>Explore Our Resources</h2>
-            <div class="resource-item">
-              <div class="resource-icon"><VideoIcon/></div>
-              <span><strong>Video Library</strong> - Expert-led sessions on mental wellness topics</span>
-            </div>
-            <div class="resource-item">
-              <div class="resource-icon"><BookIcon/></div>
-              <span><strong>Guided Workbooks</strong> - Step-by-step exercises for personal growth</span>
-            </div>
-            <div class="resource-item">
-              <div class="resource-icon"><ChalkboardIcon/></div>
-              <span><strong>Live Workshops</strong> - Interactive group sessions and support</span>
-            </div>
-            <div class="resource-item">
-              <div class="resource-icon"><PenIcon/></div>
-              <span><strong>Daily Insights</strong> - Practical tips for emotional wellness</span>
-            </div>
+            <h2>{{ resourcesData.title }}</h2>
+            <ResourceCard 
+              v-for="(card, index) in resourcesData.resourcecards" 
+              :key="card.id"
+              :title="card.title"
+              :description="card.description"
+              :icon-index="index"
+            />
             <router-link to="/videos" class="resources-cta">Explore Resources</router-link>
           </div>
           <div class="resources-visual fade-in">
@@ -266,12 +310,12 @@ onMounted(() => {
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
+    <section v-if="ctaData" class="cta-section">
       <div class="container">
         <div class="cta-content fade-in">
-          <h2>Ready to start your journey?</h2>
+          <h2>{{ ctaData.actiontext }}</h2>
           <div class="cta-buttons">
-            <router-link to="/events" class="cta-primary">Let's Go There</router-link>
+            <router-link to="/events" class="cta-primary">{{ ctaData.buttontext }}</router-link>
 <!--            <a href="mailto:support@gthere.net" class="cta-secondary">Get Started Today</a>-->
           </div>
         </div>
@@ -457,61 +501,7 @@ onMounted(() => {
   margin-top: 3rem;
 }
 
-.step-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  text-align: center;
-  position: relative;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
-
-.step-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px var(--shadow-medium);
-}
-
-.step-number {
-  position: absolute;
-  top: -15px;
-  left: 2rem;
-  width: 30px;
-  height: 30px;
-  background: var(--primary-color);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.step-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: center;
-}
-
-.step-icon svg {
-  width: 6rem;
-  height: 6rem;
-}
-
-.step-card h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.step-card p {
-  color: var(--text-light);
-  line-height: 1.6;
-}
+/* Step card styles moved to InfoCard component */
 
 /* Services Section */
 .services {
@@ -541,56 +531,7 @@ onMounted(() => {
   margin-top: 3rem;
 }
 
-.service-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  transition: all 0.3s ease;
-  text-align: center;
-  border: 1px solid var(--border-light);
-}
-
-.service-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px var(--shadow-medium);
-}
-
-.service-icon {
-  font-size: 3rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: center;
-}
-
-.service-icon svg {
-  width: 6rem;
-  height: 6rem;
-}
-
-.service-card h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.service-card p {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-}
-
-.service-link {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.service-link:hover {
-  color: var(--secondary-color);
-}
+/* Service card styles moved to ServiceCard component */
 
 /* Resources Preview Section */
 .resources-preview {
@@ -613,35 +554,7 @@ onMounted(() => {
   font-family: 'Playfair Display', serif;
 }
 
-.resource-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--bg-light);
-  border-radius: 15px;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
-
-.resource-item:hover {
-  background: var(--bg-sage);
-  transform: translateX(10px);
-}
-
-.resource-icon {
-  min-width: 40px;
-  width: 40px;
-  height: 40px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 1rem;
-  color: white;
-  font-size: 1.2rem;
-}
+/* Resource item styles moved to ResourceCard component */
 
 .resources-cta {
   display: inline-block;

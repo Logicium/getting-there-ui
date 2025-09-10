@@ -14,6 +14,20 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 
 See [Vite Configuration Reference](https://vite.dev/config/).
 
+## Environment Variables
+
+The application uses the following environment variables:
+
+- `VITE_CMS_URL`: The URL of the CMS API (default: http://localhost:1337)
+
+Create a `.env` file in the root directory to configure these variables:
+
+```
+VITE_CMS_URL=http://localhost:1337
+```
+
+For different environments, you can create `.env.development`, `.env.production`, etc.
+
 ## Project Setup
 
 ```sh
