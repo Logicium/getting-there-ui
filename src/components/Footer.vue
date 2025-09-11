@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
+import HeartIcon from "@/components/icons/HeartIcon.vue";
+import Plant2Icon from "@/components/icons/Plant2Icon.vue";
 </script>
 
 <template>
@@ -10,8 +12,8 @@ import { RouterLink } from "vue-router";
           <h3>Getting There</h3>
           <p>Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change.</p>
           <div class="credentials">
-            <span class="credential-badge">🌱 Wellness Focus</span>
-            <span class="credential-badge">💚 Compassionate Care</span>
+            <span class="credential-badge"><Plant2Icon/> Wellness Focus</span>
+            <span class="credential-badge"><HeartIcon/> Compassionate Care</span>
           </div>
         </div>
         <div class="footer-section">
@@ -99,6 +101,8 @@ footer {
 }
 
 .credential-badge {
+  display: flex;
+  gap: 5px;
   background: var(--primary-color);
   color: white;
   padding: 0.5rem 1rem;

@@ -132,7 +132,7 @@ const fetchPageData = async () => {
   error.value = null;
 
   try {
-    const response = await fetch(`${import.meta.env.VITE_CMS_URL}/api/home-page?populate=all`);
+    const response = await fetch(`http://localhost:1337/api/home-page?populate=all`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
@@ -222,20 +222,6 @@ onMounted(() => {
           <div class="hero-cta">
             <router-link to="/events" class="cta-primary">Start Your Journey</router-link>
             <router-link to="/about" class="cta-secondary">Learn How It Works</router-link>
-          </div>
-          <div class="trust-indicators">
-            <div class="trust-item">
-              <span class="trust-icon">🔒</span>
-              <span>Confidential & Secure</span>
-            </div>
-            <div class="trust-item">
-              <span class="trust-icon">👨‍⚕️</span>
-              <span>Compassionate Care</span>
-            </div>
-            <div class="trust-item">
-              <span class="trust-icon">⭐</span>
-              <span>Evidence-Based</span>
-            </div>
           </div>
         </div>
         <div class="hero-visual">
