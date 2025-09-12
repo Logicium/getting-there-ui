@@ -865,7 +865,7 @@ onMounted(async () => {
 }
 
 .slide-in-left.visible {
-  opacity: 1;
+  opacity: 1 !important;
   transform: translateX(0);
 }
 
