@@ -1,8 +1,34 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+
+// State and data fetching
+const hero = ref<any>(null);
+const defaultStats = [
+  { id: 1, name: 'Lives Transformed', statistic: 10000 },
+  { id: 2, name: 'Years of Service', statistic: 15 },
+  { id: 3, name: 'Client Satisfaction', statistic: 95 },
+];
+
+function getStatSuffix(s: { name: string }) {
+  const name = (s?.name || '').toLowerCase();
+  if (name.includes('satisfaction')) return '%';
+  if (name.includes('years')) return '+';
+  return '';
+}
+
+async function fetchHero() {
+  try {
+    const res = await fetch('https://getting-there-cms.onrender.com/api/about?populate=all');
+    const json = await res.json();
+    hero.value = json?.data?.hero || null;
+  } catch (e) {
+    console.error('Failed to load about hero', e);
+  }
+}
 
 // Animation observers
-onMounted(() => {
+onMounted(async () => {
+  await fetchHero();
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -26,9 +52,10 @@ onMounted(() => {
     const counters = document.querySelectorAll('.stat-number');
 
     counters.forEach(counter => {
-      const textContent = counter.textContent || '0';
-      const target = parseInt(textContent.replace(/\D/g, ''));
-      const suffix = textContent.replace(/\d/g, '');
+      const el = counter as HTMLElement;
+      const targetAttr = el.getAttribute('data-target') || '0';
+      const target = parseInt(targetAttr.replace(/\D/g, ''));
+      const suffix = el.getAttribute('data-suffix') || '';
       let current = 0;
       const increment = target / 50;
 
@@ -65,22 +92,14 @@ onMounted(() => {
   <section class="about-hero">
     <div class="about-hero-content">
       <div class="hero-text">
-        <div class="hero-badge">Trusted Mental Wellness Support</div>
-        <h1>Compassionate guidance for lasting change</h1>
-        <p>For over a decade, Getting There has been a beacon of hope for individuals seeking emotional wellness and personal growth. Our evidence-based approach, combined with genuine care, has helped thousands find their path to healing and happiness.</p>
+        <div class="hero-badge">{{ (hero && hero.tag) || 'Trusted Mental Wellness Support' }}</div>
+        <h1>{{ (hero && hero.title) || 'Compassionate guidance for lasting change' }}</h1>
+        <p>{{ (hero && hero.description) || 'For over a decade, Getting There has been a beacon of hope for individuals seeking emotional wellness and personal growth. Our evidence-based approach, combined with genuine care, has helped thousands find their path to healing and happiness.' }}</p>
 
         <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-number">10K+</span>
-            <span class="stat-label">Lives Transformed</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">15+</span>
-            <span class="stat-label">Years of Service</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">95%</span>
-            <span class="stat-label">Client Satisfaction</span>
+          <div class="stat-item" v-for="s in (hero && hero.stats ? hero.stats : defaultStats)" :key="s.id">
+            <span class="stat-number" :data-target="s.statistic" :data-suffix="getStatSuffix(s)">0</span>
+            <span class="stat-label">{{ s.name }}</span>
           </div>
         </div>
       </div>
