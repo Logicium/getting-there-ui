@@ -132,7 +132,7 @@ const fetchPageData = async () => {
   error.value = null;
 
   try {
-    const response = await fetch(`http://localhost:1337/api/home-page?populate=all`);
+    const response = await fetch(`${import.meta.env.VITE_CMS_URL}/api/home-page?populate=all`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
