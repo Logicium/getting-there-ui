@@ -3,9 +3,10 @@ import { onMounted, ref } from 'vue';
 
 // State and data fetching
 const hero = ref<any>(null);
+const history = ref<any>(null);
 const defaultStats = [
-  { id: 1, name: 'Lives Transformed', statistic: 10000 },
-  { id: 2, name: 'Years of Service', statistic: 15 },
+  { id: 1, name: 'Lives Transformed', statistic: 10001 },
+  { id: 2, name: 'Years of Service', statistic: 16 },
   { id: 3, name: 'Client Satisfaction', statistic: 95 },
 ];
 
@@ -21,6 +22,7 @@ async function fetchHero() {
     const res = await fetch('https://getting-there-cms.onrender.com/api/about?populate=all');
     const json = await res.json();
     hero.value = json?.data?.hero || null;
+    history.value = json?.data?.history || null;
   } catch (e) {
     console.error('Failed to load about hero', e);
   }
@@ -117,16 +119,23 @@ onMounted(async () => {
 
     <!-- Our Story Section -->
     <section class="section">
-      <h2 class="section-title fade-in">How We Got Here</h2>
+      <h2 class="section-title fade-in">{{ (history && history.title) }}</h2>
       <div class="story-content">
         <div class="story-text slide-in-left">
-          <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective mental health support. We began as a small practice in Colorado, born from Dr. Sue Nesbitt's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
+          <template v-if="history && history.content && history.content.length">
+            <p v-for="(block, idx) in history.content" :key="idx">
+              {{ (block.children || []).map((c) => c.text).join('') }}
+            </p>
+          </template>
+          <template v-else>
+            <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective mental health support. We began as a small practice in Colorado, born from Dr. Sue Nesbitt's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
 
-          <p>Our founder, Dr. Nesbitt, recognized that many people were struggling not with clinical mental illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
+            <p>Our founder, Dr. Nesbitt, recognized that many people were struggling not with clinical mental illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
 
-          <p>What started as weekend workshops in community centers has grown into a comprehensive wellness platform. Today, we serve thousands through our digital resources, in-person workshops, and personalized coaching programs. Our approach combines the rigor of clinical psychology with the accessibility of modern wellness practices.</p>
+            <p>What started as weekend workshops in community centers has grown into a comprehensive wellness platform. Today, we serve thousands through our digital resources, in-person workshops, and personalized coaching programs. Our approach combines the rigor of clinical psychology with the accessibility of modern wellness practices.</p>
 
-          <p>We remain committed to our founding principles: evidence-based methods, genuine compassion, and the belief that everyone has the capacity for positive change when given the right support and tools.</p>
+            <p>We remain committed to our founding principles: evidence-based methods, genuine compassion, and the belief that everyone has the capacity for positive change when given the right support and tools.</p>
+          </template>
         </div>
         <div class="story-visual slide-in-right">
           🧠
