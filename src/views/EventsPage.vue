@@ -1,6 +1,35 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+// Interface for the hero section data
+interface HeroSection {
+  id: number;
+  title: string;
+  description: string;
+  tag: string | null;
+  imagecarousel: null | any;
+  image: null | any;
+  stats: any[];
+}
+
+// Interface for the events page data
+interface EventsPageData {
+  data: {
+    id: number;
+    documentId: string;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+    Hero: HeroSection;
+  };
+  meta: Record<string, any>;
+}
+
+// State for hero section data
+const heroData = ref<HeroSection | null>(null);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+
 // Filter functionality
 const currentFilter = ref('all');
 
@@ -42,8 +71,8 @@ function sortEventsByDate() {
   events.forEach(event => grid.appendChild(event));
 }
 
-// Fade-in animation
-onMounted(() => {
+// Function to observe fade-in elements
+const observeFadeElements = () => {
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -60,17 +89,64 @@ onMounted(() => {
   document.querySelectorAll('.fade-in').forEach(el => {
     observer.observe(el);
   });
+};
+
+// Function to fetch events page data from CMS
+const fetchPageData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const cmsUrl = import.meta.env.VITE_CMS_URL || 'https://getting-there-cms.onrender.com';
+    const response = await fetch(`${cmsUrl}/api/events-page?populate=all`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    }
+
+    const data: EventsPageData = await response.json();
+    heroData.value = data.data.Hero;
+
+    // Wait for the DOM to update with the new data
+    setTimeout(() => {
+      observeFadeElements();
+    }, 100);
+  } catch (err) {
+    console.error('Error fetching page data:', err);
+    error.value = err instanceof Error ? err.message : 'An unknown error occurred';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Fade-in animation
+onMounted(() => {
+  // Fetch page data from CMS
+  fetchPageData();
 
   // Initialize
   sortEventsByDate();
+
+  // Initial observation of fade-in elements
+  observeFadeElements();
 });
 </script>
 
 <template>
   <section class="therapy-events-hero">
-    <div class="therapy-events-hero-content">
-      <h1>Healing Workshops & Support Groups</h1>
-      <p>Join our compassionate community in safe, supportive environments designed to foster growth, healing, and connection</p>
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading content...</p>
+    </div>
+
+    <div v-else-if="error" class="error-container">
+      <p>{{ error }}</p>
+      <button @click="fetchPageData" class="retry-button">Retry</button>
+    </div>
+
+    <div v-else-if="heroData" class="therapy-events-hero-content">
+      <h1>{{ heroData.title }}</h1>
+      <p>{{ heroData.description }}</p>
       <div class="hero-wellness-indicators">
         <span class="trust-badge">🏆 Licensed Facilitators</span>
         <span class="trust-badge">🤝 Safe Spaces</span>
@@ -370,6 +446,52 @@ onMounted(() => {
   text-align: center;
   position: relative;
   overflow: hidden;
+  min-height: 300px;
+}
+
+/* Loading and Error Styles */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-container p {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.retry-button {
+  background: white;
+  color: var(--primary-color);
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .therapy-events-hero::before {
