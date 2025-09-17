@@ -124,7 +124,7 @@ onMounted(async () => {
         <div class="story-text slide-in-left">
           <template v-if="history && history.content && history.content.length">
             <p v-for="(block, idx) in history.content" :key="idx">
-              {{ (block.children || []).map((c) => c.text).join('') }}
+              {{ (block.children || []).map((c:any) => c.text).join('') }}
             </p>
           </template>
           <template v-else>
