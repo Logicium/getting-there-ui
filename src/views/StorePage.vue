@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { books, bookCategories, heroSections } from '@/data/data';
+import { books, bookCategories } from '@/data/data';
 import ProductCard from '@/components/ProductCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
@@ -137,13 +137,32 @@ onMounted(() => {
     observer.observe(el);
   });
 });
+
+// Hero content from CMS
+const heroTitle = ref('Healing Through Knowledge');
+const heroDescription = ref('Discover evidence-based books on mental health, personal growth, and emotional wellness written by our licensed professionals');
+
+onMounted(async () => {
+  try {
+    const res = await fetch('https://getting-there-cms.onrender.com/api/books-page?populate=all');
+    if (res.ok) {
+      const json = await res.json();
+      heroTitle.value = json?.data?.Hero?.title ?? heroTitle.value;
+      heroDescription.value = json?.data?.Hero?.description ?? heroDescription.value;
+    } else {
+      console.error('Failed to fetch books page hero:', res.status, res.statusText);
+    }
+  } catch (err) {
+    console.error('Error fetching books page hero:', err);
+  }
+});
 </script>
 
 <template>
   <section class="therapy-store-hero">
     <div class="therapy-store-hero-content">
-      <h1>Healing Through Knowledge</h1>
-      <p>Discover evidence-based books on mental health, personal growth, and emotional wellness written by our licensed professionals</p>
+      <h1>{{ heroTitle }}</h1>
+      <p>{{ heroDescription }}</p>
 
       <div class="therapy-author-intro">
         <div class="author-visual">
