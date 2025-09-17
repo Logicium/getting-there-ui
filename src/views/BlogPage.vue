@@ -1,6 +1,27 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+// Blog hero data (fetched from CMS)
+const heroTitle = ref<string>('Wellness Insights & Resources');
+const heroDescription = ref<string>('Expert guidance on mental health, emotional wellness, and personal growth from our licensed professionals');
+
+// Fetch hero data from CMS
+const fetchBlogHero = async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/blog-page?populate=all`);
+    if (!res.ok) throw new Error(`Failed to fetch blog hero: ${res.status} ${res.statusText}`);
+    const json = await res.json();
+    const hero = json?.data?.Hero;
+    if (hero) {
+      if (hero.title) heroTitle.value = hero.title;
+      if (hero.description) heroDescription.value = hero.description;
+    }
+  } catch (e) {
+    console.error(e);
+    // keep defaults on error
+  }
+};
+
 // Search functionality
 const searchInput = ref('');
 const currentFilter = ref('all');
@@ -37,6 +58,9 @@ function setFilter(category: string) {
 
 // Fade-in animation
 onMounted(() => {
+  // fetch CMS hero
+  fetchBlogHero();
+
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -59,8 +83,8 @@ onMounted(() => {
 <template>
   <section class="therapy-hero">
     <div class="therapy-hero-content">
-      <h1>Wellness Insights & Resources</h1>
-      <p>Expert guidance on mental health, emotional wellness, and personal growth from our licensed professionals</p>
+      <h1>{{ heroTitle }}</h1>
+      <p>{{ heroDescription }}</p>
       <div class="hero-trust-indicators">
         <span class="trust-badge">🏆 Expert-Written</span>
         <span class="trust-badge">🧠 Evidence-Based</span>
