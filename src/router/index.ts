@@ -6,6 +6,7 @@ import EventDetailPage from '../views/EventDetailPage.vue'
 import AboutView from "@/views/AboutView.vue";
 import VideosPage from "@/views/VideosPage.vue";
 import StorePage from "@/views/StorePage.vue";
+import BlogPost from "@/views/BlogPost.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,11 @@ const router = createRouter({
       path: '/events/:id',
       name: 'event-detail',
       component: EventDetailPage,
+    },
+    {
+      path: '/blog/:id',
+      name: 'BlogPost',
+      component: BlogPost
     },
     {
       path: '/videos',

@@ -134,7 +134,9 @@ onMounted(() => {
                 <span class="author-credentials">Licensed Clinical Psychologist</span>
               </div>
             </div>
-            <a href="#" class="therapy-read-more">Continue Reading →</a>
+            <router-link :to="`/blog/anxiety-daily-life`" class="therapy-read-more">
+              Continue Reading →
+            </router-link>
           </div>
         </article>
 
