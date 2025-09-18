@@ -146,9 +146,13 @@ onMounted(async () => {
     <!-- Mission Section -->
     <section class="section">
       <div class="mission-section fade-in">
-        <h2 class="section-title">Our Mission & Values</h2>
+        <h2 class="section-title">Getting There Mission: Increase Happiness</h2>
         <p class="mission-text">
-          To provide accessible, compassionate, and evidence-based support that empowers individuals to overcome challenges, build resilience, and create meaningful, fulfilling lives aligned with their deepest values.
+          There are many kinds of happiness. Contentment with self and the life one is living is
+          longer lasting than moments of peace or excitement but all three make us happy.
+          Activities and accomplishments give each of us pleasure, another kind of happiness.
+          Getting There offers information, ideas, and strategies designed to provide you with
+          resources as you set and plan your happiness goals of whatever kind.
         </p>
 
         <div class="mission-values">
@@ -171,89 +175,6 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- Team Section -->
-    <section class="section">
-      <h2 class="section-title fade-in">Meet Our Team</h2>
-      <div class="team-grid">
-        <div class="team-member fade-in">
-          <div class="member-avatar">👩‍⚕️</div>
-          <h3 class="member-name">Dr. Sarah Mitchell</h3>
-          <p class="member-role">Founder & Clinical Director</p>
-          <div class="member-credentials">
-            <span>PhD Psychology</span>
-            <span>Licensed Clinical Psychologist</span>
-          </div>
-          <p class="member-bio">With over 20 years in clinical psychology and wellness coaching, Dr. Mitchell specializes in helping individuals navigate life transitions, build emotional resilience, and achieve meaningful goals. She's the author of several acclaimed books on mental wellness.</p>
-          <div class="member-social">
-            <a href="#" class="social-link">📧</a>
-            <a href="#" class="social-link">💼</a>
-            <a href="#" class="social-link">📚</a>
-          </div>
-        </div>
-
-        <div class="team-member fade-in">
-          <div class="member-avatar">👨‍💼</div>
-          <h3 class="member-name">Michael Chen</h3>
-          <p class="member-role">Senior Wellness Coach</p>
-          <div class="member-credentials">
-            <span>MA Counseling Psychology</span>
-            <span>Certified Life Coach</span>
-          </div>
-          <p class="member-bio">Michael brings 15 years of experience in corporate wellness and executive coaching. He specializes in stress management, work-life balance, and helping professionals navigate career transitions while maintaining mental wellness.</p>
-          <div class="member-social">
-            <a href="#" class="social-link">📧</a>
-            <a href="#" class="social-link">💼</a>
-            <a href="#" class="social-link">🌐</a>
-          </div>
-        </div>
-
-        <div class="team-member fade-in">
-          <div class="member-avatar">👩‍🏫</div>
-          <h3 class="member-name">Lisa Rodriguez</h3>
-          <p class="member-role">Program Director & Therapist</p>
-          <div class="member-credentials">
-            <span>LCSW</span>
-            <span>Trauma-Informed Care Specialist</span>
-          </div>
-          <p class="member-bio">Lisa oversees our program development and specializes in trauma-informed care and resilience building. Her background in social work and community mental health brings a unique perspective to our holistic approach.</p>
-          <div class="member-social">
-            <a href="#" class="social-link">📧</a>
-            <a href="#" class="social-link">💼</a>
-            <a href="#" class="social-link">🎓</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Our Approach Section -->
-    <section class="section">
-      <h2 class="section-title fade-in">Our Therapeutic Approach</h2>
-      <div class="approach-grid">
-        <div class="approach-item fade-in">
-          <div class="approach-number">01</div>
-          <h3 class="approach-title">Holistic Assessment</h3>
-          <p class="approach-description">We begin by understanding your complete picture - mental, emotional, social, and physical wellbeing. Our comprehensive assessment helps us create a personalized approach that addresses your unique needs and circumstances.</p>
-        </div>
-
-        <div class="approach-item fade-in">
-          <div class="approach-number">02</div>
-          <h3 class="approach-title">Collaborative Planning</h3>
-          <p class="approach-description">Together, we develop a tailored wellness plan that aligns with your goals, values, and lifestyle. You're always in control of your journey, with our team providing guidance, support, and evidence-based strategies.</p>
-        </div>
-
-        <div class="approach-item fade-in">
-          <div class="approach-number">03</div>
-          <h3 class="approach-title">Skill Building</h3>
-          <p class="approach-description">We focus on teaching practical, research-backed techniques for emotional regulation, stress management, communication, and resilience. These skills become lifelong tools for navigating challenges.</p>
-        </div>
-
-        <div class="approach-item fade-in">
-          <div class="approach-number">04</div>
-          <h3 class="approach-title">Ongoing Support</h3>
-          <p class="approach-description">Healing and growth don't happen overnight. We provide continuous support through check-ins, resource access, and community connection to ensure lasting positive change.</p>
-        </div>
-      </div>
-    </section>
 
     <!-- Credentials Section -->
     <section class="section">
@@ -475,6 +396,7 @@ onMounted(async () => {
   font-size: 1.1rem;
   line-height: 1.8;
   color: var(--text-light);
+  text-align: justify;
 }
 
 .story-text p {

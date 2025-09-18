@@ -95,30 +95,6 @@ onMounted(() => {
     <div class="therapy-videos-hero-content">
       <h1>Healing Resources & Educational Content</h1>
       <p>Access our library of therapeutic presentations, guided sessions, and educational content designed to support your mental health journey</p>
-      <div class="hero-wellness-stats">
-        <div class="hero-wellness-stat">
-          <span class="hero-stat-number">50+</span>
-          <span class="hero-stat-label">Therapeutic Videos</span>
-        </div>
-        <div class="hero-wellness-stat">
-          <span class="hero-stat-number">15</span>
-          <span class="hero-stat-label">Free Resources</span>
-        </div>
-        <div class="hero-wellness-stat">
-          <span class="hero-stat-number">10K+</span>
-          <span class="hero-stat-label">Lives Supported</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="therapy-subscription-banner">
-    <div class="therapy-banner-content">
-      <div class="therapy-banner-text">
-        <h3>💚 Access Premium Therapeutic Content</h3>
-        <p>Unlock specialized sessions on trauma, anxiety, depression, and relationship healing for just $19/month</p>
-      </div>
-      <a href="#" class="therapy-premium-btn" @click.prevent="showSubscriptionModal">Start Healing Journey</a>
     </div>
   </section>
 
