@@ -1,7 +1,32 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import { RouterLink } from "vue-router";
 import HeartIcon from "@/components/icons/HeartIcon.vue";
 import Plant2Icon from "@/components/icons/Plant2Icon.vue";
+
+// Default values shown until CMS data loads (or if it fails)
+const footerContent = ref(
+  "Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change."
+);
+const footerDisclaimer = ref(
+  "Getting There provides educational resources and support. We are not a substitute for professional medical or mental health treatment. Please consult with qualified healthcare providers for clinical concerns."
+);
+
+onMounted(async () => {
+  try {
+    const res = await fetch(
+      "https://getting-there-cms.onrender.com/api/footer?populate=all",
+      { headers: { "Accept": "application/json" } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    // Safely assign values from the CMS response
+    footerContent.value = json?.data?.content ?? footerContent.value;
+    footerDisclaimer.value = json?.data?.disclaimer ?? footerDisclaimer.value;
+  } catch (err) {
+    console.error("Failed to fetch footer content:", err);
+  }
+});
 </script>
 
 <template>
@@ -10,7 +35,7 @@ import Plant2Icon from "@/components/icons/Plant2Icon.vue";
       <div class="footer-content">
         <div class="footer-section">
           <h3>Getting There</h3>
-          <p>Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change.</p>
+          <p>{{ footerContent }}</p>
           <div class="credentials">
             <span class="credential-badge"><Plant2Icon/> Wellness Focus</span>
             <span class="credential-badge"><HeartIcon/> Compassionate Care</span>
@@ -42,7 +67,7 @@ import Plant2Icon from "@/components/icons/Plant2Icon.vue";
           </div>
         </div>
         <div class="footer-disclaimer">
-          <p><small>Getting There provides educational resources and support. We are not a substitute for professional medical or mental health treatment. Please consult with qualified healthcare providers for clinical concerns.</small></p>
+          <p><small>{{ footerDisclaimer }}</small></p>
         </div>
       </div>
     </div>
