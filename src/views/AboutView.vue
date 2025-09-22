@@ -19,7 +19,7 @@ function getStatSuffix(s: { name: string }) {
 
 async function fetchHero() {
   try {
-    const res = await fetch('https://getting-there-cms.onrender.com/api/about?populate=all');
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/about?populate=all`);
     const json = await res.json();
     hero.value = json?.data?.hero || null;
     history.value = json?.data?.history || null;

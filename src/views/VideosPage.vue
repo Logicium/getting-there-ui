@@ -11,7 +11,6 @@ const searchTerm = ref('');
 
 // Modal state
 const videoModalOpen = ref(false);
-const subscriptionModalOpen = ref(false);
 const currentVideoId = ref('');
 
 // Computed properties
@@ -28,14 +27,6 @@ const filteredVideos = computed(() => {
         video.tags.some(tag => tag.toLowerCase().includes(searchTerm.value.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
-});
-
-const freeVideos = computed(() => {
-  return filteredVideos.value.filter(video => video.isFree);
-});
-
-const premiumVideos = computed(() => {
-  return filteredVideos.value.filter(video => !video.isFree);
 });
 
 // Event handlers
@@ -56,21 +47,29 @@ const closeVideoModal = () => {
   videoModalOpen.value = false;
 };
 
-const showSubscriptionModal = () => {
-  subscriptionModalOpen.value = true;
-};
-
-const closeSubscriptionModal = () => {
-  subscriptionModalOpen.value = false;
-};
-
-const handleSubscription = () => {
-  alert('Subscription system would integrate with your payment processor here. For demo purposes, this would redirect to a secure checkout page with Stripe, PayPal, or similar payment service.');
-  closeSubscriptionModal();
-};
+// Hero content from CMS
+const heroTitle = ref('Free Healing Resources & Educational Content');
+const heroDescription = ref('Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your mental health journey');
 
 // Fade-in animation
-onMounted(() => {
+onMounted(async () => {
+  // Fetch hero data from CMS
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/videos-page?populate=all`);
+    if (res.ok) {
+      const json = await res.json();
+      const hero = json?.data?.Hero;
+      if (hero) {
+        if (hero.title) heroTitle.value = hero.title;
+        if (hero.description) heroDescription.value = hero.description;
+      }
+    } else {
+      console.error('Failed to fetch videos page hero:', res.status, res.statusText);
+    }
+  } catch (err) {
+    console.error('Error fetching videos page hero:', err);
+  }
+
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -93,8 +92,22 @@ onMounted(() => {
 <template>
   <section class="therapy-videos-hero">
     <div class="therapy-videos-hero-content">
-      <h1>Healing Resources & Educational Content</h1>
-      <p>Access our library of therapeutic presentations, guided sessions, and educational content designed to support your mental health journey</p>
+      <h1>{{ heroTitle }}</h1>
+      <p>{{ heroDescription }}</p>
+      <div class="hero-wellness-stats">
+        <div class="hero-wellness-stat">
+          <span class="hero-stat-number">50+</span>
+          <span class="hero-stat-label">Free Videos</span>
+        </div>
+        <div class="hero-wellness-stat">
+          <span class="hero-stat-number">100%</span>
+          <span class="hero-stat-label">Free Access</span>
+        </div>
+        <div class="hero-wellness-stat">
+          <span class="hero-stat-number">24/7</span>
+          <span class="hero-stat-label">Available</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -106,15 +119,18 @@ onMounted(() => {
   />
 
   <main class="therapy-videos-content">
-    <!-- Free Resources Section -->
-    <section class="therapy-video-section" v-if="freeVideos.length > 0">
+    <!-- All Free Resources Section -->
+    <section class="therapy-video-section">
       <h2 class="wellness-section-title fade-in">
-        Free Healing Resources
+        Complete Healing Resource Library
         <div class="section-divider"></div>
       </h2>
-      <div class="therapy-videos-grid" id="freeVideos">
+      <p class="section-description fade-in">
+        Our entire collection of therapeutic content is now freely available. These resources are designed to support your mental health journey with evidence-based approaches and trauma-informed care.
+      </p>
+      <div class="therapy-videos-grid" id="allVideos">
         <VideoCard
-            v-for="video in freeVideos"
+            v-for="video in filteredVideos"
             :key="video.id"
             :video="video"
             :playVideo="playVideo"
@@ -122,22 +138,30 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Premium Content Section -->
-    <section class="therapy-video-section" v-if="premiumVideos.length > 0">
-      <h2 class="wellness-section-title fade-in">
-        Premium Therapeutic Content
-        <div class="section-divider"></div>
-      </h2>
-      <p class="premium-section-description fade-in">
-        These specialized therapeutic sessions address sensitive topics and require a subscription to ensure proper support and follow-up care.
-      </p>
-      <div class="therapy-videos-grid" id="premiumVideos">
-        <VideoCard
-            v-for="video in premiumVideos"
-            :key="video.id"
-            :video="video"
-            :showSubscriptionModal="showSubscriptionModal"
-        />
+    <!-- Community Support Section -->
+    <section class="therapy-community-section fade-in">
+      <div class="community-content">
+        <h3>🤝 Join Our Healing Community</h3>
+        <div class="community-grid">
+          <div class="community-item">
+            <div class="community-icon">💚</div>
+            <h4>Support Groups</h4>
+            <p>Connect with others on similar healing journeys through our in-person and virtual support groups.</p>
+            <router-link to="/events" class="community-link">Explore Groups</router-link>
+          </div>
+          <div class="community-item">
+            <div class="community-icon">📚</div>
+            <h4>Educational Resources</h4>
+            <p>Deepen your understanding with our collection of therapeutic books and self-help guides.</p>
+            <router-link to="/store" class="community-link">Browse Books</router-link>
+          </div>
+          <div class="community-item">
+            <div class="community-icon">✍️</div>
+            <h4>Wellness Blog</h4>
+            <p>Read insights, tips, and stories from mental health professionals and community members.</p>
+            <router-link to="/blog" class="community-link">Read Blog</router-link>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -156,7 +180,7 @@ onMounted(() => {
           </div>
           <div class="disclaimer-item">
             <h4>Confidential Care</h4>
-            <p>All our premium content is designed with trauma-informed principles and includes follow-up resources for additional support.</p>
+            <p>All our content is designed with trauma-informed principles and includes resources for additional support when needed.</p>
           </div>
           <div class="disclaimer-item">
             <h4>Progress at Your Pace</h4>
@@ -193,40 +217,6 @@ onMounted(() => {
         <p><strong>⚠️ Therapeutic Content Notice:</strong> This content addresses mental health topics. Please watch in a safe, private space and consider having support available.</p>
       </div>
     </div>
-  </ModalDialog>
-
-  <!-- Subscription Modal -->
-  <ModalDialog
-      title="Access Premium Therapeutic Content"
-      :isOpen="subscriptionModalOpen"
-      size="small"
-      @close="closeSubscriptionModal"
-  >
-    <div class="therapy-subscription-content">
-      <p>Gain access to our comprehensive library of therapeutic content, including specialized sessions on trauma recovery, depression support, anxiety management, and relationship healing.</p>
-
-      <div class="therapy-pricing-card">
-        <div class="therapy-price">$19<span style="font-size: 1rem;">/month</span></div>
-        <div class="therapy-price-period">7-day free trial • Cancel anytime • No commitment</div>
-        <ul class="therapy-features-list">
-          <li>35+ therapeutic video sessions</li>
-          <li>Trauma-informed content library</li>
-          <li>Guided meditation & mindfulness</li>
-          <li>Crisis support resources</li>
-          <li>Monthly expert interviews</li>
-          <li>Downloadable self-care guides</li>
-          <li>24/7 crisis helpline access</li>
-        </ul>
-        <div class="therapy-guarantee">
-          <p>💚 <strong>Healing Guarantee:</strong> If our content doesn't support your wellness journey, get a full refund within 30 days.</p>
-        </div>
-      </div>
-    </div>
-
-    <template #footer>
-      <button class="therapy-subscribe-btn" @click="handleSubscription">Begin Healing Journey</button>
-      <button class="therapy-secondary-btn" @click="closeSubscriptionModal">Continue with Free Content</button>
-    </template>
   </ModalDialog>
 </template>
 
@@ -302,53 +292,6 @@ onMounted(() => {
   opacity: 0.8;
 }
 
-/* Subscription Banner */
-.therapy-subscription-banner {
-  background: linear-gradient(135deg, var(--success-color) 0%, var(--primary-color) 100%);
-  color: white;
-  padding: 2rem 0;
-  text-align: center;
-}
-
-.therapy-banner-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-}
-
-.therapy-banner-text h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.therapy-banner-text p {
-  opacity: 0.9;
-  font-size: 1rem;
-}
-
-.therapy-premium-btn {
-  background: white;
-  color: var(--primary-color);
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  white-space: nowrap;
-}
-
-.therapy-premium-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
-}
-
 /* Main Content */
 .therapy-videos-content {
   max-width: 1200px;
@@ -378,12 +321,12 @@ onMounted(() => {
   margin-bottom: 4rem;
 }
 
-.premium-section-description {
+.section-description {
   color: var(--text-light);
   font-size: 1.1rem;
   text-align: center;
   margin-bottom: 3rem;
-  max-width: 600px;
+  max-width: 700px;
   margin-left: auto;
   margin-right: auto;
   line-height: 1.6;
@@ -393,6 +336,78 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 2rem;
+}
+
+/* Community Support Section */
+.therapy-community-section {
+  background: var(--bg-light);
+  padding: 3rem;
+  border-radius: 20px;
+  margin: 4rem 0;
+  border: 1px solid var(--border-light);
+}
+
+.community-content h3 {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--text-dark);
+}
+
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.community-item {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px var(--shadow-light);
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-light);
+}
+
+.community-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px var(--shadow-medium);
+}
+
+.community-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.community-item h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.community-item p {
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.community-link {
+  display: inline-block;
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.community-link:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
 }
 
 /* Therapeutic Disclaimer */
@@ -524,107 +539,8 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-/* Subscription Modal Styles */
-.therapy-subscription-content p {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.therapy-pricing-card {
-  background: var(--gradient);
-  color: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  margin: 2rem 0;
-  text-align: center;
-}
-
-.therapy-price {
-  font-size: 3rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-}
-
-.therapy-price-period {
-  opacity: 0.8;
-  margin-bottom: 2rem;
-  font-size: 0.95rem;
-}
-
-.therapy-features-list {
-  list-style: none;
-  text-align: left;
-  padding: 0;
-  margin-bottom: 2rem;
-}
-
-.therapy-features-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-}
-
-.therapy-features-list li::before {
-  content: '💚';
-  font-size: 1rem;
-}
-
-.therapy-guarantee {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1.5rem;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.therapy-guarantee p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.therapy-subscribe-btn {
-  background: var(--accent-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-}
-
-.therapy-subscribe-btn:hover {
-  background: var(--warning-color);
-  transform: translateY(-2px);
-}
-
-.therapy-secondary-btn {
-  background: transparent;
-  color: var(--text-light);
-  padding: 1rem 2rem;
-  border: 2px solid var(--border-light);
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.therapy-secondary-btn:hover {
-  background: var(--bg-light);
-  color: var(--text-dark);
-}
-
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .therapy-banner-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
   .hero-wellness-stats {
     flex-direction: column;
     gap: 1.5rem;
@@ -634,7 +550,7 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .disclaimer-grid {
+  .disclaimer-grid, .community-grid {
     grid-template-columns: 1fr;
   }
 

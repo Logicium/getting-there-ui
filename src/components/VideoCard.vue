@@ -4,59 +4,61 @@ import type { VideoData } from '@/data/data';
 
 interface Props {
   video: VideoData;
-  showSubscriptionModal?: () => void;
   playVideo?: (videoId: string) => void;
 }
 
 const props = defineProps<Props>();
 
-const isFree = computed(() => props.video.isFree);
-const badgeClass = computed(() => isFree.value ? 'free-badge' : 'premium-badge');
-const badgeText = computed(() => isFree.value ? 'FREE' : '⭐ PREMIUM');
+const categoryDisplay = computed(() => {
+  const category = props.video.category[1] || props.video.category[0];
+  switch(category) {
+    case 'motivation': return 'Mindset & Motivation';
+    case 'productivity': return 'Goal Setting';
+    case 'wellness': return 'Mental Wellness';
+    case 'therapy': return 'Therapeutic Content';
+    default: return category;
+  }
+});
+
+const categoryClass = computed(() => {
+  const category = props.video.category[1] || props.video.category[0];
+  return `category-${category}`;
+});
 
 const handleClick = () => {
-  if (isFree.value && props.playVideo) {
+  if (props.playVideo) {
     props.playVideo(props.video.id);
-  } else if (!isFree.value && props.showSubscriptionModal) {
-    props.showSubscriptionModal();
   }
 };
 
 const handleWatchClick = () => {
-  if (isFree.value && props.playVideo) {
+  if (props.playVideo) {
     props.playVideo(props.video.id);
-  } else if (!isFree.value && props.showSubscriptionModal) {
-    props.showSubscriptionModal();
   }
 };
 </script>
 
 <template>
-  <div 
-    class="video-card fade-in" 
-    :data-category="video.category.join(' ')" 
-    :data-title="video.title.toLowerCase() + ' ' + video.tags.join(' ')"
+  <div
+      class="video-card fade-in"
+      :data-category="video.category.join(' ')"
+      :data-title="video.title.toLowerCase() + ' ' + video.tags.join(' ')"
   >
     <div class="video-thumbnail" @click="handleClick">
-      <div :class="badgeClass">{{ badgeText }}</div>
+      <div :class="['category-badge', categoryClass]">{{ categoryDisplay }}</div>
       <div class="video-duration">{{ video.duration }}</div>
     </div>
     <div class="video-content">
-      <div class="video-category">{{ video.category[1] === 'motivation' ? 'Mindset & Motivation' : 
-                                    video.category[1] === 'productivity' ? 'Goal Setting' : 
-                                    video.category[1] === 'wellness' ? 'Wellness' : 
-                                    video.category[1] }}</div>
       <h3 class="video-title">{{ video.title }}</h3>
       <p class="video-presenter">{{ video.presenter }}</p>
       <p class="video-description">{{ video.description }}</p>
       <div class="video-footer">
         <span class="video-views">{{ video.views }} views</span>
-        <button 
-          class="watch-btn" 
-          :class="{ premium: !isFree }" 
-          @click="handleWatchClick"
+        <button
+            class="watch-btn"
+            @click="handleWatchClick"
         >
-          {{ isFree ? 'Watch Now' : 'Premium Only' }}
+          Watch Now
         </button>
       </div>
     </div>
@@ -71,6 +73,7 @@ const handleWatchClick = () => {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   transition: all 0.4s ease;
   position: relative;
+  border: 1px solid var(--border-light);
 }
 
 .video-card:hover {
@@ -107,42 +110,37 @@ const handleWatchClick = () => {
   font-weight: 600;
 }
 
-.premium-badge {
+.category-badge {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  background: var(--premium-gold);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.free-badge {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: var(--success-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 700;
+.category-wellness {
+  background: rgba(74, 124, 89, 0.9);
+}
+
+.category-therapy {
+  background: rgba(52, 152, 219, 0.9);
+}
+
+.category-motivation {
+  background: rgba(244, 162, 97, 0.9);
+}
+
+.category-productivity {
+  background: rgba(155, 89, 182, 0.9);
 }
 
 .video-content {
   padding: 1.5rem;
-}
-
-.video-category {
-  color: var(--primary-color);
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
 }
 
 .video-title {
@@ -154,9 +152,10 @@ const handleWatchClick = () => {
 }
 
 .video-presenter {
-  color: var(--text-light);
+  color: var(--primary-color);
   font-size: 0.9rem;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 .video-description {
@@ -192,15 +191,6 @@ const handleWatchClick = () => {
 
 .watch-btn:hover {
   background: var(--secondary-color);
-  transform: translateY(-2px);
-}
-
-.watch-btn.premium {
-  background: var(--premium-gold);
-}
-
-.watch-btn.premium:hover {
-  background: var(--premium-gold);
   transform: translateY(-2px);
 }
 </style>

@@ -47,7 +47,7 @@ nav {
 .logo{
   height: 50px;
   width: 150px;
-  background-image: url('public/Gemini_Generated_Image_pw80a7pw80a7pw80.png');
+  background-image: url('/Gemini_Generated_Image_pw80a7pw80a7pw80.png');
   background-size: cover;
   background-position: center;
 }
