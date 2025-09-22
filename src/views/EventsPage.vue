@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import GrowthIcon from "@/components/icons/GrowthIcon.vue";
+import PlantIcon from "@/components/icons/PlantIcon.vue";
+import Plant2Icon from "@/components/icons/Plant2Icon.vue";
 
 // Interface for the hero section data
 interface HeroSection {
@@ -410,6 +413,67 @@ onMounted(() => {
 
     </div>
 
+    <section class="therapy-private-workshops fade-in">
+      <div class="private-workshops-content">
+        <div class="workshops-text">
+          <h2><Plant2Icon/>Private Workshops for Your Organization</h2>
+          <p class="workshops-subtitle">
+            Bring mental health education and support directly to your team with customized workshops designed for your community's unique needs.
+          </p>
+
+          <div class="workshop-types">
+            <div class="workshop-type">
+              <span class="type-icon">🏢</span>
+              <span>Corporate Teams</span>
+            </div>
+            <div class="workshop-type">
+              <span class="type-icon">❤️</span>
+              <span>Nonprofit Organizations</span>
+            </div>
+            <div class="workshop-type">
+              <span class="type-icon">⛪</span>
+              <span>Faith Communities</span>
+            </div>
+            <div class="workshop-type">
+              <span class="type-icon">🏫</span>
+              <span>Educational Institutions</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="workshops-cta-card">
+          <h3>Ready to Support Your Community?</h3>
+          <p>Get a customized quote for mental health workshops tailored to your organization.</p>
+
+          <div class="workshop-features">
+            <div class="feature-item">
+              <span class="feature-icon">🩺</span>
+              <span>Licensed mental health professionals</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎯</span>
+              <span>Customized content for your community</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">💻</span>
+              <span>On-site, virtual, or hybrid delivery</span>
+            </div>
+          </div>
+
+          <div class="cta-buttons-wrapper">
+            <a href="mailto:workshops@gthere.net?subject=Private Workshop Inquiry" class="workshop-cta-primary">
+              Request Information
+            </a>
+            <a href="tel:+1234567890" class="workshop-cta-secondary">
+              📞 (123) 456-7890
+            </a>
+          </div>
+
+          <p class="pricing-note">Starting at $1,500 • Sliding scale available</p>
+        </div>
+      </div>
+    </section>
+
     <!-- Support Information Section -->
     <section class="therapy-support-info fade-in">
       <div class="support-info-content">
@@ -476,6 +540,12 @@ onMounted(() => {
 .error-container p {
   color: white;
   margin-bottom: 1rem;
+}
+
+svg{
+  height: 50px;
+  width: 50px;
+  margin-right: 0.5rem;
 }
 
 .retry-button {
@@ -927,5 +997,184 @@ onMounted(() => {
 .fade-in.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Private Workshops Section */
+.therapy-private-workshops {
+  background: var(--primary-color);
+  padding: 4rem 0;
+  margin: 4rem 0;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.therapy-private-workshops::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
+  animation: gentleFloat 20s ease-in-out infinite;
+}
+
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(180deg); }
+}
+
+.private-workshops-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 3rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.workshops-text h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-family: 'Playfair Display', serif;
+}
+
+.workshops-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.workshop-types {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.workshop-type {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.workshop-type:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.type-icon {
+  font-size: 1.2rem;
+}
+
+/* Workshop CTA Card */
+.workshops-cta-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px var(--shadow-medium);
+  text-align: center;
+  border: 1px solid var(--border-light);
+}
+
+.workshops-cta-card h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+}
+
+.workshops-cta-card p {
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.workshop-features {
+  margin-bottom: 2rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+  color: var(--text-dark);
+}
+
+.feature-icon {
+  font-size: 1.1rem;
+  color: var(--primary-color);
+}
+
+.cta-buttons-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.workshop-cta-primary {
+  background: var(--primary-color);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.workshop-cta-primary:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.workshop-cta-secondary {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.75rem;
+}
+
+.workshop-cta-secondary:hover {
+  color: var(--secondary-color);
+}
+
+.pricing-note {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .private-workshops-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .workshop-types {
+    grid-template-columns: 1fr;
+  }
+
+  .workshops-text h2 {
+    font-size: 1.8rem;
+  }
 }
 </style>
