@@ -54,7 +54,7 @@ const fetchHeroData = async () => {
   error.value = null;
 
   try {
-    const res = await fetch('https://getting-there-cms.onrender.com/api/books-page?populate=all');
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/books-page?populate=all`);
 
     if (!res.ok) {
       throw new Error(`Failed to fetch books page hero: ${res.status} ${res.statusText}`);

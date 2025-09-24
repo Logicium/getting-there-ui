@@ -69,7 +69,8 @@ const statusText = computed(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+
 .therapy-event-card {
   background: white;
   border-radius: 20px;

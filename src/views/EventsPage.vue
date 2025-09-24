@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref } from 'vue';
 import GrowthIcon from "@/components/icons/GrowthIcon.vue";
 import PlantIcon from "@/components/icons/PlantIcon.vue";
 import Plant2Icon from "@/components/icons/Plant2Icon.vue";
-import EventCard from "@/components/cards/EventCard.vue";
-import { events } from "@/data/data";
 
 // Interface for the hero section data
 interface HeroSection {
@@ -40,15 +38,41 @@ const currentFilter = ref('all');
 
 function setFilter(filter: string) {
   currentFilter.value = filter;
+  filterEvents();
 }
 
-// Filtered events
-const filteredEvents = computed(() => {
-  if (currentFilter.value === 'all') {
-    return events;
-  }
-  return events.filter(event => event.category === currentFilter.value);
-});
+function filterEvents() {
+  const filter = currentFilter.value;
+  const eventCards = document.querySelectorAll('.therapy-event-card');
+
+  eventCards.forEach(card => {
+    const htmlCard = card as HTMLElement;
+    const category = htmlCard.dataset.category;
+    if (filter === 'all' || category === filter) {
+      htmlCard.style.display = 'block';
+    } else {
+      htmlCard.style.display = 'none';
+    }
+  });
+}
+
+// Sort events by date
+function sortEventsByDate() {
+  const grid = document.getElementById('eventsGrid');
+  if (!grid) return;
+
+  const events = Array.from(document.querySelectorAll('.therapy-event-card'));
+
+  events.sort((a, b) => {
+    const htmlA = a as HTMLElement;
+    const htmlB = b as HTMLElement;
+    const dateA = new Date(htmlA.dataset.date || '');
+    const dateB = new Date(htmlB.dataset.date || '');
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  events.forEach(event => grid.appendChild(event));
+}
 
 // Function to observe fade-in elements
 const observeFadeElements = () => {
@@ -100,7 +124,10 @@ const fetchPageData = async () => {
 
 onMounted(() => {
   // Fetch page data from CMS
-  fetchPageData();
+  fetchPageData().then(() => {
+    // Initialize
+    sortEventsByDate();
+  });
 
   // Initial observation of fade-in elements
   observeFadeElements();
@@ -155,47 +182,234 @@ onMounted(() => {
   <main class="therapy-events-content">
 
     <!-- Featured Event -->
-    <div class="featured-therapy-event fade-in" v-if="events.length > 0">
+    <div class="featured-therapy-event fade-in">
       <div class="featured-wellness-badge">Featured Program</div>
       <div class="featured-therapy-image">
-        <div class="featured-visual-icon">{{ events[0].icon }}</div>
+        <div class="featured-visual-icon">🌱</div>
       </div>
       <div class="featured-therapy-content">
-        <h2 class="featured-therapy-title">{{ events[0].title }}</h2>
+        <h2 class="featured-therapy-title">Anxiety Support Circle</h2>
         <p class="featured-therapy-description">
-          {{ events[0].description }}
+          A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by licensed therapists in a judgment-free space.
         </p>
         <div class="featured-therapy-details">
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">📅</span>
-            <span>{{ events[0].date }}</span>
+            <span>Every Tuesday, Starting April 15</span>
           </div>
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">📍</span>
-            <span>{{ events[0].location }}</span>
+            <span>Denver Wellness Center</span>
           </div>
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">⏰</span>
-            <span>{{ events[0].time }}</span>
+            <span>6:00 PM - 7:30 PM</span>
           </div>
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">👥</span>
-            <span>{{ events[0].capacity }}</span>
+            <span>Small group (8-10 participants)</span>
           </div>
         </div>
-        <router-link :to="`/events/${events[0].slug}`" class="featured-therapy-btn">Join Our Circle - {{ events[0].price }}</router-link>
+        <router-link :to="'/events/anxiety-support'" class="featured-therapy-btn">Join Our Circle - $60/session</router-link>
       </div>
     </div>
 
     <h2 class="wellness-section-title fade-in">All Programs & Support Groups</h2>
 
     <div class="therapy-events-grid" id="eventsGrid">
-      <EventCard 
-        v-for="event in filteredEvents" 
-        :key="event.id" 
-        :event="event" 
-        class="fade-in"
-      />
+
+      <div class="therapy-event-card fade-in" data-category="mindfulness" data-date="2024-04-20">
+        <div class="therapy-event-image">
+          <div class="therapy-event-status status-available">Open</div>
+          <div class="event-visual-icon">🧘‍♀️</div>
+        </div>
+        <div class="therapy-event-content">
+          <div class="therapy-event-date">📅 Every Saturday, Starting April 20</div>
+          <h3 class="therapy-event-title">Mindful Healing Workshop</h3>
+          <p class="therapy-event-description">
+            Learn mindfulness-based stress reduction techniques in a supportive group setting. Perfect for beginners and those seeking deeper practice.
+          </p>
+          <div class="therapy-event-details">
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">📍</span>
+              <span>Colorado Springs Wellness Center</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">⏰</span>
+              <span>10:00 AM - 12:00 PM</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">👥</span>
+              <span>12 spots available</span>
+            </div>
+          </div>
+          <div class="therapy-event-footer">
+            <div class="therapy-event-price">$45/session</div>
+            <router-link :to="'/events/mindful-healing'" class="therapy-event-btn">Learn More</router-link>
+          </div>
+        </div>
+      </div>
+
+      <div class="therapy-event-card fade-in" data-category="support" data-date="2024-04-25">
+        <div class="therapy-event-image">
+          <div class="therapy-event-status status-available">Open</div>
+          <div class="event-visual-icon">💔</div>
+        </div>
+        <div class="therapy-event-content">
+          <div class="therapy-event-date">📅 Every Thursday, Starting April 25</div>
+          <h3 class="therapy-event-title">Grief & Loss Support Group</h3>
+          <p class="therapy-event-description">
+            A compassionate space for those navigating loss. Share your journey with others who understand, guided by experienced grief counselors.
+          </p>
+          <div class="therapy-event-details">
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">📍</span>
+              <span>Boulder Community Center</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">⏰</span>
+              <span>7:00 PM - 8:30 PM</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">👥</span>
+              <span>6-8 participants (intimate setting)</span>
+            </div>
+          </div>
+          <div class="therapy-event-footer">
+            <div class="therapy-event-price">$40/session</div>
+            <router-link :to="'/events/grief-support'" class="therapy-event-btn">Join Group</router-link>
+          </div>
+        </div>
+      </div>
+
+      <div class="therapy-event-card fade-in" data-category="online" data-date="2024-05-02">
+        <div class="therapy-event-image">
+          <div class="therapy-event-status status-filling">Filling Fast</div>
+          <div class="event-visual-icon">💻</div>
+        </div>
+        <div class="therapy-event-content">
+          <div class="therapy-event-date">📅 May 2, 2024</div>
+          <h3 class="therapy-event-title">Virtual Depression Support Circle</h3>
+          <p class="therapy-event-description">
+            Connect with others from the comfort of your home. A safe, confidential online space for sharing experiences and learning coping strategies.
+          </p>
+          <div class="therapy-event-details">
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">💻</span>
+              <span>Secure Online Platform</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">⏰</span>
+              <span>6:00 PM - 7:30 PM</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">👥</span>
+              <span>3 spots remaining</span>
+            </div>
+          </div>
+          <div class="therapy-event-footer">
+            <div class="therapy-event-price">$50/session</div>
+            <router-link :to="'/events/virtual-depression'" class="therapy-event-btn">Register Now</router-link>
+          </div>
+        </div>
+      </div>
+
+      <div class="therapy-event-card fade-in" data-category="therapy" data-date="2024-05-10">
+        <div class="therapy-event-image">
+          <div class="therapy-event-status status-available">Open</div>
+          <div class="event-visual-icon">💕</div>
+        </div>
+        <div class="therapy-event-content">
+          <div class="therapy-event-date">📅 May 10, 2024</div>
+          <h3 class="therapy-event-title">Couples Communication Workshop</h3>
+          <p class="therapy-event-description">
+            Strengthen your relationship with evidence-based communication techniques. Learn to express needs, resolve conflicts, and deepen intimacy.
+          </p>
+          <div class="therapy-event-details">
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">📍</span>
+              <span>Fort Collins Therapy Center</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">⏰</span>
+              <span>1:00 PM - 4:00 PM</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">👥</span>
+              <span>6 couples maximum</span>
+            </div>
+          </div>
+          <div class="therapy-event-footer">
+            <div class="therapy-event-price">$120/couple</div>
+            <router-link :to="'/events/couples-communication'" class="therapy-event-btn">Register</router-link>
+          </div>
+        </div>
+      </div>
+
+      <div class="therapy-event-card fade-in" data-category="support" data-date="2024-05-18">
+        <div class="therapy-event-image">
+          <div class="therapy-event-status status-waitlist">Waitlist</div>
+          <div class="event-visual-icon">👥</div>
+        </div>
+        <div class="therapy-event-content">
+          <div class="therapy-event-date">📅 May 18, 2024</div>
+          <h3 class="therapy-event-title">Trauma Recovery Support Group</h3>
+          <p class="therapy-event-description">
+            A gentle, trauma-informed support group for survivors. Focus on healing, resilience, and post-traumatic growth in a safe environment.
+          </p>
+          <div class="therapy-event-details">
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">📍</span>
+              <span>Denver Trauma Center</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">⏰</span>
+              <span>6:00 PM - 7:30 PM</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">👥</span>
+              <span>Currently full - waitlist available</span>
+            </div>
+          </div>
+          <div class="therapy-event-footer">
+            <div class="therapy-event-price">$65/session</div>
+            <button class="therapy-event-btn waitlist-btn">Join Waitlist</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="therapy-event-card fade-in" data-category="mindfulness" data-date="2024-05-25">
+        <div class="therapy-event-image">
+          <div class="therapy-event-status status-available">Open</div>
+          <div class="event-visual-icon">🌸</div>
+        </div>
+        <div class="therapy-event-content">
+          <div class="therapy-event-date">📅 May 25, 2024</div>
+          <h3 class="therapy-event-title">Self-Compassion & Healing Circle</h3>
+          <p class="therapy-event-description">
+            Learn to treat yourself with the same kindness you'd offer a good friend. Develop self-compassion practices that promote healing and growth.
+          </p>
+          <div class="therapy-event-details">
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">📍</span>
+              <span>Pueblo Wellness Center</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">⏰</span>
+              <span>2:00 PM - 4:00 PM</span>
+            </div>
+            <div class="therapy-event-detail">
+              <span class="therapy-event-detail-icon">👥</span>
+              <span>10 spots available</span>
+            </div>
+          </div>
+          <div class="therapy-event-footer">
+            <div class="therapy-event-price">$55/session</div>
+            <router-link :to="'/events/self-compassion'" class="therapy-event-btn">Join Circle</router-link>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <section class="therapy-private-workshops fade-in">
@@ -287,7 +501,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@import '../assets/common.scss';
+@import '@/assets/common.scss';
 
 svg {
   height: 50px;
@@ -365,9 +579,13 @@ svg {
 }
 
 .therapy-event-card {
-  @extend .card-base;
+  background: white;
+  border-radius: 20px;
   overflow: hidden;
+  box-shadow: 0 8px 30px var(--shadow-light);
+  transition: all 0.4s ease;
   position: relative;
+  border: 1px solid var(--border-light);
 
   &:hover {
     transform: translateY(-8px);
@@ -500,13 +718,16 @@ svg {
 
 /* Featured Event */
 .featured-therapy-event {
-  @extend .card-base;
+  background: white;
+  border-radius: 20px;
   overflow: hidden;
+  box-shadow: 0 15px 40px var(--shadow-medium);
   margin-bottom: 4rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
   position: relative;
+  border: 1px solid var(--border-light);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
