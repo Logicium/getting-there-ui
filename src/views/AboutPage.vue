@@ -4,6 +4,9 @@ import { onMounted, ref } from 'vue';
 // State and data fetching
 const hero = ref<any>(null);
 const history = ref<any>(null);
+const mission = ref<any>(null);
+const cards = ref<any>(null);
+const action = ref<any>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
@@ -34,6 +37,9 @@ async function fetchHero() {
     const json = await res.json();
     hero.value = json?.data?.hero || null;
     history.value = json?.data?.history || null;
+    mission.value = json?.data?.mission || null;
+    cards.value = json?.data?.cards || null;
+    action.value = json?.data?.action || null;
   } catch (e) {
     console.error('Failed to load about hero', e);
     error.value = e instanceof Error ? e.message : 'Failed to load content';
@@ -178,31 +184,36 @@ onMounted(async () => {
     <!-- Mission Section -->
     <section class="section">
       <div class="mission-section fade-in">
-        <h2 class="section-title">Getting There Mission: Increase Happiness</h2>
+        <h2 class="section-title">{{ (mission && mission.title) || 'Getting There Mission: Increase Happiness' }}</h2>
         <p class="mission-text">
-          There are many kinds of happiness. Contentment with self and the life one is living is
-          longer lasting than moments of peace or excitement but all three make us happy.
-          Activities and accomplishments give each of us pleasure, another kind of happiness.
-          Getting There offers information, ideas, and strategies designed to provide you with
-          resources as you set and plan your happiness goals of whatever kind.
+          {{ (mission && mission.Description) || 'There are many kinds of happiness. Contentment with self and the life one is living is longer lasting than moments of peace or excitement but all three make us happy. Activities and accomplishments give each of us pleasure, another kind of happiness. Getting There offers information, ideas, and strategies designed to provide you with resources as you set and plan your happiness goals of whatever kind.' }}
         </p>
 
         <div class="mission-values">
-          <div class="value-item">
-            <div class="value-icon">🤝</div>
-            <h3 class="value-title">Compassionate Care</h3>
-            <p class="value-description">We approach every interaction with empathy, understanding, and genuine care for your wellbeing and unique journey.</p>
+          <div class="value-item" v-for="card in (mission && mission.cards ? mission.cards : [])" :key="card.id">
+            <div class="value-icon">{{ card.icon ? '🖼️' : (card.title.includes('Compassionate') ? '🤝' : card.title.includes('Evidence') ? '🔬' : '🌍') }}</div>
+            <h3 class="value-title">{{ card.title }}</h3>
+            <p class="value-description">{{ card.description }}</p>
           </div>
-          <div class="value-item">
-            <div class="value-icon">🔬</div>
-            <h3 class="value-title">Evidence-Based Methods</h3>
-            <p class="value-description">Our approaches are grounded in scientific research from psychology, neuroscience, and positive psychology to ensure effectiveness.</p>
-          </div>
-          <div class="value-item">
-            <div class="value-icon">🌍</div>
-            <h3 class="value-title">Accessible Support</h3>
-            <p class="value-description">We believe mental wellness support should be available to everyone, regardless of background, location, or circumstances.</p>
-          </div>
+
+          <!-- Fallback if no cards are available -->
+          <template v-if="!mission || !mission.cards || mission.cards.length === 0">
+            <div class="value-item">
+              <div class="value-icon">🤝</div>
+              <h3 class="value-title">Compassionate Care</h3>
+              <p class="value-description">We approach every interaction with empathy, understanding, and genuine care for your wellbeing and unique journey.</p>
+            </div>
+            <div class="value-item">
+              <div class="value-icon">🔬</div>
+              <h3 class="value-title">Evidence-Based Methods</h3>
+              <p class="value-description">Our approaches are grounded in scientific research from psychology, neuroscience, and positive psychology to ensure effectiveness.</p>
+            </div>
+            <div class="value-item">
+              <div class="value-icon">🌍</div>
+              <h3 class="value-title">Accessible Support</h3>
+              <p class="value-description">We believe mental wellness support should be available to everyone, regardless of background, location, or circumstances.</p>
+            </div>
+          </template>
         </div>
       </div>
     </section>
@@ -213,36 +224,47 @@ onMounted(async () => {
       <div class="credentials-section fade-in">
         <h2 class="section-title">Professional Standards & Ethics</h2>
         <div class="credentials-grid">
-          <div class="credential-item">
-            <div class="credential-icon">🛡️</div>
-            <h3>Licensed & Accredited</h3>
-            <p>All our clinical staff hold proper licenses and certifications. We maintain active memberships in professional associations and adhere to strict ethical guidelines.</p>
+          <div class="credential-item" v-for="card in cards" :key="card.id" v-if="cards && cards.length">
+            <div class="credential-icon" v-if="card.icon && card.icon.url">
+              <img :src="'https://getting-there-cms.onrender.com'+card.icon.url" :alt="card.title" class="icon-image" />
+            </div>
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.description }}</p>
           </div>
-          <div class="credential-item">
-            <div class="credential-icon">🔒</div>
-            <h3>Privacy & Confidentiality</h3>
-            <p>We are HIPAA compliant and take your privacy seriously. All interactions are confidential, and your personal information is protected with industry-standard security measures.</p>
-          </div>
-          <div class="credential-item">
-            <div class="credential-icon">📚</div>
-            <h3>Continuing Education</h3>
-            <p>Our team regularly participates in ongoing training and education to stay current with the latest research and best practices in mental health and wellness.</p>
-          </div>
-          <div class="credential-item">
-            <div class="credential-icon">🤝</div>
-            <h3>Collaborative Care</h3>
-            <p>We work closely with other healthcare providers when appropriate and can provide referrals to specialized services when needed.</p>
-          </div>
+
+          <!-- Fallback if no cards are available -->
+          <template v-if="!cards || !cards.length">
+            <div class="credential-item">
+              <div class="credential-icon">🛡️</div>
+              <h3>Licensed & Accredited</h3>
+              <p>All our clinical staff hold proper licenses and certifications. We maintain active memberships in professional associations and adhere to strict ethical guidelines.</p>
+            </div>
+            <div class="credential-item">
+              <div class="credential-icon">🔒</div>
+              <h3>Privacy & Confidentiality</h3>
+              <p>We are HIPAA compliant and take your privacy seriously. All interactions are confidential, and your personal information is protected with industry-standard security measures.</p>
+            </div>
+            <div class="credential-item">
+              <div class="credential-icon">📚</div>
+              <h3>Continuing Education</h3>
+              <p>Our team regularly participates in ongoing training and education to stay current with the latest research and best practices in mental health and wellness.</p>
+            </div>
+            <div class="credential-item">
+              <div class="credential-icon">🤝</div>
+              <h3>Collaborative Care</h3>
+              <p>We work closely with other healthcare providers when appropriate and can provide referrals to specialized services when needed.</p>
+            </div>
+          </template>
         </div>
       </div>
     </section>
 
     <!-- CTA Section -->
     <div class="cta-section fade-in">
-      <h2>Ready to begin your wellness journey?</h2>
-      <p>Take the first step towards emotional wellness and personal growth. Our compassionate team is here to support you with evidence-based approaches and genuine care.</p>
+      <h2>{{ (action && action.actiontext) || 'Ready to begin your wellness journey?' }}</h2>
+      <p>{{ (action && action.Description) || 'Take the first step towards emotional wellness and personal growth. Our compassionate team is here to support you with evidence-based approaches and genuine care.' }}</p>
       <div class="cta-buttons">
-        <router-link to="/events" class="cta-btn">Explore Our Programs</router-link>
+        <router-link to="/events" class="cta-btn">{{ (action && action.buttontext) || 'Explore Our Programs' }}</router-link>
         <a href="mailto:support@gthere.net" class="cta-btn secondary">Get Support Today</a>
       </div>
     </div>
@@ -273,6 +295,12 @@ onMounted(async () => {
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-10px) rotate(180deg); }
+}
+
+.icon-image{
+  width: 60px;
+  height: 60px;
+  margin-right: 10px;
 }
 
 .about-hero-content {
