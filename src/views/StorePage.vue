@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { books, bookCategories } from '@/data/data';
-import ProductCard from '@/components/ProductCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
+import ProductCard from "@/components/cards/ProductCard.vue";
 
 // Book filtering state
 const currentFilter = ref('all');
@@ -51,21 +51,15 @@ const addToCart = (bookId: string, button: HTMLElement) => {
   const book = books[bookId];
   if (!book) return;
 
-  // Get the selected format from the product card
-  const productCard = button.closest('.product-card') as HTMLElement;
-  if (!productCard) return;
-
-  const selectedFormat = productCard.querySelector('.format-option.selected') as HTMLElement;
-  if (!selectedFormat) return;
-
-  const format = selectedFormat.dataset.format || 'digital';
-  const price = format === 'digital' ? book.formats.digital.price : book.formats.print.price;
+  // Only digital format available now
+  const format = 'digital';
+  const price = book.formats.digital.price;
 
   const cartItem: CartItem = {
     id: bookId + '-' + format,
     bookId: bookId,
     title: book.title,
-    format: format === 'digital' ? 'Digital Edition' : 'Print Edition',
+    format: 'Digital Edition',
     price: price
   };
 
@@ -189,7 +183,7 @@ onMounted(async () => {
   <main class="therapy-store-content">
     <section class="therapy-books-section">
       <h2 class="wellness-section-title fade-in">
-        Therapeutic Literature & Self-Help Guides
+        Digital Therapeutic Literature & Self-Help Guides
         <div class="section-divider"></div>
       </h2>
 
@@ -200,7 +194,75 @@ onMounted(async () => {
             :book="book"
             :addToCart="addToCart"
             :showBookPreview="showBookPreview"
+            :digitalOnly="true"
         />
+      </div>
+    </section>
+
+    <!-- Bulk Print Request Section -->
+    <section class="therapy-bulk-print fade-in">
+      <div class="bulk-print-content">
+        <div class="bulk-print-text">
+          <div class="bulk-icon">📚</div>
+          <h2>Bulk Print Orders for Organizations</h2>
+          <p class="bulk-subtitle">
+            Need physical copies for your organization, workshop, or group? We offer bulk printing services for educational institutions, healthcare facilities, and community organizations.
+          </p>
+
+          <div class="organization-types">
+            <div class="org-type">
+              <span class="type-icon">🏥</span>
+              <span>Healthcare Facilities</span>
+            </div>
+            <div class="org-type">
+              <span class="type-icon">🏫</span>
+              <span>Educational Institutions</span>
+            </div>
+            <div class="org-type">
+              <span class="type-icon">🏢</span>
+              <span>Corporate Wellness Programs</span>
+            </div>
+            <div class="org-type">
+              <span class="type-icon">🤝</span>
+              <span>Support Organizations</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bulk-print-cta-card">
+          <h3>Request Bulk Print Quote</h3>
+          <p>Get customized pricing for physical copies of our therapeutic resources.</p>
+
+          <div class="bulk-features">
+            <div class="feature-item">
+              <span class="feature-icon">📖</span>
+              <span>Professional-grade printing and binding</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📦</span>
+              <span>Minimum order: 25 copies</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🚚</span>
+              <span>Direct shipping to your facility</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">💰</span>
+              <span>Volume discounts available</span>
+            </div>
+          </div>
+
+          <div class="bulk-cta-buttons">
+            <a href="mailto:bulk@gthere.net?subject=Bulk Print Request&body=Hello,%0D%0A%0D%0APlease provide a quote for bulk printing.%0D%0A%0D%0AOrganization:%0D%0AContact Person:%0D%0APhone:%0D%0ABook Title(s):%0D%0AQuantity Needed:%0D%0ADelivery Address:%0D%0A%0D%0AThank you!" class="bulk-cta-primary">
+              Request Quote
+            </a>
+            <a href="tel:+1234567890" class="bulk-cta-secondary">
+              📞 (123) 456-7890
+            </a>
+          </div>
+
+          <p class="bulk-pricing-note">Pricing starts at $8/book • Volume discounts available</p>
+        </div>
       </div>
     </section>
 
@@ -238,20 +300,20 @@ onMounted(async () => {
   <div class="therapy-cart-overlay" :class="{ active: cartOpen }" @click="closeCart"></div>
   <div class="therapy-cart-sidebar" :class="{ open: cartOpen }">
     <div class="therapy-cart-header">
-      <h3 class="therapy-cart-title">Your Healing Library</h3>
+      <h3 class="therapy-cart-title">Your Digital Library</h3>
       <button class="therapy-close-cart" @click="closeCart">&times;</button>
     </div>
 
     <div class="therapy-cart-items" id="cartItems">
       <div v-if="cart.length === 0" class="therapy-empty-cart">
-        <div class="empty-cart-icon">📚</div>
-        <p>Your healing library is empty</p>
+        <div class="empty-cart-icon">📱</div>
+        <p>Your digital library is empty</p>
         <p>Add some books to begin your journey!</p>
       </div>
 
       <div v-else>
         <div v-for="(item, index) in cart" :key="item.id" class="therapy-cart-item">
-          <div class="therapy-cart-item-image">📖</div>
+          <div class="therapy-cart-item-image">📱</div>
           <div class="therapy-cart-item-details">
             <div class="therapy-cart-item-title">{{ item.title }}</div>
             <div class="therapy-cart-item-format">{{ item.format }}</div>
@@ -267,8 +329,8 @@ onMounted(async () => {
         <span>Total Investment: </span>
         <span>${{ cartTotal.toFixed(2) }}</span>
       </div>
-      <button class="therapy-checkout-btn" @click="checkout">Begin Your Healing Journey</button>
-      <p class="therapy-cart-note">💚 30-day money-back guarantee on all purchases</p>
+      <button class="therapy-checkout-btn" @click="checkout">Get Instant Access</button>
+      <p class="therapy-cart-note">📱 Instant download • 30-day money-back guarantee</p>
     </div>
   </div>
 
@@ -281,10 +343,11 @@ onMounted(async () => {
   >
     <div v-if="currentBook" class="therapy-book-preview">
       <div class="therapy-book-preview-image">
-        <div class="book-cover">📚</div>
+        <div class="book-cover">📱</div>
         <div class="book-badges">
           <span v-if="currentBook.category.includes('bestseller')" class="preview-badge bestseller">Bestseller</span>
           <span v-if="currentBook.category.includes('new')" class="preview-badge new">New Release</span>
+          <span class="preview-badge digital">Digital Only</span>
         </div>
       </div>
       <div class="therapy-book-details">
@@ -293,10 +356,18 @@ onMounted(async () => {
         <p class="book-description">{{ currentBook.fullDescription }}</p>
 
         <div class="therapy-book-specs">
-          <h4>📋 Book Information</h4>
+          <h4>📋 Digital Book Information</h4>
           <div v-for="(value, key) in currentBook.specs" :key="key" class="therapy-spec-item">
             <span class="therapy-spec-label">{{ key }}:</span>
             <span class="therapy-spec-value">{{ value }}</span>
+          </div>
+          <div class="therapy-spec-item">
+            <span class="therapy-spec-label">Format:</span>
+            <span class="therapy-spec-value">PDF, EPUB compatible</span>
+          </div>
+          <div class="therapy-spec-item">
+            <span class="therapy-spec-label">Access:</span>
+            <span class="therapy-spec-value">Instant download</span>
           </div>
         </div>
 
@@ -360,7 +431,7 @@ onMounted(async () => {
 .therapy-store-hero p {
   font-size: 1.2rem;
   opacity: 0.9;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   line-height: 1.6;
 }
 
@@ -446,6 +517,175 @@ onMounted(async () => {
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 2rem;
   margin-bottom: 4rem;
+}
+
+/* Bulk Print Section */
+.therapy-bulk-print {
+  background: var(--primary-color);
+  padding: 4rem 0;
+  margin: 4rem 0;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.therapy-bulk-print::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
+  animation: gentleFloat 20s ease-in-out infinite;
+}
+
+.bulk-print-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 3rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.bulk-print-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.bulk-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.bulk-print-text h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-family: 'Playfair Display', serif;
+}
+
+.bulk-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.organization-types {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.org-type {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.org-type:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.type-icon {
+  font-size: 1.2rem;
+}
+
+/* Bulk Print CTA Card */
+.bulk-print-cta-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px var(--shadow-medium);
+  text-align: center;
+  border: 1px solid var(--border-light);
+}
+
+.bulk-print-cta-card h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+}
+
+.bulk-print-cta-card p {
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.bulk-features {
+  margin-bottom: 2rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+  color: var(--text-dark);
+}
+
+.feature-icon {
+  font-size: 1.1rem;
+  color: var(--primary-color);
+}
+
+.bulk-cta-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bulk-cta-primary {
+  background: var(--primary-color);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.bulk-cta-primary:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.bulk-cta-secondary {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.75rem;
+}
+
+.bulk-cta-secondary:hover {
+  color: var(--secondary-color);
+}
+
+.bulk-pricing-note {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 /* Reading Benefits Section */
@@ -781,6 +1021,11 @@ onMounted(async () => {
   color: white;
 }
 
+.preview-badge.digital {
+  background: var(--soft-blue);
+  color: white;
+}
+
 .therapy-book-details h3 {
   font-size: 1.4rem;
   font-weight: 700;
@@ -855,6 +1100,19 @@ onMounted(async () => {
     text-align: center;
   }
 
+  .bulk-print-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .organization-types {
+    grid-template-columns: 1fr;
+  }
+
+  .bulk-print-text h2 {
+    font-size: 1.8rem;
+  }
+
   .therapy-cart-sidebar {
     width: 100%;
     right: -100%;
@@ -891,4 +1149,5 @@ onMounted(async () => {
   opacity: 1;
   transform: translateY(0);
 }
+
 </style>

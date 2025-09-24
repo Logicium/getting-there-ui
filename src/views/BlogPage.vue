@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { blogArticles } from '@/data/data';
-import BlogCard from '@/components/BlogCard.vue';
+import BlogCard from '@/components/cards/BlogCard.vue';
 
 // Blog hero data (fetched from CMS)
 const heroTitle = ref<string>('Wellness Insights & Resources');

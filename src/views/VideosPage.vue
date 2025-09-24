@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { videos, videoCategories, heroSections } from '@/data/data';
-import VideoCard from '@/components/VideoCard.vue';
+import VideoCard from '@/components/cards/VideoCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
 

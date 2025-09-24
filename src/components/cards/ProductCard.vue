@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import type { BookData } from '@/data/data';
 
 interface Props {
   book: BookData;
   addToCart: (bookId: string, target: HTMLElement) => void;
   showBookPreview: (bookId: string) => void;
+  digitalOnly?: boolean;
 }
 
 const props = defineProps<Props>();
-
-const selectedFormat = ref('digital');
 
 const isBestseller = computed(() => props.book.category.includes('bestseller'));
 const isNewRelease = computed(() => props.book.category.includes('new'));
@@ -24,17 +23,13 @@ const handleAddToCart = (event: Event) => {
 const handlePreview = () => {
   props.showBookPreview(props.book.id);
 };
-
-const selectFormat = (format: string) => {
-  selectedFormat.value = format;
-};
 </script>
 
 <template>
   <div class="product-card fade-in" :data-category="book.category.join(' ')">
     <div class="product-image">
       <div v-if="badgeClass" :class="badgeClass">{{ badgeText }}</div>
-      {{ book.id.charAt(0).toUpperCase() }}📚
+      {{ book.id.charAt(0).toUpperCase() }}📱
     </div>
     <div class="product-content">
       <h3 class="product-title">{{ book.title }}</h3>
@@ -42,27 +37,14 @@ const selectFormat = (format: string) => {
       <p class="product-description">{{ book.description }}</p>
 
       <div class="product-format">
-        <div 
-          class="format-option" 
-          :class="{ selected: selectedFormat === 'digital' }"
-          @click="selectFormat('digital')"
-          data-format="digital"
-          :data-price="book.formats.digital.price"
-        >
-          <div class="format-title">Digital Edition</div>
+        <div class="format-option selected digital-format">
+          <div class="format-title">📱 Digital Edition</div>
           <div class="format-price">${{ book.formats.digital.price.toFixed(2) }}</div>
-          <div class="format-delivery">{{ book.formats.digital.delivery }}</div>
-        </div>
-        <div 
-          class="format-option" 
-          :class="{ selected: selectedFormat === 'print' }"
-          @click="selectFormat('print')"
-          data-format="print"
-          :data-price="book.formats.print.price"
-        >
-          <div class="format-title">Print Edition</div>
-          <div class="format-price">${{ book.formats.print.price.toFixed(2) }}</div>
-          <div class="format-delivery">{{ book.formats.print.delivery }}</div>
+          <div class="format-features">
+            <span class="feature">✓ Instant Download</span>
+            <span class="feature">✓ PDF & EPUB</span>
+            <span class="feature">✓ Read Anywhere</span>
+          </div>
         </div>
       </div>
 
@@ -82,6 +64,7 @@ const selectFormat = (format: string) => {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   transition: all 0.4s ease;
   position: relative;
+  border: 1px solid var(--border-light);
 }
 
 .product-card:hover {
@@ -110,6 +93,7 @@ const selectFormat = (format: string) => {
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 700;
+  z-index: 2;
 }
 
 .new-badge {
@@ -117,6 +101,19 @@ const selectFormat = (format: string) => {
   top: 1rem;
   left: 1rem;
   background: var(--success-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.digital-only-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--soft-blue);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 15px;
@@ -150,51 +147,68 @@ const selectFormat = (format: string) => {
 }
 
 .product-format {
-  display: flex;
-  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .format-option {
-  flex: 1;
-  padding: 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
+  padding: 1.5rem;
+  border: 2px solid var(--primary-color);
+  border-radius: 15px;
   text-align: center;
-  cursor: pointer;
+  background: rgba(74, 124, 89, 0.05);
   transition: all 0.3s ease;
 }
 
-.format-option:hover, .format-option.selected {
-  border-color: var(--primary-color);
-  background: rgba(37, 99, 235, 0.05);
+.digital-format:hover {
+  background: rgba(74, 124, 89, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px var(--shadow-light);
 }
 
 .format-title {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
   color: var(--text-dark);
+  font-size: 1.1rem;
 }
 
 .format-price {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: var(--primary-color);
+  margin-bottom: 0.5rem;
 }
 
 .format-delivery {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--text-light);
-  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.format-features {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.feature {
+  font-size: 0.8rem;
+  color: var(--primary-color);
+  font-weight: 500;
+  background: rgba(74, 124, 89, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
 }
 
 .product-footer {
   display: flex;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .add-to-cart-btn {
-  flex: 1;
+  flex: 2;
   background: var(--primary-color);
   color: white;
   padding: 1rem;
@@ -204,18 +218,21 @@ const selectFormat = (format: string) => {
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--shadow-light);
 }
 
 .add-to-cart-btn:hover {
   background: var(--secondary-color);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--shadow-medium);
 }
 
 .quick-view-btn {
+  flex: 1;
   background: transparent;
   color: var(--primary-color);
   border: 2px solid var(--primary-color);
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   border-radius: 25px;
   font-weight: 600;
   cursor: pointer;
@@ -225,5 +242,35 @@ const selectFormat = (format: string) => {
 .quick-view-btn:hover {
   background: var(--primary-color);
   color: white;
+}
+
+.digital-benefits {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.benefit-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .format-features {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .product-footer {
+    flex-direction: column;
+  }
+
+  .add-to-cart-btn, .quick-view-btn {
+    flex: 1;
+  }
 }
 </style>
