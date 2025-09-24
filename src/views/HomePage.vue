@@ -226,11 +226,11 @@ onMounted(() => {
           <div class="hero-images">
             <!-- Use CMS imagecarousel data if available -->
             <template v-if="heroData.imagecarousel && heroData.imagecarousel.length > 0">
-              <img 
-                v-for="(image, index) in heroData.imagecarousel" 
+              <img
+                v-for="(image, index) in heroData.imagecarousel"
                 :key="image.id"
-                :src="`https://getting-there-cms.onrender.com${image.url}`" 
-                :alt="image.alternativeText || 'Hero image'" 
+                :src="`https://getting-there-cms.onrender.com${image.url}`"
+                :alt="image.alternativeText || 'Hero image'"
                 :class="['hero-image', index === 0 ? 'active' : '']"
               >
             </template>
@@ -268,8 +268,8 @@ onMounted(() => {
       <div class="container">
         <h2 class="section-title fade-in">{{ servicesData.title }}</h2>
         <div class="services-grid">
-          <ServiceCard 
-            v-for="(card, index) in servicesData.servicecards" 
+          <ServiceCard
+            v-for="(card, index) in servicesData.servicecards"
             :key="card.id"
             :title="card.title"
             :description="card.description"
@@ -286,8 +286,8 @@ onMounted(() => {
         <div class="resources-content">
           <div class="resources-text fade-in">
             <h2>{{ resourcesData.title }}</h2>
-            <ResourceCard 
-              v-for="(card, index) in resourcesData.resourcecards" 
+            <ResourceCard
+              v-for="(card, index) in resourcesData.resourcecards"
               :key="card.id"
               :title="card.title"
               :description="card.description"
@@ -324,7 +324,9 @@ onMounted(() => {
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '@/assets/common.scss';
+
 /* Hero Section */
 .hero {
   min-height: 100vh;
@@ -334,17 +336,17 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   padding-top: 80px;
-}
 
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%234a7c59" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: float 30s ease-in-out infinite;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%234a7c59" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
+    animation: float 30s ease-in-out infinite;
+  }
 }
 
 @keyframes float {
@@ -362,6 +364,12 @@ onMounted(() => {
   align-items: center;
   position: relative;
   z-index: 2;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
 }
 
 .hero-text {
@@ -401,45 +409,20 @@ onMounted(() => {
   gap: 1rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
-}
 
-.cta-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px var(--shadow-light);
-}
-
-.cta-primary:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--shadow-medium);
-}
-
-.cta-secondary {
-  background: transparent;
-  color: var(--primary-color);
-  padding: 1rem 2rem;
-  border: 2px solid var(--primary-color);
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.cta-secondary:hover {
-  background: var(--primary-color);
-  color: white;
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
 }
 
 .trust-indicators {
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
 }
 
 .trust-item {
@@ -457,6 +440,11 @@ onMounted(() => {
 .hero-visual {
   position: relative;
   height: 500px;
+
+  @media (max-width: 768px) {
+    order: -1;
+    height: 300px;
+  }
 }
 
 .hero-images {
@@ -477,10 +465,10 @@ onMounted(() => {
   border-radius: 20px;
   opacity: 0;
   transition: opacity 2s ease-in-out;
-}
 
-.hero-image.active {
-  opacity: 1;
+  &.active {
+    opacity: 1;
+  }
 }
 
 @keyframes gentleFloat {
@@ -495,13 +483,13 @@ onMounted(() => {
 }
 
 .steps-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  @extend .grid-auto-fit;
   margin-top: 3rem;
-}
 
-/* Step card styles moved to InfoCard component */
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* Services Section */
 .services {
@@ -509,29 +497,11 @@ onMounted(() => {
   background: white;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.section-title {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 3rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-}
-
 .services-grid {
-  display: grid;
+  @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
   margin-top: 3rem;
 }
-
-/* Service card styles moved to ServiceCard component */
 
 /* Resources Preview Section */
 .resources-preview {
@@ -544,6 +514,11 @@ onMounted(() => {
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
 .resources-text h2 {
@@ -554,25 +529,10 @@ onMounted(() => {
   font-family: 'Playfair Display', serif;
 }
 
-/* Resource item styles moved to ResourceCard component */
-
 .resources-cta {
-  display: inline-block;
-  background: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  @extend .cta-primary;
   margin-top: 1rem;
-  box-shadow: 0 4px 15px var(--shadow-light);
-}
-
-.resources-cta:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--shadow-medium);
+  display: inline-block;
 }
 
 .resources-visual {
@@ -593,18 +553,18 @@ onMounted(() => {
   border-radius: 50%;
   position: absolute;
   animation: gentlePulse 4s ease-in-out infinite;
-}
 
-.visual-element:nth-child(2) {
-  width: 100px;
-  height: 100px;
-  animation-delay: 1s;
-}
+  &:nth-child(2) {
+    width: 100px;
+    height: 100px;
+    animation-delay: 1s;
+  }
 
-.visual-element:nth-child(3) {
-  width: 50px;
-  height: 50px;
-  animation-delay: 2s;
+  &:nth-child(3) {
+    width: 50px;
+    height: 50px;
+    animation-delay: 2s;
+  }
 }
 
 @keyframes gentlePulse {
@@ -617,16 +577,16 @@ onMounted(() => {
   text-align: center;
   z-index: 2;
   position: relative;
-}
 
-.visual-text h3 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
+  h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
 
-.visual-text p {
-  opacity: 0.9;
+  p {
+    opacity: 0.9;
+  }
 }
 
 /* CTA Section */
@@ -662,25 +622,30 @@ onMounted(() => {
   justify-content: center;
   margin-bottom: 2rem;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 .cta-section .cta-primary {
   background: var(--accent-color);
-}
 
-.cta-section .cta-primary:hover {
-  background: var(--warning-color);
+  &:hover {
+    background: var(--warning-color);
+  }
 }
 
 .cta-section .cta-secondary {
   border-color: rgba(255, 255, 255, 0.5);
   color: rgba(255, 255, 255, 0.9);
-}
 
-.cta-section .cta-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: white;
-  color: white;
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    color: white;
+  }
 }
 
 .cta-assurance {
@@ -690,110 +655,8 @@ onMounted(() => {
   flex-wrap: wrap;
   opacity: 0.8;
   font-size: 0.9rem;
-}
 
-/* Loading animation */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Loading and Error States */
-.loading-container, .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 50vh;
-  padding: 2rem;
-  text-align: center;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid var(--bg-light);
-  border-top: 5px solid var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container p {
-  color: var(--warning-color);
-  margin-bottom: 1rem;
-  font-weight: 500;
-}
-
-.retry-button {
-  background: var(--primary-color);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-button:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .hero-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    text-align: center;
-  }
-
-  .hero-visual {
-    order: -1;
-    height: 300px;
-  }
-
-  .hero-cta {
-    justify-content: center;
-  }
-
-  .trust-indicators {
-    justify-content: center;
-  }
-
-  .steps-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .resources-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .section-title {
-    font-size: 2rem;
-  }
-
-  .cta-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .cta-assurance {
+  @media (max-width: 768px) {
     flex-direction: column;
     gap: 1rem;
   }

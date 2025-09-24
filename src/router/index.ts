@@ -1,25 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomePage from '../views/HomePage.vue'
 import BlogPage from '../views/BlogPage.vue'
 import EventsPage from '../views/EventsPage.vue'
 import EventDetailPage from '../views/EventDetailPage.vue'
-import AboutView from "@/views/AboutView.vue";
+import AboutPage from "@/views/AboutPage.vue";
 import VideosPage from "@/views/VideosPage.vue";
 import StorePage from "@/views/StorePage.vue";
 import BlogPost from "@/views/BlogPost.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    return { top: 0 };
+  },
   routes: [
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: HomePage,
     },
     {
       path: '/about',
       name: 'about',
-      component: AboutView,
+      component: AboutPage,
     },
     {
       path: '/blog',

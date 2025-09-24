@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import GrowthIcon from "@/components/icons/GrowthIcon.vue";
 import PlantIcon from "@/components/icons/PlantIcon.vue";
 import Plant2Icon from "@/components/icons/Plant2Icon.vue";
+import EventCard from "@/components/cards/EventCard.vue";
+import { events } from "@/data/data";
 
 // Interface for the hero section data
 interface HeroSection {
@@ -38,41 +40,15 @@ const currentFilter = ref('all');
 
 function setFilter(filter: string) {
   currentFilter.value = filter;
-  filterEvents();
 }
 
-function filterEvents() {
-  const filter = currentFilter.value;
-  const eventCards = document.querySelectorAll('.therapy-event-card');
-
-  eventCards.forEach(card => {
-    const htmlCard = card as HTMLElement;
-    const category = htmlCard.dataset.category;
-    if (filter === 'all' || category === filter) {
-      htmlCard.style.display = 'block';
-    } else {
-      htmlCard.style.display = 'none';
-    }
-  });
-}
-
-// Sort events by date
-function sortEventsByDate() {
-  const grid = document.getElementById('eventsGrid');
-  if (!grid) return;
-
-  const events = Array.from(document.querySelectorAll('.therapy-event-card'));
-
-  events.sort((a, b) => {
-    const htmlA = a as HTMLElement;
-    const htmlB = b as HTMLElement;
-    const dateA = new Date(htmlA.dataset.date || '');
-    const dateB = new Date(htmlB.dataset.date || '');
-    return dateA.getTime() - dateB.getTime();
-  });
-
-  events.forEach(event => grid.appendChild(event));
-}
+// Filtered events
+const filteredEvents = computed(() => {
+  if (currentFilter.value === 'all') {
+    return events;
+  }
+  return events.filter(event => event.category === currentFilter.value);
+});
 
 // Function to observe fade-in elements
 const observeFadeElements = () => {
@@ -122,13 +98,9 @@ const fetchPageData = async () => {
   }
 };
 
-// Fade-in animation
 onMounted(() => {
   // Fetch page data from CMS
   fetchPageData();
-
-  // Initialize
-  sortEventsByDate();
 
   // Initial observation of fade-in elements
   observeFadeElements();
@@ -139,7 +111,7 @@ onMounted(() => {
   <section class="therapy-events-hero">
     <div v-if="isLoading" class="loading-container">
       <div class="loading-spinner"></div>
-      <p>Loading content...</p>
+      <p>Loading events content...</p>
     </div>
 
     <div v-else-if="error" class="error-container">
@@ -183,234 +155,47 @@ onMounted(() => {
   <main class="therapy-events-content">
 
     <!-- Featured Event -->
-    <div class="featured-therapy-event fade-in">
+    <div class="featured-therapy-event fade-in" v-if="events.length > 0">
       <div class="featured-wellness-badge">Featured Program</div>
       <div class="featured-therapy-image">
-        <div class="featured-visual-icon">🌱</div>
+        <div class="featured-visual-icon">{{ events[0].icon }}</div>
       </div>
       <div class="featured-therapy-content">
-        <h2 class="featured-therapy-title">Anxiety Support Circle</h2>
+        <h2 class="featured-therapy-title">{{ events[0].title }}</h2>
         <p class="featured-therapy-description">
-          A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by licensed therapists in a judgment-free space.
+          {{ events[0].description }}
         </p>
         <div class="featured-therapy-details">
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">📅</span>
-            <span>Every Tuesday, Starting April 15</span>
+            <span>{{ events[0].date }}</span>
           </div>
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">📍</span>
-            <span>Denver Wellness Center</span>
+            <span>{{ events[0].location }}</span>
           </div>
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">⏰</span>
-            <span>6:00 PM - 7:30 PM</span>
+            <span>{{ events[0].time }}</span>
           </div>
           <div class="therapy-event-detail">
             <span class="therapy-event-detail-icon">👥</span>
-            <span>Small group (8-10 participants)</span>
+            <span>{{ events[0].capacity }}</span>
           </div>
         </div>
-        <router-link :to="'/events/anxiety-support'" class="featured-therapy-btn">Join Our Circle - $60/session</router-link>
+        <router-link :to="`/events/${events[0].slug}`" class="featured-therapy-btn">Join Our Circle - {{ events[0].price }}</router-link>
       </div>
     </div>
 
     <h2 class="wellness-section-title fade-in">All Programs & Support Groups</h2>
 
     <div class="therapy-events-grid" id="eventsGrid">
-
-      <div class="therapy-event-card fade-in" data-category="mindfulness" data-date="2024-04-20">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">🧘‍♀️</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 Every Saturday, Starting April 20</div>
-          <h3 class="therapy-event-title">Mindful Healing Workshop</h3>
-          <p class="therapy-event-description">
-            Learn mindfulness-based stress reduction techniques in a supportive group setting. Perfect for beginners and those seeking deeper practice.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Colorado Springs Wellness Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>10:00 AM - 12:00 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>12 spots available</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$45/session</div>
-            <router-link :to="'/events/mindful-healing'" class="therapy-event-btn">Learn More</router-link>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="support" data-date="2024-04-25">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">💔</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 Every Thursday, Starting April 25</div>
-          <h3 class="therapy-event-title">Grief & Loss Support Group</h3>
-          <p class="therapy-event-description">
-            A compassionate space for those navigating loss. Share your journey with others who understand, guided by experienced grief counselors.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Boulder Community Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>7:00 PM - 8:30 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>6-8 participants (intimate setting)</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$40/session</div>
-            <router-link :to="'/events/grief-support'" class="therapy-event-btn">Join Group</router-link>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="online" data-date="2024-05-02">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-filling">Filling Fast</div>
-          <div class="event-visual-icon">💻</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 2, 2024</div>
-          <h3 class="therapy-event-title">Virtual Depression Support Circle</h3>
-          <p class="therapy-event-description">
-            Connect with others from the comfort of your home. A safe, confidential online space for sharing experiences and learning coping strategies.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">💻</span>
-              <span>Secure Online Platform</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>6:00 PM - 7:30 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>3 spots remaining</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$50/session</div>
-            <router-link :to="'/events/virtual-depression'" class="therapy-event-btn">Register Now</router-link>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="therapy" data-date="2024-05-10">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">💕</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 10, 2024</div>
-          <h3 class="therapy-event-title">Couples Communication Workshop</h3>
-          <p class="therapy-event-description">
-            Strengthen your relationship with evidence-based communication techniques. Learn to express needs, resolve conflicts, and deepen intimacy.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Fort Collins Therapy Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>1:00 PM - 4:00 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>6 couples maximum</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$120/couple</div>
-            <router-link :to="'/events/couples-communication'" class="therapy-event-btn">Register</router-link>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="support" data-date="2024-05-18">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-waitlist">Waitlist</div>
-          <div class="event-visual-icon">👥</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 18, 2024</div>
-          <h3 class="therapy-event-title">Trauma Recovery Support Group</h3>
-          <p class="therapy-event-description">
-            A gentle, trauma-informed support group for survivors. Focus on healing, resilience, and post-traumatic growth in a safe environment.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Denver Trauma Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>6:00 PM - 7:30 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>Currently full - waitlist available</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$65/session</div>
-            <button class="therapy-event-btn waitlist-btn">Join Waitlist</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="mindfulness" data-date="2024-05-25">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">🌸</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 25, 2024</div>
-          <h3 class="therapy-event-title">Self-Compassion & Healing Circle</h3>
-          <p class="therapy-event-description">
-            Learn to treat yourself with the same kindness you'd offer a good friend. Develop self-compassion practices that promote healing and growth.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Pueblo Wellness Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>2:00 PM - 4:00 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>10 spots available</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$55/session</div>
-            <router-link :to="'/events/self-compassion'" class="therapy-event-btn">Join Circle</router-link>
-          </div>
-        </div>
-      </div>
-
+      <EventCard 
+        v-for="event in filteredEvents" 
+        :key="event.id" 
+        :event="event" 
+        class="fade-in"
+      />
     </div>
 
     <section class="therapy-private-workshops fade-in">
@@ -501,112 +286,25 @@ onMounted(() => {
   </main>
 </template>
 
-<style scoped>
-/* Therapy Events Hero Section */
-.therapy-events-hero {
-  padding: 8rem 0 4rem;
-  background: var(--gradient);
-  color: white;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  min-height: 300px;
-}
+<style scoped lang="scss">
+@import '../assets/common.scss';
 
-/* Loading and Error Styles */
-.loading-container, .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 2rem;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-container p {
-  color: white;
-  margin-bottom: 1rem;
-}
-
-svg{
+svg {
   height: 50px;
   width: 50px;
   margin-right: 0.5rem;
 }
 
-.retry-button {
-  background: white;
-  color: var(--primary-color);
-  border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.therapy-events-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: gentleFloat 20s ease-in-out infinite;
-}
-
-@keyframes gentleFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(180deg); }
+/* Therapy Events Hero Section */
+.therapy-events-hero {
+  @extend .hero-base;
+  background: var(--gradient);
+  color: white;
+  text-align: center;
 }
 
 .therapy-events-hero-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  position: relative;
-  z-index: 2;
-}
-
-.therapy-events-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
-  font-weight: 700;
-  margin-bottom: 1rem;
-  font-family: 'Playfair Display', serif;
-}
-
-.therapy-events-hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.hero-wellness-indicators {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  @extend .hero-content-base;
 }
 
 /* Filter Section */
@@ -617,9 +315,7 @@ svg{
 }
 
 .filter-wellness-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  @extend .container;
   display: flex;
   gap: 2rem;
   align-items: center;
@@ -645,53 +341,38 @@ svg{
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
 
-.wellness-filter-btn:hover, .wellness-filter-btn.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px var(--shadow-light);
+  &:hover, &.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--shadow-light);
+  }
 }
 
 /* Main Content */
 .therapy-events-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  @extend .container;
   padding: 4rem 2rem;
-}
-
-.wellness-section-title {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 3rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
 }
 
 /* Events Grid */
 .therapy-events-grid {
-  display: grid;
+  @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  gap: 2rem;
   margin-bottom: 4rem;
 }
 
 .therapy-event-card {
-  background: white;
-  border-radius: 20px;
+  @extend .card-base;
   overflow: hidden;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  transition: all 0.4s ease;
   position: relative;
-  border: 1px solid var(--border-light);
-}
 
-.therapy-event-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 50px var(--shadow-medium);
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px var(--shadow-medium);
+  }
 }
 
 .therapy-event-image {
@@ -718,21 +399,21 @@ svg{
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-}
 
-.status-available {
-  background: var(--success-color);
-  color: white;
-}
+  &.status-available {
+    background: var(--success-color);
+    color: white;
+  }
 
-.status-filling {
-  background: var(--warning-color);
-  color: white;
-}
+  &.status-filling {
+    background: var(--warning-color);
+    color: white;
+  }
 
-.status-waitlist {
-  background: var(--text-light);
-  color: white;
+  &.status-waitlist {
+    background: var(--text-light);
+    color: white;
+  }
 }
 
 .therapy-event-content {
@@ -788,6 +469,11 @@ svg{
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .therapy-event-price {
@@ -797,44 +483,34 @@ svg{
 }
 
 .therapy-event-btn {
-  background: var(--primary-color);
-  color: white;
+  @extend .cta-primary;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
-}
 
-.therapy-event-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-}
+  &.waitlist-btn {
+    background: var(--text-light);
+    cursor: default;
 
-.waitlist-btn {
-  background: var(--text-light);
-  cursor: default;
-}
-
-.waitlist-btn:hover {
-  background: var(--text-light);
-  transform: none;
+    &:hover {
+      background: var(--text-light);
+      transform: none;
+    }
+  }
 }
 
 /* Featured Event */
 .featured-therapy-event {
-  background: white;
-  border-radius: 20px;
+  @extend .card-base;
   overflow: hidden;
-  box-shadow: 0 15px 40px var(--shadow-medium);
   margin-bottom: 4rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
   position: relative;
-  border: 1px solid var(--border-light);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .featured-wellness-badge {
@@ -870,6 +546,10 @@ svg{
   display: flex;
   flex-direction: column;
   justify-content: center;
+
+  @media (max-width: 768px) {
+    padding: 2rem;
+  }
 }
 
 .featured-therapy-title {
@@ -888,10 +568,13 @@ svg{
 }
 
 .featured-therapy-details {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  @extend .grid-two;
   gap: 1rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .featured-therapy-btn {
@@ -905,98 +588,11 @@ svg{
   transition: all 0.3s ease;
   text-align: center;
   box-shadow: 0 8px 25px rgba(244, 162, 97, 0.3);
-}
 
-.featured-therapy-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(244, 162, 97, 0.4);
-}
-
-/* Support Information Section */
-.therapy-support-info {
-  background: var(--bg-sage);
-  padding: 3rem;
-  border-radius: 20px;
-  margin-top: 2rem;
-  border: 1px solid var(--border-light);
-}
-
-.support-info-content h3 {
-  text-align: center;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--text-dark);
-}
-
-.support-info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-}
-
-.support-info-item {
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px var(--shadow-light);
-  text-align: center;
-}
-
-.support-info-item h4 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-}
-
-.support-info-item p {
-  color: var(--text-light);
-  line-height: 1.5;
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .therapy-events-grid {
-    grid-template-columns: 1fr;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(244, 162, 97, 0.4);
   }
-
-  .featured-therapy-event {
-    grid-template-columns: 1fr;
-  }
-
-  .featured-therapy-content {
-    padding: 2rem;
-  }
-
-  .featured-therapy-details {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-wellness-content {
-    justify-content: center;
-  }
-
-  .therapy-event-footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .support-info-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Animations */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* Private Workshops Section */
@@ -1008,22 +604,17 @@ svg{
   position: relative;
   overflow: hidden;
   border-radius: 20px;
-}
 
-.therapy-private-workshops::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: gentleFloat 20s ease-in-out infinite;
-}
-
-@keyframes gentleFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(180deg); }
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
+    animation: gentleFloat 20s ease-in-out infinite;
+  }
 }
 
 .private-workshops-content {
@@ -1036,6 +627,11 @@ svg{
   align-items: center;
   position: relative;
   z-index: 2;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
 .workshops-text h2 {
@@ -1044,6 +640,10 @@ svg{
   margin-bottom: 1.5rem;
   color: white;
   font-family: 'Playfair Display', serif;
+
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
 }
 
 .workshops-subtitle {
@@ -1054,9 +654,11 @@ svg{
 }
 
 .workshop-types {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  @extend .grid-two;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .workshop-type {
@@ -1071,11 +673,11 @@ svg{
   color: white;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
-}
 
-.workshop-type:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
 }
 
 .type-icon {
@@ -1084,25 +686,23 @@ svg{
 
 /* Workshop CTA Card */
 .workshops-cta-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 15px 40px var(--shadow-medium);
+  @extend .card-base;
   text-align: center;
-  border: 1px solid var(--border-light);
-}
+  padding: 2.5rem;
+  background: white;
 
-.workshops-cta-card h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
+  h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+  }
 
-.workshops-cta-card p {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 2rem;
+  p {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
 }
 
 .workshop-features {
@@ -1131,18 +731,7 @@ svg{
 }
 
 .workshop-cta-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.workshop-cta-primary:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
+  @extend .cta-primary;
 }
 
 .workshop-cta-secondary {
@@ -1150,10 +739,10 @@ svg{
   text-decoration: none;
   font-weight: 600;
   padding: 0.75rem;
-}
 
-.workshop-cta-secondary:hover {
-  color: var(--secondary-color);
+  &:hover {
+    color: var(--secondary-color);
+  }
 }
 
 .pricing-note {
@@ -1162,19 +751,47 @@ svg{
   margin: 0;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .private-workshops-content {
+/* Support Information Section */
+.therapy-support-info {
+  background: var(--bg-sage);
+  padding: 3rem;
+  border-radius: 20px;
+  margin-top: 2rem;
+  border: 1px solid var(--border-light);
+}
+
+.support-info-content h3 {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--text-dark);
+}
+
+.support-info-grid {
+  @extend .grid-auto-fit;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 2rem;
+  }
+}
+
+.support-info-item {
+  @extend .card-base;
+  text-align: center;
+  background: white;
+
+  h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
   }
 
-  .workshop-types {
-    grid-template-columns: 1fr;
-  }
-
-  .workshops-text h2 {
-    font-size: 1.8rem;
+  p {
+    color: var(--text-light);
+    line-height: 1.5;
   }
 }
 </style>

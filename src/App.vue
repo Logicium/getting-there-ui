@@ -10,7 +10,9 @@ import Footer from "@/components/Footer.vue";
   <Footer/>
 </template>
 
-<style>
+<style lang="scss">
+@import "assets/common";
+
 :root {
   /* Therapy-inspired color palette */
   --primary-color: #4a7c59;        /* Sage green - calming, trustworthy */
@@ -209,13 +211,5 @@ input:focus,
 textarea:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  :root {
-    --text-light: #333333;
-    --border-light: rgba(74, 124, 89, 0.5);
-  }
 }
 </style>

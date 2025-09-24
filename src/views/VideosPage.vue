@@ -13,6 +13,12 @@ const searchTerm = ref('');
 const videoModalOpen = ref(false);
 const currentVideoId = ref('');
 
+// Hero content from CMS
+const heroTitle = ref('Free Healing Resources & Educational Content');
+const heroDescription = ref('Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your mental health journey');
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+
 // Computed properties
 const currentVideo = computed(() => {
   if (!currentVideoId.value) return null;
@@ -47,29 +53,34 @@ const closeVideoModal = () => {
   videoModalOpen.value = false;
 };
 
-// Hero content from CMS
-const heroTitle = ref('Free Healing Resources & Educational Content');
-const heroDescription = ref('Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your mental health journey');
+// Fetch hero data from CMS
+const fetchHeroData = async () => {
+  isLoading.value = true;
+  error.value = null;
 
-// Fade-in animation
-onMounted(async () => {
-  // Fetch hero data from CMS
   try {
     const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/videos-page?populate=all`);
-    if (res.ok) {
-      const json = await res.json();
-      const hero = json?.data?.Hero;
-      if (hero) {
-        if (hero.title) heroTitle.value = hero.title;
-        if (hero.description) heroDescription.value = hero.description;
-      }
-    } else {
-      console.error('Failed to fetch videos page hero:', res.status, res.statusText);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch videos page hero: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    const hero = json?.data?.Hero;
+    if (hero) {
+      if (hero.title) heroTitle.value = hero.title;
+      if (hero.description) heroDescription.value = hero.description;
     }
   } catch (err) {
     console.error('Error fetching videos page hero:', err);
+    error.value = err instanceof Error ? err.message : 'Failed to load content';
+  } finally {
+    isLoading.value = false;
   }
+};
 
+// Function to observe fade-in elements
+function observeFadeElements() {
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -86,12 +97,32 @@ onMounted(async () => {
   document.querySelectorAll('.fade-in').forEach(el => {
     observer.observe(el);
   });
+}
+
+onMounted(async () => {
+  // Fetch hero data from CMS
+  await fetchHeroData();
+
+  // Wait for DOM to update, then observe elements
+  setTimeout(() => {
+    observeFadeElements();
+  }, 100);
 });
 </script>
 
 <template>
   <section class="therapy-videos-hero">
-    <div class="therapy-videos-hero-content">
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading videos content...</p>
+    </div>
+
+    <div v-else-if="error" class="error-container">
+      <p>{{ error }}</p>
+      <button @click="fetchHeroData" class="retry-button">Retry</button>
+    </div>
+
+    <div v-else class="therapy-videos-hero-content">
       <h1>{{ heroTitle }}</h1>
       <p>{{ heroDescription }}</p>
       <div class="hero-wellness-stats">
@@ -220,53 +251,19 @@ onMounted(async () => {
   </ModalDialog>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../assets/common.scss';
+
 /* Therapy Videos Hero Section */
 .therapy-videos-hero {
-  padding: 8rem 0 4rem;
+  @extend .hero-base;
   background: var(--gradient);
   color: white;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.therapy-videos-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: gentleFloat 20s ease-in-out infinite;
-}
-
-@keyframes gentleFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(180deg); }
 }
 
 .therapy-videos-hero-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  position: relative;
-  z-index: 2;
-}
-
-.therapy-videos-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
-  font-weight: 700;
-  margin-bottom: 1rem;
-  font-family: 'Playfair Display', serif;
-}
-
-.therapy-videos-hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin-bottom: 2rem;
-  line-height: 1.6;
+  @extend .hero-content-base;
 }
 
 .hero-wellness-stats {
@@ -274,6 +271,11 @@ onMounted(async () => {
   justify-content: center;
   gap: 3rem;
   margin-top: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
 }
 
 .hero-wellness-stat {
@@ -294,31 +296,8 @@ onMounted(async () => {
 
 /* Main Content */
 .therapy-videos-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  @extend .container;
   padding: 4rem 2rem;
-}
-
-.wellness-section-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.section-divider {
-  height: 3px;
-  background: var(--gradient);
-  border-radius: 2px;
-  flex: 1;
-}
-
-.therapy-video-section {
-  margin-bottom: 4rem;
 }
 
 .section-description {
@@ -332,10 +311,13 @@ onMounted(async () => {
   line-height: 1.6;
 }
 
+.therapy-video-section {
+  margin-bottom: 4rem;
+}
+
 .therapy-videos-grid {
-  display: grid;
+  @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
 }
 
 /* Community Support Section */
@@ -356,24 +338,18 @@ onMounted(async () => {
 }
 
 .community-grid {
-  display: grid;
+  @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
 }
 
 .community-item {
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px var(--shadow-light);
+  @extend .card-base;
   text-align: center;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
 
-.community-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px var(--shadow-medium);
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px var(--shadow-medium);
+  }
 }
 
 .community-icon {
@@ -395,19 +371,9 @@ onMounted(async () => {
 }
 
 .community-link {
-  display: inline-block;
-  background: var(--primary-color);
-  color: white;
+  @extend .cta-primary;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.community-link:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
 }
 
 /* Therapeutic Disclaimer */
@@ -428,29 +394,26 @@ onMounted(async () => {
 }
 
 .disclaimer-grid {
-  display: grid;
+  @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
 }
 
 .disclaimer-item {
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px var(--shadow-light);
+  @extend .card-base;
   text-align: center;
-}
+  background: white;
 
-.disclaimer-item h4 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-}
+  h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
 
-.disclaimer-item p {
-  color: var(--text-light);
-  line-height: 1.5;
+  p {
+    color: var(--text-light);
+    line-height: 1.5;
+  }
 }
 
 /* Modal Styles */
@@ -514,16 +477,16 @@ onMounted(async () => {
 .presenter-info p {
   margin: 0;
   line-height: 1.4;
-}
 
-.presenter-info p:first-child {
-  font-weight: 600;
-  color: var(--text-dark);
-}
+  &:first-child {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
 
-.presenter-info p:last-child {
-  color: var(--text-light);
-  font-size: 0.9rem;
+  &:last-child {
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
 }
 
 .therapy-modal-warning {
@@ -531,21 +494,16 @@ onMounted(async () => {
   padding: 1rem;
   border-radius: 10px;
   border-left: 4px solid var(--warning-color);
-}
 
-.therapy-modal-warning p {
-  margin: 0;
-  color: var(--text-dark);
-  font-size: 0.9rem;
+  p {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+  }
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .hero-wellness-stats {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
   .therapy-videos-grid {
     grid-template-columns: 1fr;
   }
@@ -553,28 +511,5 @@ onMounted(async () => {
   .disclaimer-grid, .community-grid {
     grid-template-columns: 1fr;
   }
-
-  .wellness-section-title {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .section-divider {
-    width: 100px;
-    margin: 0 auto;
-  }
-}
-
-/* Animations */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 </style>

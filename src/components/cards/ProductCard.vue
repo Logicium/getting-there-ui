@@ -36,16 +36,12 @@ const handlePreview = () => {
       <p class="product-author">by {{ book.author }}</p>
       <p class="product-description">{{ book.description }}</p>
 
-      <div class="product-format">
-        <div class="format-option selected digital-format">
-          <div class="format-title">📱 Digital Edition</div>
-          <div class="format-price">${{ book.formats.digital.price.toFixed(2) }}</div>
-          <div class="format-features">
-            <span class="feature">✓ Instant Download</span>
-            <span class="feature">✓ PDF & EPUB</span>
-            <span class="feature">✓ Read Anywhere</span>
-          </div>
+      <div class="product-pricing">
+        <div class="price-display">
+          <span class="price">${{ book.formats.digital.price.toFixed(2) }}</span>
+          <span class="format-type">Digital Edition</span>
         </div>
+        <div class="instant-access">📱 Instant Download</div>
       </div>
 
       <div class="product-footer">
@@ -73,13 +69,13 @@ const handlePreview = () => {
 }
 
 .product-image {
-  height: 250px;
+  height: 180px;
   background: var(--gradient);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 4rem;
+  font-size: 3rem;
   position: relative;
 }
 
@@ -122,11 +118,11 @@ const handlePreview = () => {
 }
 
 .product-content {
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .product-title {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
   color: var(--text-dark);
@@ -136,95 +132,79 @@ const handlePreview = () => {
 .product-author {
   color: var(--primary-color);
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
 }
 
 .product-description {
   color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.product-format {
-  margin-bottom: 1.5rem;
+.product-pricing {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-sage);
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
 }
 
-.format-option {
-  padding: 1.5rem;
-  border: 2px solid var(--primary-color);
-  border-radius: 15px;
-  text-align: center;
-  background: rgba(74, 124, 89, 0.05);
-  transition: all 0.3s ease;
+.price-display {
+  display: flex;
+  flex-direction: column;
 }
 
-.digital-format:hover {
-  background: rgba(74, 124, 89, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px var(--shadow-light);
-}
-
-.format-title {
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: var(--text-dark);
-  font-size: 1.1rem;
-}
-
-.format-price {
-  font-size: 1.4rem;
+.price {
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--primary-color);
-  margin-bottom: 0.5rem;
 }
 
-.format-delivery {
-  font-size: 0.9rem;
+.format-type {
+  font-size: 0.75rem;
   color: var(--text-light);
-  margin-bottom: 1rem;
+  font-weight: 500;
 }
 
-.format-features {
-  display: flex;
-  justify-content: space-around;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.feature {
+.instant-access {
   font-size: 0.8rem;
   color: var(--primary-color);
-  font-weight: 500;
+  font-weight: 600;
   background: rgba(74, 124, 89, 0.1);
   padding: 0.25rem 0.5rem;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .product-footer {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
 }
 
 .add-to-cart-btn {
   flex: 2;
   background: var(--primary-color);
   color: white;
-  padding: 1rem;
-  border-radius: 25px;
+  padding: 0.75rem;
+  border-radius: 20px;
   border: none;
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px var(--shadow-light);
 }
 
 .add-to-cart-btn:hover {
   background: var(--secondary-color);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--shadow-medium);
 }
 
 .quick-view-btn {
@@ -232,29 +212,17 @@ const handlePreview = () => {
   background: transparent;
   color: var(--primary-color);
   border: 2px solid var(--primary-color);
-  padding: 1rem;
-  border-radius: 25px;
+  padding: 0.75rem;
+  border-radius: 20px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 0.9rem;
 }
 
 .quick-view-btn:hover {
   background: var(--primary-color);
   color: white;
-}
-
-.digital-benefits {
-  text-align: center;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-light);
-}
-
-.benefit-text {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--text-light);
-  font-weight: 500;
 }
 
 /* Mobile Responsiveness */

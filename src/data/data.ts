@@ -460,6 +460,123 @@ export const blogArticles: BlogData[] = [
   }
 ];
 
+// Event data
+export interface EventData {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  date: string;
+  location: string;
+  time: string;
+  capacity: string;
+  price: string;
+  status: 'available' | 'filling' | 'waitlist';
+  icon: string;
+  slug?: string;
+}
+
+export const events: EventData[] = [
+  {
+    id: 'anxiety-support',
+    title: 'Anxiety Support Circle',
+    description: 'A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by licensed therapists in a judgment-free space.',
+    category: 'therapy',
+    date: 'Every Tuesday, Starting April 15',
+    location: 'Denver Wellness Center',
+    time: '6:00 PM - 7:30 PM',
+    capacity: 'Small group (8-10 participants)',
+    price: '$60/session',
+    status: 'available',
+    icon: '🌱',
+    slug: 'anxiety-support'
+  },
+  {
+    id: 'mindful-healing',
+    title: 'Mindful Healing Workshop',
+    description: 'Learn mindfulness-based stress reduction techniques in a supportive group setting. Perfect for beginners and those seeking deeper practice.',
+    category: 'mindfulness',
+    date: 'Every Saturday, Starting April 20',
+    location: 'Colorado Springs Wellness Center',
+    time: '10:00 AM - 12:00 PM',
+    capacity: '12 spots available',
+    price: '$45/session',
+    status: 'available',
+    icon: '🧘‍♀️',
+    slug: 'mindful-healing'
+  },
+  {
+    id: 'grief-support',
+    title: 'Grief & Loss Support Group',
+    description: 'A compassionate space for those navigating loss. Share your journey with others who understand, guided by experienced grief counselors.',
+    category: 'support',
+    date: 'Every Thursday, Starting April 25',
+    location: 'Boulder Community Center',
+    time: '7:00 PM - 8:30 PM',
+    capacity: '6-8 participants (intimate setting)',
+    price: '$40/session',
+    status: 'available',
+    icon: '💔',
+    slug: 'grief-support'
+  },
+  {
+    id: 'virtual-depression',
+    title: 'Virtual Depression Support Circle',
+    description: 'Connect with others from the comfort of your home. A safe, confidential online space for sharing experiences and learning coping strategies.',
+    category: 'online',
+    date: 'May 2, 2024',
+    location: 'Secure Online Platform',
+    time: '6:00 PM - 7:30 PM',
+    capacity: '3 spots remaining',
+    price: '$50/session',
+    status: 'filling',
+    icon: '💻',
+    slug: 'virtual-depression'
+  },
+  {
+    id: 'couples-communication',
+    title: 'Couples Communication Workshop',
+    description: 'Strengthen your relationship with evidence-based communication techniques. Learn to express needs, resolve conflicts, and deepen intimacy.',
+    category: 'therapy',
+    date: 'May 10, 2024',
+    location: 'Fort Collins Therapy Center',
+    time: '1:00 PM - 4:00 PM',
+    capacity: '6 couples maximum',
+    price: '$120/couple',
+    status: 'available',
+    icon: '💕',
+    slug: 'couples-communication'
+  },
+  {
+    id: 'trauma-recovery',
+    title: 'Trauma Recovery Support Group',
+    description: 'A gentle, trauma-informed support group for survivors. Focus on healing, resilience, and post-traumatic growth in a safe environment.',
+    category: 'support',
+    date: 'May 18, 2024',
+    location: 'Denver Trauma Center',
+    time: '6:00 PM - 7:30 PM',
+    capacity: 'Currently full - waitlist available',
+    price: '$65/session',
+    status: 'waitlist',
+    icon: '👥',
+    slug: 'trauma-recovery'
+  },
+  {
+    id: 'self-compassion',
+    title: 'Self-Compassion & Healing Circle',
+    description: 'Learn to treat yourself with the same kindness you\'d offer a good friend. Develop self-compassion practices that promote healing and growth.',
+    category: 'mindfulness',
+    date: 'May 25, 2024',
+    location: 'Pueblo Wellness Center',
+    time: '2:00 PM - 4:00 PM',
+    capacity: '10 spots available',
+    price: '$55/session',
+    status: 'available',
+    icon: '🌸',
+    slug: 'self-compassion'
+  }
+];
+
 // Hero section data - Updated to reflect all free content
 export const heroSections = {
   videos: {

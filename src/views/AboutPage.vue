@@ -4,6 +4,9 @@ import { onMounted, ref } from 'vue';
 // State and data fetching
 const hero = ref<any>(null);
 const history = ref<any>(null);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+
 const defaultStats = [
   { id: 1, name: 'Lives Transformed', statistic: 10001 },
   { id: 2, name: 'Years of Service', statistic: 16 },
@@ -18,19 +21,29 @@ function getStatSuffix(s: { name: string }) {
 }
 
 async function fetchHero() {
+  isLoading.value = true;
+  error.value = null;
+
   try {
     const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/about?populate=all`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch about data: ${res.status} ${res.statusText}`);
+    }
+
     const json = await res.json();
     hero.value = json?.data?.hero || null;
     history.value = json?.data?.history || null;
   } catch (e) {
     console.error('Failed to load about hero', e);
+    error.value = e instanceof Error ? e.message : 'Failed to load content';
+  } finally {
+    isLoading.value = false;
   }
 }
 
 // Animation observers
-onMounted(async () => {
-  await fetchHero();
+function observeFadeElements() {
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -87,12 +100,31 @@ onMounted(async () => {
   if (heroSection) {
     heroObserver.observe(heroSection);
   }
+}
+
+onMounted(async () => {
+  await fetchHero();
+
+  // Wait for DOM to update, then observe elements
+  setTimeout(() => {
+    observeFadeElements();
+  }, 100);
 });
 </script>
 
 <template>
   <section class="about-hero">
-    <div class="about-hero-content">
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading about content...</p>
+    </div>
+
+    <div v-else-if="error" class="error-container">
+      <p>{{ error }}</p>
+      <button @click="fetchHero" class="retry-button">Retry</button>
+    </div>
+
+    <div v-else class="about-hero-content">
       <div class="hero-text">
         <div class="hero-badge">{{ (hero && hero.tag) || 'Trusted Mental Wellness Support' }}</div>
         <h1>{{ (hero && hero.title) || 'Compassionate guidance for lasting change' }}</h1>
@@ -119,7 +151,7 @@ onMounted(async () => {
 
     <!-- Our Story Section -->
     <section class="section">
-      <h2 class="section-title fade-in">{{ (history && history.title) }}</h2>
+      <h2 class="section-title fade-in">{{ (history && history.title) || 'Our Story' }}</h2>
       <div class="story-content">
         <div class="story-text slide-in-left">
           <template v-if="history && history.content && history.content.length">
@@ -217,7 +249,9 @@ onMounted(async () => {
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../assets/common';
+
 * {
   margin: 0;
   padding: 0;
@@ -226,22 +260,14 @@ onMounted(async () => {
 
 /* Hero Section */
 .about-hero {
-  padding: 8rem 0 4rem;
+  @extend .hero-base;
   background: var(--gradient-neutral);
   color: var(--text-dark);
-  position: relative;
-  overflow: hidden;
-}
 
-.about-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%234a7c59" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: float 30s ease-in-out infinite;
+  &::before {
+    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%234a7c59" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
+    animation: float 30s ease-in-out infinite;
+  }
 }
 
 @keyframes float {
@@ -375,15 +401,6 @@ onMounted(async () => {
   margin-bottom: 6rem;
 }
 
-.section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 3rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-}
-
 /* Our Story Section */
 .story-content {
   display: grid;
@@ -430,12 +447,9 @@ onMounted(async () => {
 
 /* Mission Section */
 .mission-section {
-  background: white;
-  padding: 4rem;
-  border-radius: 30px;
-  box-shadow: 0 20px 60px var(--shadow-light);
+  @extend .card-base;
   text-align: center;
-  border: 1px solid var(--border-light);
+  padding: 4rem;
 }
 
 .mission-text {
@@ -447,24 +461,19 @@ onMounted(async () => {
 }
 
 .mission-values {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  @extend .grid-three;
   margin-top: 3rem;
 }
 
 .value-item {
+  @extend .card-base;
+  text-align: center;
   padding: 2rem;
   background: var(--bg-light);
-  border-radius: 15px;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
 
-.value-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px var(--shadow-light);
-  background: var(--bg-sage);
+  &:hover {
+    background: var(--bg-sage);
+  }
 }
 
 .value-icon {
@@ -484,153 +493,6 @@ onMounted(async () => {
   line-height: 1.5;
 }
 
-/* Team Section */
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.team-member {
-  background: white;
-  border-radius: 20px;
-  padding: 2.5rem;
-  text-align: center;
-  box-shadow: 0 10px 30px var(--shadow-light);
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
-
-.team-member:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 50px var(--shadow-medium);
-}
-
-.member-avatar {
-  width: 120px;
-  height: 120px;
-  background: var(--bg-sage);
-  border-radius: 50%;
-  margin: 0 auto 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  border: 3px solid var(--primary-color);
-}
-
-.member-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.member-role {
-  color: var(--primary-color);
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.member-credentials {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.member-credentials span {
-  background: var(--bg-light);
-  color: var(--text-light);
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: 1px solid var(--border-light);
-}
-
-.member-bio {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-}
-
-.member-social {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.social-link {
-  width: 40px;
-  height: 40px;
-  background: var(--bg-light);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
-
-.social-link:hover {
-  background: var(--primary-color);
-  color: white;
-  transform: translateY(-2px);
-}
-
-/* Approach Section */
-.approach-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 3rem;
-}
-
-.approach-item {
-  background: white;
-  padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px var(--shadow-light);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--border-light);
-}
-
-.approach-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--gradient);
-}
-
-.approach-number {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--primary-color);
-  opacity: 0.2;
-  position: absolute;
-  top: 1rem;
-  right: 2rem;
-}
-
-.approach-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.approach-description {
-  color: var(--text-light);
-  line-height: 1.6;
-}
-
 /* Credentials Section */
 .credentials-section {
   background: var(--bg-light);
@@ -640,18 +502,14 @@ onMounted(async () => {
 }
 
 .credentials-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
+  @extend .grid-two;
   margin-top: 2rem;
 }
 
 .credential-item {
-  background: white;
+  @extend .card-base;
   padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 8px 25px var(--shadow-light);
-  border: 1px solid var(--border-light);
+  background: white;
 }
 
 .credential-icon {
@@ -680,23 +538,23 @@ onMounted(async () => {
   text-align: center;
   margin-top: 4rem;
   box-shadow: 0 15px 40px var(--shadow-medium);
-}
 
-.cta-section h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  font-family: 'Playfair Display', serif;
-}
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-family: 'Playfair Display', serif;
+  }
 
-.cta-section p {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  margin-bottom: 2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.6;
+  p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
 }
 
 .cta-buttons {
@@ -715,22 +573,22 @@ onMounted(async () => {
   font-weight: 700;
   transition: all 0.3s ease;
   box-shadow: 0 6px 20px rgba(244, 162, 97, 0.3);
-}
 
-.cta-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(244, 162, 97, 0.4);
-}
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(244, 162, 97, 0.4);
+  }
 
-.cta-btn.secondary {
-  background: transparent;
-  border: 2px solid white;
-  box-shadow: none;
-}
+  &.secondary {
+    background: transparent;
+    border: 2px solid white;
+    box-shadow: none;
 
-.cta-btn.secondary:hover {
-  background: white;
-  color: var(--primary-color);
+    &:hover {
+      background: white;
+      color: var(--primary-color);
+    }
+  }
 }
 
 /* Mobile Responsiveness */
@@ -751,63 +609,13 @@ onMounted(async () => {
     gap: 2rem;
   }
 
-  .mission-values {
-    grid-template-columns: 1fr;
-  }
-
-  .approach-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .credentials-grid {
-    grid-template-columns: 1fr;
-  }
-
   .cta-buttons {
     flex-direction: column;
     align-items: center;
   }
 
-  .section-title {
-    font-size: 2rem;
-  }
-
   .hero-text h1 {
     font-size: 2.5rem;
   }
-}
-
-/* Animations */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.slide-in-left {
-  opacity: 0;
-  transform: translateX(-50px);
-  transition: all 0.8s ease;
-}
-
-.slide-in-left.visible {
-  opacity: 1 !important;
-  transform: translateX(0);
-}
-
-.slide-in-right {
-  opacity: 0;
-  transform: translateX(50px);
-  transition: all 0.8s ease;
-}
-
-.slide-in-right.visible {
-  opacity: 1;
-  transform: translateX(0);
 }
 </style>

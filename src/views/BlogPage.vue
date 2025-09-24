@@ -6,12 +6,21 @@ import BlogCard from '@/components/cards/BlogCard.vue';
 // Blog hero data (fetched from CMS)
 const heroTitle = ref<string>('Wellness Insights & Resources');
 const heroDescription = ref<string>('Expert guidance on mental health, emotional wellness, and personal growth from our licensed professionals');
+const isLoading = ref(true);
+const error = ref<string | null>(null);
 
 // Fetch hero data from CMS
 const fetchBlogHero = async () => {
+  isLoading.value = true;
+  error.value = null;
+
   try {
     const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/blog-page?populate=all`);
-    if (!res.ok) throw new Error(`Failed to fetch blog hero: ${res.status} ${res.statusText}`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch blog hero: ${res.status} ${res.statusText}`);
+    }
+
     const json = await res.json();
     const hero = json?.data?.Hero;
     if (hero) {
@@ -19,8 +28,10 @@ const fetchBlogHero = async () => {
       if (hero.description) heroDescription.value = hero.description;
     }
   } catch (e) {
-    console.error(e);
-    // keep defaults on error
+    console.error('Error fetching blog hero:', e);
+    error.value = e instanceof Error ? e.message : 'Failed to load content';
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -32,8 +43,8 @@ const currentFilter = ref('all');
 const filteredArticles = computed(() => {
   const searchTerm = searchInput.value.toLowerCase();
   return blogArticles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm) || 
-                          article.excerpt.toLowerCase().includes(searchTerm);
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm) ||
+        article.excerpt.toLowerCase().includes(searchTerm);
     const matchesFilter = currentFilter.value === 'all' || article.category === currentFilter.value;
     return matchesSearch && matchesFilter;
   });
@@ -43,11 +54,8 @@ function setFilter(category: string) {
   currentFilter.value = category;
 }
 
-// Fade-in animation
-onMounted(() => {
-  // fetch CMS hero
-  fetchBlogHero();
-
+// Function to observe fade-in elements
+function observeFadeElements() {
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -64,12 +72,32 @@ onMounted(() => {
   document.querySelectorAll('.fade-in').forEach(el => {
     observer.observe(el);
   });
+}
+
+onMounted(async () => {
+  // fetch CMS hero
+  await fetchBlogHero();
+
+  // Wait for DOM to update, then observe elements
+  setTimeout(() => {
+    observeFadeElements();
+  }, 100);
 });
 </script>
 
 <template>
   <section class="therapy-hero">
-    <div class="therapy-hero-content">
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading blog content...</p>
+    </div>
+
+    <div v-else-if="error" class="error-container">
+      <p>{{ error }}</p>
+      <button @click="fetchBlogHero" class="retry-button">Retry</button>
+    </div>
+
+    <div v-else class="therapy-hero-content">
       <h1>{{ heroTitle }}</h1>
       <p>{{ heroDescription }}</p>
       <div class="hero-trust-indicators">
@@ -101,21 +129,21 @@ onMounted(() => {
     <section class="articles-section">
       <h2 class="wellness-section-title">Latest Wellness Articles</h2>
       <div class="therapy-articles-grid" id="articlesGrid">
-        <BlogCard 
-          v-for="article in filteredArticles" 
-          :key="article.id"
-          :category="article.category"
-          :category-label="article.categoryLabel"
-          :icon="article.icon"
-          :image-url="article.imageUrl"
-          :date="article.date"
-          :read-time="article.readTime"
-          :title="article.title"
-          :excerpt="article.excerpt"
-          :author-avatar="article.authorAvatar"
-          :author-name="article.authorName"
-          :author-credentials="article.authorCredentials"
-          :slug="article.slug"
+        <BlogCard
+            v-for="article in filteredArticles"
+            :key="article.id"
+            :category="article.category"
+            :category-label="article.categoryLabel"
+            :icon="article.icon"
+            :image-url="article.imageUrl"
+            :date="article.date"
+            :read-time="article.readTime"
+            :title="article.title"
+            :excerpt="article.excerpt"
+            :author-avatar="article.authorAvatar"
+            :author-name="article.authorName"
+            :author-credentials="article.authorCredentials"
+            :slug="article.slug"
         />
       </div>
     </section>
@@ -155,60 +183,19 @@ onMounted(() => {
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../assets/common.scss';
+
 /* Therapy Hero Section */
 .therapy-hero {
-  padding: 8rem 0 4rem;
+  @extend .hero-base;
   background: var(--gradient);
   color: white;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.therapy-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: gentleFloat 20s ease-in-out infinite;
-}
-
-@keyframes gentleFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(180deg); }
 }
 
 .therapy-hero-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  position: relative;
-  z-index: 2;
-}
-
-.therapy-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
-  font-weight: 700;
-  margin-bottom: 1rem;
-  font-family: 'Playfair Display', serif;
-}
-
-.therapy-hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.hero-trust-indicators {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  @extend .hero-content-base;
 }
 
 /* Search and Filter Section */
@@ -245,12 +232,12 @@ onMounted(() => {
   transition: all 0.3s ease;
   background: white;
   color: var(--text-dark);
-}
 
-.therapy-search-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+  }
 }
 
 .search-icon {
@@ -278,14 +265,14 @@ onMounted(() => {
   transition: all 0.3s ease;
   cursor: pointer;
   font-size: 0.9rem;
-}
 
-.wellness-tag:hover, .wellness-tag.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px var(--shadow-light);
+  &:hover, &.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--shadow-light);
+  }
 }
 
 /* Main Content */
@@ -296,14 +283,6 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 4rem;
-}
-
-.wellness-section-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
 }
 
 /* Articles Grid */
@@ -320,25 +299,21 @@ onMounted(() => {
 }
 
 .sidebar-wellness-section {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
+  @extend .card-base;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  border: 1px solid var(--border-light);
-}
 
-.sidebar-wellness-section h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+  }
 
-.sidebar-wellness-section p {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 1rem;
+  p {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
 }
 
 /* Wellness Check Buttons */
@@ -359,11 +334,11 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
-}
 
-.wellness-check-btn:hover {
-  border-color: var(--primary-color);
-  background: var(--bg-sage);
+  &:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-sage);
+  }
 }
 
 .wellness-note {
@@ -373,33 +348,32 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
-
 /* Wellness Topics List */
 .wellness-topics-list {
   list-style: none;
   padding: 0;
-}
 
-.wellness-topics-list li {
-  margin-bottom: 0.75rem;
-}
+  li {
+    margin-bottom: 0.75rem;
+  }
 
-.wellness-topics-list a {
-  color: var(--text-dark);
-  text-decoration: none;
-  padding: 0.75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
-}
+  a {
+    color: var(--text-dark);
+    text-decoration: none;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
 
-.wellness-topics-list a:hover {
-  background: var(--bg-sage);
-  color: var(--primary-color);
-  padding-left: 1rem;
+    &:hover {
+      background: var(--bg-sage);
+      color: var(--primary-color);
+      padding-left: 1rem;
+    }
+  }
 }
 
 .topic-count {
@@ -419,12 +393,12 @@ onMounted(() => {
   border-radius: 12px;
   margin-bottom: 1rem;
   transition: all 0.3s ease;
-}
 
-.wellness-email-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+  }
 }
 
 .wellness-subscribe-btn {
@@ -438,11 +412,11 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 0.5rem;
-}
 
-.wellness-subscribe-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
+  &:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+  }
 }
 
 .privacy-note {
@@ -472,7 +446,6 @@ onMounted(() => {
     gap: 2rem;
   }
 
-
   .therapy-sidebar {
     position: static;
     top: auto;
@@ -482,17 +455,5 @@ onMounted(() => {
     flex-direction: row;
     flex-wrap: wrap;
   }
-}
-
-/* Animations */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 </style>

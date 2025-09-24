@@ -8,6 +8,12 @@ import ProductCard from "@/components/cards/ProductCard.vue";
 // Book filtering state
 const currentFilter = ref('all');
 
+// Hero content from CMS
+const heroTitle = ref('Healing Through Knowledge');
+const heroDescription = ref('Discover evidence-based books on mental health, personal growth, and emotional wellness written by our licensed professionals');
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+
 // Cart state
 interface CartItem {
   id: string;
@@ -41,6 +47,29 @@ const cartCount = computed(() => cart.value.length);
 const cartTotal = computed(() => {
   return cart.value.reduce((sum, item) => sum + item.price, 0);
 });
+
+// Fetch hero data from CMS
+const fetchHeroData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const res = await fetch('https://getting-there-cms.onrender.com/api/books-page?populate=all');
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch books page hero: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    heroTitle.value = json?.data?.Hero?.title ?? heroTitle.value;
+    heroDescription.value = json?.data?.Hero?.description ?? heroDescription.value;
+  } catch (err) {
+    console.error('Error fetching books page hero:', err);
+    error.value = err instanceof Error ? err.message : 'Failed to load content';
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 // Event handlers
 const handleFilter = (filter: string) => {
@@ -112,8 +141,8 @@ const closeBookPreview = () => {
   bookModalOpen.value = false;
 };
 
-// Fade-in animation
-onMounted(() => {
+// Function to observe fade-in elements
+function observeFadeElements() {
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -130,31 +159,32 @@ onMounted(() => {
   document.querySelectorAll('.fade-in').forEach(el => {
     observer.observe(el);
   });
-});
-
-// Hero content from CMS
-const heroTitle = ref('Healing Through Knowledge');
-const heroDescription = ref('Discover evidence-based books on mental health, personal growth, and emotional wellness written by our licensed professionals');
+}
 
 onMounted(async () => {
-  try {
-    const res = await fetch('https://getting-there-cms.onrender.com/api/books-page?populate=all');
-    if (res.ok) {
-      const json = await res.json();
-      heroTitle.value = json?.data?.Hero?.title ?? heroTitle.value;
-      heroDescription.value = json?.data?.Hero?.description ?? heroDescription.value;
-    } else {
-      console.error('Failed to fetch books page hero:', res.status, res.statusText);
-    }
-  } catch (err) {
-    console.error('Error fetching books page hero:', err);
-  }
+  // Fetch hero data from CMS
+  await fetchHeroData();
+
+  // Wait for DOM to update, then observe elements
+  setTimeout(() => {
+    observeFadeElements();
+  }, 100);
 });
 </script>
 
 <template>
   <section class="therapy-store-hero">
-    <div class="therapy-store-hero-content">
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading books content...</p>
+    </div>
+
+    <div v-else-if="error" class="error-container">
+      <p>{{ error }}</p>
+      <button @click="fetchHeroData" class="retry-button">Retry</button>
+    </div>
+
+    <div v-else class="therapy-store-hero-content">
       <h1>{{ heroTitle }}</h1>
       <p>{{ heroDescription }}</p>
 
@@ -183,7 +213,7 @@ onMounted(async () => {
   <main class="therapy-store-content">
     <section class="therapy-books-section">
       <h2 class="wellness-section-title fade-in">
-        Digital Therapeutic Literature & Self-Help Guides
+        Therapeutic Literature & Self-Help Guides
         <div class="section-divider"></div>
       </h2>
 
@@ -386,67 +416,49 @@ onMounted(async () => {
   </button>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '@/assets/common.scss';
+
 /* Therapy Store Hero Section */
 .therapy-store-hero {
-  padding: 8rem 0 4rem;
+  @extend .hero-base;
   background: var(--gradient);
   color: white;
   position: relative;
   overflow: hidden;
-}
-
-.therapy-store-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: gentleFloat 20s ease-in-out infinite;
-}
-
-@keyframes gentleFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(180deg); }
+  /* Removed custom padding override to match other pages */
 }
 
 .therapy-store-hero-content {
+  @extend .hero-content-base;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-  position: relative;
-  z-index: 2;
-  text-align: center;
-}
-
-.therapy-store-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
-  font-weight: 700;
-  margin-bottom: 1rem;
-  font-family: 'Playfair Display', serif;
-}
-
-.therapy-store-hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin-bottom: 2rem;
-  line-height: 1.6;
 }
 
 /* Author Introduction */
 .therapy-author-intro {
   background: rgba(255, 255, 255, 0.1);
-  padding: 3rem;
-  border-radius: 20px;
+  padding: 2rem;
+  border-radius: 15px;
   backdrop-filter: blur(10px);
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: center;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 2rem;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
 }
 
 .author-visual {
@@ -456,66 +468,52 @@ onMounted(async () => {
 }
 
 .author-avatar-large {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 0.5rem;
 }
 
 .author-details h3 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
   font-family: 'Playfair Display', serif;
 }
 
 .author-details p {
-  font-size: 1rem;
+  font-size: 0.9rem;
   opacity: 0.9;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
+  margin-bottom: 1rem;
+  line-height: 1.5;
 }
 
 .author-credentials {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+.credential-badge {
+  @extend .trust-badge;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
 }
 
 /* Main Content */
 .therapy-store-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  @extend .container;
   padding: 4rem 2rem;
 }
 
-.wellness-section-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 3rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.section-divider {
-  height: 3px;
-  background: var(--gradient);
-  border-radius: 2px;
-  flex: 1;
-}
-
 .therapy-books-grid {
-  display: grid;
+  @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
   margin-bottom: 4rem;
 }
 
@@ -528,17 +526,17 @@ onMounted(async () => {
   position: relative;
   overflow: hidden;
   border-radius: 20px;
-}
 
-.therapy-bulk-print::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
-  animation: gentleFloat 20s ease-in-out infinite;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
+    animation: gentleFloat 20s ease-in-out infinite;
+  }
 }
 
 .bulk-print-content {
@@ -551,6 +549,11 @@ onMounted(async () => {
   align-items: center;
   position: relative;
   z-index: 2;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
 .bulk-print-text {
@@ -570,6 +573,10 @@ onMounted(async () => {
   margin-bottom: 1.5rem;
   color: white;
   font-family: 'Playfair Display', serif;
+
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
 }
 
 .bulk-subtitle {
@@ -580,9 +587,11 @@ onMounted(async () => {
 }
 
 .organization-types {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  @extend .grid-two;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .org-type {
@@ -597,11 +606,11 @@ onMounted(async () => {
   color: white;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
-}
 
-.org-type:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
 }
 
 .type-icon {
@@ -610,25 +619,23 @@ onMounted(async () => {
 
 /* Bulk Print CTA Card */
 .bulk-print-cta-card {
+  @extend .card-base;
+  text-align: center;
   background: white;
   padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 15px 40px var(--shadow-medium);
-  text-align: center;
-  border: 1px solid var(--border-light);
-}
 
-.bulk-print-cta-card h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
+  h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+  }
 
-.bulk-print-cta-card p {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 2rem;
+  p {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
 }
 
 .bulk-features {
@@ -657,18 +664,7 @@ onMounted(async () => {
 }
 
 .bulk-cta-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.bulk-cta-primary:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
+  @extend .cta-primary;
 }
 
 .bulk-cta-secondary {
@@ -676,10 +672,10 @@ onMounted(async () => {
   text-decoration: none;
   font-weight: 600;
   padding: 0.75rem;
-}
 
-.bulk-cta-secondary:hover {
-  color: var(--secondary-color);
+  &:hover {
+    color: var(--secondary-color);
+  }
 }
 
 .bulk-pricing-note {
@@ -706,23 +702,23 @@ onMounted(async () => {
 }
 
 .benefits-grid {
-  display: grid;
+  @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .benefit-item {
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px var(--shadow-light);
+  @extend .card-base;
   text-align: center;
-  transition: all 0.3s ease;
-}
+  background: white;
 
-.benefit-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px var(--shadow-medium);
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px var(--shadow-medium);
+  }
 }
 
 .benefit-icon {
@@ -761,11 +757,11 @@ onMounted(async () => {
   box-shadow: 0 8px 25px var(--shadow-medium);
   transition: all 0.3s ease;
   z-index: 100;
-}
 
-.therapy-cart-button:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 35px var(--shadow-medium);
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px var(--shadow-medium);
+  }
 }
 
 .therapy-cart-count {
@@ -797,10 +793,15 @@ onMounted(async () => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-}
 
-.therapy-cart-sidebar.open {
-  right: 0;
+  &.open {
+    right: 0;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    right: -100%;
+  }
 }
 
 .therapy-cart-header {
@@ -828,11 +829,11 @@ onMounted(async () => {
   padding: 0.5rem;
   border-radius: 50%;
   transition: all 0.3s ease;
-}
 
-.therapy-close-cart:hover {
-  background: var(--primary-color);
-  color: white;
+  &:hover {
+    background: var(--primary-color);
+    color: white;
+  }
 }
 
 .therapy-cart-items {
@@ -847,10 +848,10 @@ onMounted(async () => {
   padding: 1.5rem 0;
   border-bottom: 1px solid var(--border-light);
   align-items: center;
-}
 
-.therapy-cart-item:last-child {
-  border-bottom: none;
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .therapy-cart-item-image {
@@ -897,10 +898,10 @@ onMounted(async () => {
   padding: 0.5rem;
   border-radius: 50%;
   transition: all 0.3s ease;
-}
 
-.therapy-cart-item-remove:hover {
-  background: rgba(231, 111, 81, 0.1);
+  &:hover {
+    background: rgba(231, 111, 81, 0.1);
+  }
 }
 
 .therapy-cart-footer {
@@ -931,11 +932,11 @@ onMounted(async () => {
   transition: all 0.3s ease;
   font-size: 1.1rem;
   margin-bottom: 1rem;
-}
 
-.therapy-checkout-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
+  &:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+  }
 }
 
 .therapy-cart-note {
@@ -965,10 +966,10 @@ onMounted(async () => {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1500;
-}
 
-.therapy-cart-overlay.active {
-  display: block;
+  &.active {
+    display: block;
+  }
 }
 
 /* Book Preview Modal */
@@ -1009,21 +1010,21 @@ onMounted(async () => {
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 600;
-}
 
-.preview-badge.bestseller {
-  background: var(--accent-color);
-  color: white;
-}
+  &.bestseller {
+    background: var(--accent-color);
+    color: white;
+  }
 
-.preview-badge.new {
-  background: var(--success-color);
-  color: white;
-}
+  &.new {
+    background: var(--success-color);
+    color: white;
+  }
 
-.preview-badge.digital {
-  background: var(--soft-blue);
-  color: white;
+  &.digital {
+    background: var(--soft-blue);
+    color: white;
+  }
 }
 
 .therapy-book-details h3 {
@@ -1050,12 +1051,12 @@ onMounted(async () => {
   padding: 1.5rem;
   border-radius: 12px;
   margin: 1.5rem 0;
-}
 
-.therapy-book-specs h4 {
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
+  h4 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+  }
 }
 
 .therapy-spec-item {
@@ -1078,76 +1079,18 @@ onMounted(async () => {
   padding: 1.5rem;
   border-radius: 12px;
   border-left: 4px solid var(--warning-color);
-}
 
-.therapy-content-warning h4 {
-  color: var(--warning-color);
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
-}
-
-.therapy-content-warning p {
-  margin: 0;
-  color: var(--text-dark);
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .therapy-author-intro {
-    grid-template-columns: 1fr;
-    text-align: center;
+  h4 {
+    color: var(--warning-color);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
   }
 
-  .bulk-print-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .organization-types {
-    grid-template-columns: 1fr;
-  }
-
-  .bulk-print-text h2 {
-    font-size: 1.8rem;
-  }
-
-  .therapy-cart-sidebar {
-    width: 100%;
-    right: -100%;
-  }
-
-  .therapy-books-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .benefits-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .wellness-section-title {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .section-divider {
-    width: 100px;
-    margin: 0 auto;
+  p {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
 }
-
-/* Animations */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 </style>
