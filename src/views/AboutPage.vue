@@ -191,7 +191,12 @@ onMounted(async () => {
 
         <div class="mission-values">
           <div class="value-item" v-for="card in (mission && mission.cards ? mission.cards : [])" :key="card.id">
-            <div class="value-icon">{{ card.icon ? '🖼️' : (card.title.includes('Compassionate') ? '🤝' : card.title.includes('Evidence') ? '🔬' : '🌍') }}</div>
+            <div class="value-icon" v-if="card.icon && card.icon.url">
+              <img :src="'https://getting-there-cms.onrender.com'+card.icon.url" :alt="card.title" class="icon-image" />
+            </div>
+            <div class="value-icon" v-else>
+              {{ card.title.includes('Compassionate') ? '🤝' : card.title.includes('Evidence') ? '🔬' : '🌍' }}
+            </div>
             <h3 class="value-title">{{ card.title }}</h3>
             <p class="value-description">{{ card.description }}</p>
           </div>
@@ -298,8 +303,8 @@ onMounted(async () => {
 }
 
 .icon-image{
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   margin-right: 10px;
 }
 
