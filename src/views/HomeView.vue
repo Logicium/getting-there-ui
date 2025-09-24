@@ -1,18 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import ThoughtIcon from '@/components/icons/ThoughtIcon.vue';
-import FallingStarIcon from '@/components/icons/FallingStarIcon.vue';
-import HandDrawnPlantIcon from '@/components/icons/HandDrawnPlantIcon.vue';
-import PlantIcon from '@/components/icons/PlantIcon.vue';
-import PostItsIcon from '@/components/icons/PostItsIcon.vue';
-import PuzzleIcon from '@/components/icons/PuzzleIcon.vue';
-import IdeaIcon from '@/components/icons/IdeaIcon.vue';
-import GrowthIcon from "@/components/icons/GrowthIcon.vue";
-import ArrowIcon from "@/components/icons/ArrowIcon.vue";
-import VideoIcon from "@/components/icons/VideoIcon.vue";
-import BookIcon from "@/components/icons/BookIcon.vue";
-import ChalkboardIcon from "@/components/icons/ChalkboardIcon.vue";
-import PenIcon from "@/components/icons/PenIcon.vue";
 import InfoCard from "@/components/cards/InfoCard.vue";
 import ServiceCard from "@/components/cards/ServiceCard.vue";
 import ResourceCard from "@/components/cards/ResourceCard.vue";
@@ -150,34 +137,45 @@ const fetchPageData = async () => {
     setTimeout(() => {
       observeFadeElements();
     }, 100);
+
+    return data; // Return the data to allow Promise chaining
   } catch (err) {
     console.error('Error fetching page data:', err);
     error.value = err instanceof Error ? err.message : 'An unknown error occurred';
+    throw err; // Re-throw to allow Promise chaining with .catch()
   } finally {
     isLoading.value = false;
   }
 };
 
-onMounted(() => {
-  // Fetch all page data from CMS
-  fetchPageData();
-
-  // Image rotation for hero section
+// Function to set up hero image rotation
+const setupHeroImageRotation = () => {
   let currentImageIndex = 0;
   const heroImages = document.querySelectorAll('.hero-image');
 
+  // Only set up rotation if we have images
+  if (heroImages.length <= 1) return;
+
   function rotateHeroImages() {
-    if (heroImages.length > 1) {
-      heroImages[currentImageIndex]?.classList.remove('active');
-      currentImageIndex = (currentImageIndex + 1) % heroImages.length;
-      heroImages[currentImageIndex]?.classList.add('active');
-    }
+    heroImages[currentImageIndex]?.classList.remove('active');
+    currentImageIndex = (currentImageIndex + 1) % heroImages.length;
+    heroImages[currentImageIndex]?.classList.add('active');
   }
 
   // Start image rotation after 3 seconds, then every 6 seconds (slower for calming effect)
   setTimeout(() => {
     setInterval(rotateHeroImages, 6000);
   }, 3000);
+};
+
+onMounted(() => {
+  // Fetch all page data from CMS
+  fetchPageData().then(() => {
+    // Set up hero image rotation after data is loaded
+    setTimeout(() => {
+      setupHeroImageRotation();
+    }, 500); // Small delay to ensure DOM is updated
+  });
 
   // Initial observation of fade-in elements that might already be in the DOM
   observeFadeElements();
@@ -226,9 +224,22 @@ onMounted(() => {
         </div>
         <div class="hero-visual">
           <div class="hero-images">
-            <img src="/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg" alt="Happy client achieving goals" class="hero-image active">
-            <img src="/fortytwo-1xMG-yqR2GM-unsplash.jpg" alt="Success and motivation" class="hero-image">
-            <img src="/hrant-khachatryan-V9sHuZ11lmk-unsplash.jpg" alt="Goal achievement celebration" class="hero-image">
+            <!-- Use CMS imagecarousel data if available -->
+            <template v-if="heroData.imagecarousel && heroData.imagecarousel.length > 0">
+              <img 
+                v-for="(image, index) in heroData.imagecarousel" 
+                :key="image.id"
+                :src="`https://getting-there-cms.onrender.com${image.url}`" 
+                :alt="image.alternativeText || 'Hero image'" 
+                :class="['hero-image', index === 0 ? 'active' : '']"
+              >
+            </template>
+            <!-- Fallback to static images if no CMS data -->
+            <template v-else>
+              <img src="/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg" alt="Happy client achieving goals" class="hero-image active">
+              <img src="/fortytwo-1xMG-yqR2GM-unsplash.jpg" alt="Success and motivation" class="hero-image">
+              <img src="/hrant-khachatryan-V9sHuZ11lmk-unsplash.jpg" alt="Goal achievement celebration" class="hero-image">
+            </template>
           </div>
         </div>
       </div>
@@ -246,6 +257,7 @@ onMounted(() => {
             :description="card.description"
             :step-number="index + 1"
             :icon-index="index"
+            :icon="card.icon"
           />
         </div>
       </div>
@@ -262,6 +274,7 @@ onMounted(() => {
             :title="card.title"
             :description="card.description"
             :icon-index="index"
+            :icon="card.icon"
           />
         </div>
       </div>
@@ -279,6 +292,7 @@ onMounted(() => {
               :title="card.title"
               :description="card.description"
               :icon-index="index"
+              :icon="card.icon"
             />
             <router-link to="/videos" class="resources-cta">Explore Resources</router-link>
           </div>

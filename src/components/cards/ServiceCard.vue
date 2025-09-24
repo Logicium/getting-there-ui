@@ -1,7 +1,8 @@
 <template>
   <div class="service-card fade-in">
     <div class="service-icon">
-      <component :is="iconComponent" />
+      <img v-if="icon && icon.url" :src="`https://getting-there-cms.onrender.com${icon.url}`" :alt="title" />
+      <component v-else :is="fallbackIconComponent" />
     </div>
     <h3>{{ title }}</h3>
     <p>{{ description }}</p>
@@ -16,14 +17,29 @@ import FallingStarIcon from '@/components/icons/FallingStarIcon.vue';
 import HandDrawnPlantIcon from '@/components/icons/HandDrawnPlantIcon.vue';
 import PlantIcon from '@/components/icons/PlantIcon.vue';
 
+const baseUrl = import.meta.env.VITE_CMS_URL || '';
+
 const props = defineProps<{
   title: string;
   description: string;
   iconIndex: number;
+  icon?: {
+    url: string;
+    width: number;
+    height: number;
+    formats?: {
+      small?: {
+        url: string;
+      };
+      thumbnail?: {
+        url: string;
+      };
+    };
+  };
 }>();
 
-// Determine which icon to use based on the index
-const iconComponent = computed(() => {
+// Fallback icon if CMS data is not available
+const fallbackIconComponent = computed(() => {
   switch (props.iconIndex) {
     case 0:
       return ThoughtIcon;
@@ -60,9 +76,10 @@ const iconComponent = computed(() => {
   justify-content: center;
 }
 
-.service-icon svg {
+.service-icon svg, .service-icon img {
   width: 6rem;
   height: 6rem;
+  object-fit: contain;
 }
 
 .service-card h3 {

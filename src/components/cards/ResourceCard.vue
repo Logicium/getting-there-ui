@@ -1,7 +1,8 @@
 <template>
   <div class="resource-item fade-in">
     <div class="resource-icon">
-      <component :is="iconComponent" />
+      <img v-if="icon && icon.url" :src="`https://getting-there-cms.onrender.com${icon.url}`" :alt="title" />
+      <component v-else :is="fallbackIconComponent" />
     </div>
     <span><strong>{{ title }}</strong> - {{ description }}</span>
   </div>
@@ -14,14 +15,29 @@ import BookIcon from '@/components/icons/BookIcon.vue';
 import ChalkboardIcon from '@/components/icons/ChalkboardIcon.vue';
 import PenIcon from '@/components/icons/PenIcon.vue';
 
+const baseUrl = import.meta.env.VITE_CMS_URL || '';
+
 const props = defineProps<{
   title: string;
   description: string;
   iconIndex: number;
+  icon?: {
+    url: string;
+    width: number;
+    height: number;
+    formats?: {
+      small?: {
+        url: string;
+      };
+      thumbnail?: {
+        url: string;
+      };
+    };
+  };
 }>();
 
-// Determine which icon to use based on the index
-const iconComponent = computed(() => {
+// Fallback icon if CMS data is not available
+const fallbackIconComponent = computed(() => {
   switch (props.iconIndex) {
     case 0:
       return VideoIcon;
@@ -64,5 +80,13 @@ const iconComponent = computed(() => {
   margin-right: 1rem;
   color: white;
   font-size: 1.2rem;
+  overflow: hidden;
+}
+
+.resource-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: invert(1)
 }
 </style>

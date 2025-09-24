@@ -2,7 +2,8 @@
   <div class="step-card fade-in">
     <div class="step-number">{{ stepNumber }}</div>
     <div class="step-icon">
-      <component :is="iconComponent" />
+      <img v-if="icon && icon.url" :src="`https://getting-there-cms.onrender.com${icon.url}`" :alt="title" />
+      <component v-else :is="fallbackIconComponent" />
     </div>
     <h3>{{ title }}</h3>
     <p>{{ description }}</p>
@@ -10,20 +11,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import PostItsIcon from '@/components/icons/PostItsIcon.vue';
 import PuzzleIcon from '@/components/icons/PuzzleIcon.vue';
 import ArrowIcon from '@/components/icons/ArrowIcon.vue';
+
+const baseUrl = import.meta.env.VITE_CMS_URL || '';
 
 const props = defineProps<{
   title: string;
   description: string;
   stepNumber: number;
   iconIndex: number;
+  icon?: {
+    url: string;
+    width: number;
+    height: number;
+    formats?: {
+      small?: {
+        url: string;
+      };
+      thumbnail?: {
+        url: string;
+      };
+    };
+  };
 }>();
 
-// Determine which icon to use based on the index
-const iconComponent = computed(() => {
+// Fallback icon if CMS data is not available
+const fallbackIconComponent = computed(() => {
   switch (props.iconIndex) {
     case 0:
       return PostItsIcon;
@@ -77,9 +93,10 @@ const iconComponent = computed(() => {
   justify-content: center;
 }
 
-.step-icon svg {
+.step-icon svg, .step-icon img {
   width: 6rem;
   height: 6rem;
+  object-fit: contain;
 }
 
 .step-card h3 {
