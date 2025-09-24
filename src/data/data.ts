@@ -350,6 +350,116 @@ export const bookCategories = [
   { id: 'goals', label: 'Goal Setting', icon: '🎯' }
 ];
 
+// Blog data
+export interface BlogData {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  categoryLabel: string;
+  icon: string;
+  imageUrl: string;
+  date: string;
+  readTime: number;
+  authorName: string;
+  authorCredentials: string;
+  authorAvatar: string;
+  slug?: string;
+}
+
+export const blogArticles: BlogData[] = [
+  {
+    id: 'anxiety-daily-life',
+    title: 'Understanding and Managing Anxiety in Daily Life',
+    excerpt: 'Learn practical, evidence-based techniques to recognize anxiety triggers and develop healthy coping strategies that fit into your everyday routine.',
+    category: 'anxiety',
+    categoryLabel: 'Anxiety Support',
+    icon: '🧘‍♀️',
+    imageUrl: '/backgrounds/therapy1.jpg',
+    date: 'March 15, 2024',
+    readTime: 7,
+    authorName: 'Dr. Sarah Mitchell',
+    authorCredentials: 'Licensed Clinical Psychologist',
+    authorAvatar: '👩‍⚕️',
+    slug: 'anxiety-daily-life'
+  },
+  {
+    id: 'depression-recovery',
+    title: 'Small Steps to Brighter Days: Depression Recovery',
+    excerpt: 'Discover gentle, compassionate approaches to depression recovery that honor your pace and celebrate small victories along the way.',
+    category: 'depression',
+    categoryLabel: 'Depression Care',
+    icon: '🌱',
+    imageUrl: '/backgrounds/therapy2.jpg',
+    date: 'March 12, 2024',
+    readTime: 6,
+    authorName: 'Dr. Michael Chen',
+    authorCredentials: 'Licensed Therapist, LCSW',
+    authorAvatar: '👨‍⚕️',
+    slug: 'depression-recovery'
+  },
+  {
+    id: 'healthy-communication',
+    title: 'Building Healthy Communication in Relationships',
+    excerpt: 'Learn the essential skills for expressing your needs, setting boundaries, and creating deeper connections with the people who matter most.',
+    category: 'relationships',
+    categoryLabel: 'Relationships',
+    icon: '💕',
+    imageUrl: '/backgrounds/brett-jordan-D44kHt8Ex14-unsplash.jpg',
+    date: 'March 10, 2024',
+    readTime: 8,
+    authorName: 'Lisa Rodriguez',
+    authorCredentials: 'Marriage & Family Therapist',
+    authorAvatar: '👩‍🏫',
+    slug: 'healthy-communication'
+  },
+  {
+    id: 'mindfulness-busy-lives',
+    title: '5-Minute Mindfulness for Busy Lives',
+    excerpt: 'Simple mindfulness practices that can be integrated into your daily routine, perfect for those moments when you need to find calm in the chaos.',
+    category: 'mindfulness',
+    categoryLabel: 'Mindfulness',
+    icon: '🧘',
+    imageUrl: '/backgrounds/selfcare1.jpg',
+    date: 'March 8, 2024',
+    readTime: 5,
+    authorName: 'Dr. James Wilson',
+    authorCredentials: 'Mindfulness-Based Therapist',
+    authorAvatar: '👨‍🎓',
+    slug: 'mindfulness-busy-lives'
+  },
+  {
+    id: 'stress-relief-toolkit',
+    title: 'Creating Your Personal Stress Relief Toolkit',
+    excerpt: 'Build a personalized collection of stress management techniques that work specifically for your lifestyle, personality, and unique challenges.',
+    category: 'stress',
+    categoryLabel: 'Stress Management',
+    icon: '🌸',
+    imageUrl: '/backgrounds/selfcare2.jpg',
+    date: 'March 5, 2024',
+    readTime: 6,
+    authorName: 'Dr. Sarah Mitchell',
+    authorCredentials: 'Licensed Clinical Psychologist',
+    authorAvatar: '👩‍⚕️',
+    slug: 'stress-relief-toolkit'
+  },
+  {
+    id: 'anxiety-seeking-support',
+    title: 'When Worry Becomes Overwhelming: Seeking Support',
+    excerpt: 'Understanding when anxiety might need professional support and how to take that important first step toward healing and recovery.',
+    category: 'anxiety',
+    categoryLabel: 'Anxiety Support',
+    icon: '🌊',
+    imageUrl: '/backgrounds/therapy3.jpg',
+    date: 'March 3, 2024',
+    readTime: 7,
+    authorName: 'Dr. Michael Chen',
+    authorCredentials: 'Licensed Therapist, LCSW',
+    authorAvatar: '👨‍⚕️',
+    slug: 'anxiety-seeking-support'
+  }
+];
+
 // Hero section data - Updated to reflect all free content
 export const heroSections = {
   videos: {

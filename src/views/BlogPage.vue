@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
+import { blogArticles } from '@/data/data';
+import BlogCard from '@/components/BlogCard.vue';
 
 // Blog hero data (fetched from CMS)
 const heroTitle = ref<string>('Wellness Insights & Resources');
@@ -26,34 +28,19 @@ const fetchBlogHero = async () => {
 const searchInput = ref('');
 const currentFilter = ref('all');
 
-function filterArticles() {
+// Filtered blog articles
+const filteredArticles = computed(() => {
   const searchTerm = searchInput.value.toLowerCase();
-  const articles = document.querySelectorAll('.article-card');
-
-  articles.forEach(article => {
-    const titleElement = article.querySelector('.article-title');
-    const excerptElement = article.querySelector('.article-excerpt');
-
-    if (!titleElement || !titleElement.textContent || !excerptElement || !excerptElement.textContent) return;
-
-    const title = titleElement.textContent.toLowerCase();
-    const excerpt = excerptElement.textContent.toLowerCase();
-    const category = (article as HTMLElement).dataset.category;
-
-    const matchesSearch = title.includes(searchTerm) || excerpt.includes(searchTerm);
-    const matchesFilter = currentFilter.value === 'all' || category === currentFilter.value;
-
-    if (matchesSearch && matchesFilter) {
-      (article as HTMLElement).style.display = 'grid';
-    } else {
-      (article as HTMLElement).style.display = 'none';
-    }
+  return blogArticles.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm) || 
+                          article.excerpt.toLowerCase().includes(searchTerm);
+    const matchesFilter = currentFilter.value === 'all' || article.category === currentFilter.value;
+    return matchesSearch && matchesFilter;
   });
-}
+});
 
 function setFilter(category: string) {
   currentFilter.value = category;
-  filterArticles();
 }
 
 // Fade-in animation
@@ -96,7 +83,7 @@ onMounted(() => {
   <section class="search-filter-section">
     <div class="search-filter-content">
       <div class="search-container">
-        <input type="text" class="therapy-search-input" placeholder="Search wellness topics..." v-model="searchInput" @input="filterArticles">
+        <input type="text" class="therapy-search-input" placeholder="Search wellness topics..." v-model="searchInput">
         <span class="search-icon">🔍</span>
       </div>
       <div class="filter-wellness-tags">
@@ -114,147 +101,22 @@ onMounted(() => {
     <section class="articles-section">
       <h2 class="wellness-section-title">Latest Wellness Articles</h2>
       <div class="therapy-articles-grid" id="articlesGrid">
-
-        <article class="therapy-article-card fade-in" data-category="anxiety">
-          <div class="article-therapy-image">
-            <div class="therapy-category-badge anxiety">Anxiety Support</div>
-            <div class="article-visual-icon">🧘‍♀️</div>
-          </div>
-          <div class="article-therapy-content">
-            <div class="article-meta-therapy">
-              <span class="article-date-therapy">March 15, 2024</span>
-              <span class="read-time">7 min read</span>
-            </div>
-            <h3 class="article-title">Understanding and Managing Anxiety in Daily Life</h3>
-            <p class="article-excerpt">Learn practical, evidence-based techniques to recognize anxiety triggers and develop healthy coping strategies that fit into your everyday routine.</p>
-            <div class="article-author-therapy">
-              <div class="author-avatar-therapy">👩‍⚕️</div>
-              <div class="author-info-therapy">
-                <span class="author-name">Dr. Sarah Mitchell</span>
-                <span class="author-credentials">Licensed Clinical Psychologist</span>
-              </div>
-            </div>
-            <router-link :to="`/blog/anxiety-daily-life`" class="therapy-read-more">
-              Continue Reading →
-            </router-link>
-          </div>
-        </article>
-
-        <article class="therapy-article-card fade-in" data-category="depression">
-          <div class="article-therapy-image">
-            <div class="therapy-category-badge depression">Depression Care</div>
-            <div class="article-visual-icon">🌱</div>
-          </div>
-          <div class="article-therapy-content">
-            <div class="article-meta-therapy">
-              <span class="article-date-therapy">March 12, 2024</span>
-              <span class="read-time">6 min read</span>
-            </div>
-            <h3 class="article-title">Small Steps to Brighter Days: Depression Recovery</h3>
-            <p class="article-excerpt">Discover gentle, compassionate approaches to depression recovery that honor your pace and celebrate small victories along the way.</p>
-            <div class="article-author-therapy">
-              <div class="author-avatar-therapy">👨‍⚕️</div>
-              <div class="author-info-therapy">
-                <span class="author-name">Dr. Michael Chen</span>
-                <span class="author-credentials">Licensed Therapist, LCSW</span>
-              </div>
-            </div>
-            <a href="#" class="therapy-read-more">Continue Reading →</a>
-          </div>
-        </article>
-
-        <article class="therapy-article-card fade-in" data-category="relationships">
-          <div class="article-therapy-image">
-            <div class="therapy-category-badge relationships">Relationships</div>
-            <div class="article-visual-icon">💕</div>
-          </div>
-          <div class="article-therapy-content">
-            <div class="article-meta-therapy">
-              <span class="article-date-therapy">March 10, 2024</span>
-              <span class="read-time">8 min read</span>
-            </div>
-            <h3 class="article-title">Building Healthy Communication in Relationships</h3>
-            <p class="article-excerpt">Learn the essential skills for expressing your needs, setting boundaries, and creating deeper connections with the people who matter most.</p>
-            <div class="article-author-therapy">
-              <div class="author-avatar-therapy">👩‍🏫</div>
-              <div class="author-info-therapy">
-                <span class="author-name">Lisa Rodriguez</span>
-                <span class="author-credentials">Marriage & Family Therapist</span>
-              </div>
-            </div>
-            <a href="#" class="therapy-read-more">Continue Reading →</a>
-          </div>
-        </article>
-
-        <article class="therapy-article-card fade-in" data-category="mindfulness">
-          <div class="article-therapy-image">
-            <div class="therapy-category-badge mindfulness">Mindfulness</div>
-            <div class="article-visual-icon">🧘</div>
-          </div>
-          <div class="article-therapy-content">
-            <div class="article-meta-therapy">
-              <span class="article-date-therapy">March 8, 2024</span>
-              <span class="read-time">5 min read</span>
-            </div>
-            <h3 class="article-title">5-Minute Mindfulness for Busy Lives</h3>
-            <p class="article-excerpt">Simple mindfulness practices that can be integrated into your daily routine, perfect for those moments when you need to find calm in the chaos.</p>
-            <div class="article-author-therapy">
-              <div class="author-avatar-therapy">👨‍🎓</div>
-              <div class="author-info-therapy">
-                <span class="author-name">Dr. James Wilson</span>
-                <span class="author-credentials">Mindfulness-Based Therapist</span>
-              </div>
-            </div>
-            <a href="#" class="therapy-read-more">Continue Reading →</a>
-          </div>
-        </article>
-
-        <article class="therapy-article-card fade-in" data-category="stress">
-          <div class="article-therapy-image">
-            <div class="therapy-category-badge stress">Stress Management</div>
-            <div class="article-visual-icon">🌸</div>
-          </div>
-          <div class="article-therapy-content">
-            <div class="article-meta-therapy">
-              <span class="article-date-therapy">March 5, 2024</span>
-              <span class="read-time">6 min read</span>
-            </div>
-            <h3 class="article-title">Creating Your Personal Stress Relief Toolkit</h3>
-            <p class="article-excerpt">Build a personalized collection of stress management techniques that work specifically for your lifestyle, personality, and unique challenges.</p>
-            <div class="article-author-therapy">
-              <div class="author-avatar-therapy">👩‍⚕️</div>
-              <div class="author-info-therapy">
-                <span class="author-name">Dr. Sarah Mitchell</span>
-                <span class="author-credentials">Licensed Clinical Psychologist</span>
-              </div>
-            </div>
-            <a href="#" class="therapy-read-more">Continue Reading →</a>
-          </div>
-        </article>
-
-        <article class="therapy-article-card fade-in" data-category="anxiety">
-          <div class="article-therapy-image">
-            <div class="therapy-category-badge anxiety">Anxiety Support</div>
-            <div class="article-visual-icon">🌊</div>
-          </div>
-          <div class="article-therapy-content">
-            <div class="article-meta-therapy">
-              <span class="article-date-therapy">March 3, 2024</span>
-              <span class="read-time">7 min read</span>
-            </div>
-            <h3 class="article-title">When Worry Becomes Overwhelming: Seeking Support</h3>
-            <p class="article-excerpt">Understanding when anxiety might need professional support and how to take that important first step toward healing and recovery.</p>
-            <div class="article-author-therapy">
-              <div class="author-avatar-therapy">👨‍⚕️</div>
-              <div class="author-info-therapy">
-                <span class="author-name">Dr. Michael Chen</span>
-                <span class="author-credentials">Licensed Therapist, LCSW</span>
-              </div>
-            </div>
-            <a href="#" class="therapy-read-more">Continue Reading →</a>
-          </div>
-        </article>
-
+        <BlogCard 
+          v-for="article in filteredArticles" 
+          :key="article.id"
+          :category="article.category"
+          :category-label="article.categoryLabel"
+          :icon="article.icon"
+          :image-url="article.imageUrl"
+          :date="article.date"
+          :read-time="article.readTime"
+          :title="article.title"
+          :excerpt="article.excerpt"
+          :author-avatar="article.authorAvatar"
+          :author-name="article.authorName"
+          :author-credentials="article.authorCredentials"
+          :slug="article.slug"
+        />
       </div>
     </section>
 
@@ -450,151 +312,6 @@ onMounted(() => {
   gap: 2rem;
 }
 
-.therapy-article-card {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  transition: all 0.3s ease;
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 0;
-  border: 1px solid var(--border-light);
-}
-
-.therapy-article-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px var(--shadow-medium);
-}
-
-.article-therapy-image {
-  background: var(--bg-sage);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-}
-
-.therapy-category-badge {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: white;
-}
-
-.therapy-category-badge.anxiety {
-  background: var(--soft-blue);
-}
-
-.therapy-category-badge.depression {
-  background: var(--success-color);
-}
-
-.therapy-category-badge.relationships {
-  background: var(--accent-color);
-}
-
-.therapy-category-badge.mindfulness {
-  background: var(--lavender);
-  color: var(--text-dark);
-}
-
-.therapy-category-badge.stress {
-  background: var(--warning-color);
-}
-
-.article-visual-icon {
-  font-size: 3rem;
-  opacity: 0.8;
-}
-
-.article-therapy-content {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.article-meta-therapy {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  color: var(--text-light);
-  font-size: 0.9rem;
-}
-
-.article-date-therapy, .read-time {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.article-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  line-height: 1.4;
-}
-
-.article-excerpt {
-  color: var(--text-light);
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-  flex-grow: 1;
-}
-
-.article-author-therapy {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.author-avatar-therapy {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-sage);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  border: 2px solid var(--primary-color);
-}
-
-.author-info-therapy {
-  display: flex;
-  flex-direction: column;
-}
-
-.author-name {
-  font-weight: 600;
-  color: var(--text-dark);
-  font-size: 0.9rem;
-}
-
-.author-credentials {
-  color: var(--text-light);
-  font-size: 0.8rem;
-}
-
-.therapy-read-more {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-  align-self: flex-start;
-}
-
-.therapy-read-more:hover {
-  color: var(--secondary-color);
-}
-
 /* Therapy Sidebar */
 .therapy-sidebar {
   position: sticky;
@@ -656,41 +373,6 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
-/* Crisis Resources */
-.crisis-resource {
-  background: rgba(231, 111, 81, 0.1);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border-left: 4px solid var(--warning-color);
-}
-
-.crisis-resource h4 {
-  color: var(--warning-color);
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
-}
-
-.crisis-resource p {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.crisis-link {
-  display: block;
-  color: var(--warning-color);
-  text-decoration: none;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(231, 111, 81, 0.1);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.crisis-link:hover {
-  background: var(--warning-color);
-  color: white;
-}
 
 /* Wellness Topics List */
 .wellness-topics-list {
@@ -790,13 +472,6 @@ onMounted(() => {
     gap: 2rem;
   }
 
-  .therapy-article-card {
-    grid-template-columns: 1fr;
-  }
-
-  .article-therapy-image {
-    min-height: 150px;
-  }
 
   .therapy-sidebar {
     position: static;
