@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref } from 'vue';
 import { blogArticles } from '@/data/data';
 import BlogCard from '@/components/cards/BlogCard.vue';
 
-// Blog hero data (fetched from CMS)
 const heroTitle = ref<string>('Wellness Insights & Resources');
 const heroDescription = ref<string>('Expert guidance on mental health, emotional wellness, and personal growth from our licensed professionals');
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
-// Fetch hero data from CMS
+const searchInput = ref('');
+const currentFilter = ref('all');
+
 const fetchBlogHero = async () => {
   isLoading.value = true;
   error.value = null;
@@ -35,26 +36,39 @@ const fetchBlogHero = async () => {
   }
 };
 
-// Search functionality
-const searchInput = ref('');
-const currentFilter = ref('all');
-
-// Filtered blog articles
-const filteredArticles = computed(() => {
-  const searchTerm = searchInput.value.toLowerCase();
-  return blogArticles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm) ||
-        article.excerpt.toLowerCase().includes(searchTerm);
-    const matchesFilter = currentFilter.value === 'all' || article.category === currentFilter.value;
-    return matchesSearch && matchesFilter;
-  });
-});
-
+// DOM MANIPULATION APPROACH LIKE WORKSHOPS
 function setFilter(category: string) {
   currentFilter.value = category;
+  filterArticles();
 }
 
-// Function to observe fade-in elements
+function filterArticles() {
+  const filter = currentFilter.value;
+  const search = searchInput.value.toLowerCase();
+  const articleCards = document.querySelectorAll('.therapy-article-card');
+
+  articleCards.forEach(card => {
+    const htmlCard = card as HTMLElement;
+    const category = htmlCard.dataset.category || '';
+    const title = (htmlCard.querySelector('.article-title')?.textContent || '').toLowerCase();
+    const excerpt = (htmlCard.querySelector('.article-excerpt')?.textContent || '').toLowerCase();
+
+    const matchesCategory = filter === 'all' || category === filter;
+    const matchesSearch = search === '' || title.includes(search) || excerpt.includes(search);
+
+    if (matchesCategory && matchesSearch) {
+      htmlCard.style.display = 'grid';
+    } else {
+      htmlCard.style.display = 'none';
+    }
+  });
+}
+
+// Watch search input
+function handleSearch() {
+  filterArticles();
+}
+
 function observeFadeElements() {
   const observerOptions = {
     threshold: 0.1,
@@ -75,10 +89,8 @@ function observeFadeElements() {
 }
 
 onMounted(async () => {
-  // fetch CMS hero
   await fetchBlogHero();
 
-  // Wait for DOM to update, then observe elements
   setTimeout(() => {
     observeFadeElements();
   }, 100);
@@ -111,7 +123,13 @@ onMounted(async () => {
   <section class="search-filter-section">
     <div class="search-filter-content">
       <div class="search-container">
-        <input type="text" class="therapy-search-input" placeholder="Search wellness topics..." v-model="searchInput">
+        <input
+            type="text"
+            class="therapy-search-input"
+            placeholder="Search wellness topics..."
+            v-model="searchInput"
+            @input="handleSearch"
+        >
         <span class="search-icon">🔍</span>
       </div>
       <div class="filter-wellness-tags">
@@ -128,9 +146,10 @@ onMounted(async () => {
   <main class="therapy-blog-content">
     <section class="articles-section">
       <h2 class="wellness-section-title">Latest Wellness Articles</h2>
+      <!-- RENDER ALL ARTICLES - FILTER WITH DOM MANIPULATION -->
       <div class="therapy-articles-grid" id="articlesGrid">
         <BlogCard
-            v-for="article in filteredArticles"
+            v-for="article in blogArticles"
             :key="article.id"
             :category="article.category"
             :category-label="article.categoryLabel"
@@ -186,7 +205,6 @@ onMounted(async () => {
 <style scoped lang="scss">
 @import '../assets/common.scss';
 
-/* Therapy Hero Section */
 .therapy-hero {
   @extend .hero-base;
   background: var(--gradient);
@@ -198,7 +216,6 @@ onMounted(async () => {
   @extend .hero-content-base;
 }
 
-/* Search and Filter Section */
 .search-filter-section {
   background: var(--bg-light);
   padding: 2rem 0;
@@ -275,7 +292,6 @@ onMounted(async () => {
   }
 }
 
-/* Main Content */
 .therapy-blog-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -285,13 +301,11 @@ onMounted(async () => {
   gap: 4rem;
 }
 
-/* Articles Grid */
 .therapy-articles-grid {
   display: grid;
   gap: 2rem;
 }
 
-/* Therapy Sidebar */
 .therapy-sidebar {
   position: sticky;
   top: 6rem;
@@ -316,7 +330,6 @@ onMounted(async () => {
   }
 }
 
-/* Wellness Check Buttons */
 .wellness-check-buttons {
   display: flex;
   flex-direction: column;
@@ -348,7 +361,6 @@ onMounted(async () => {
   margin-bottom: 0;
 }
 
-/* Wellness Topics List */
 .wellness-topics-list {
   list-style: none;
   padding: 0;
@@ -385,7 +397,6 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* Newsletter Signup */
 .wellness-email-input {
   width: 100%;
   padding: 0.75rem;
@@ -425,7 +436,6 @@ onMounted(async () => {
   margin: 0;
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .search-filter-content {
     flex-direction: column;

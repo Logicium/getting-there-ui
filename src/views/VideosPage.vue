@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { videos, videoCategories, heroSections } from '@/data/data';
+import { ref, onMounted } from 'vue';
+import { videos, videoCategories } from '@/data/data';
 import VideoCard from '@/components/cards/VideoCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
@@ -20,32 +20,44 @@ const isLoading = ref(true);
 const error = ref<string | null>(null);
 
 // Computed properties
-const currentVideo = computed(() => {
-  if (!currentVideoId.value) return null;
-  return videos[currentVideoId.value];
-});
+const currentVideo = ref(null as any);
 
-const filteredVideos = computed(() => {
-  return Object.values(videos).filter(video => {
-    const matchesCategory = currentFilter.value === 'all' || video.category.includes(currentFilter.value);
-    const matchesSearch = searchTerm.value === '' ||
-        video.title.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        video.tags.some(tag => tag.toLowerCase().includes(searchTerm.value.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
-});
-
-// Event handlers
+// Event handlers - USING DOM MANIPULATION LIKE WORKSHOPS
 const handleFilter = (filter: string) => {
   currentFilter.value = filter;
+  filterVideos();
 };
 
 const handleSearch = (term: string) => {
   searchTerm.value = term;
+  filterVideos();
 };
+
+// EXACT SAME APPROACH AS WORKSHOPS PAGE
+function filterVideos() {
+  const filter = currentFilter.value;
+  const search = searchTerm.value.toLowerCase();
+  const videoCards = document.querySelectorAll('.video-card');
+
+  videoCards.forEach(card => {
+    const htmlCard = card as HTMLElement;
+    const category = htmlCard.dataset.category || '';
+    const title = htmlCard.dataset.title || '';
+
+    const matchesCategory = filter === 'all' || category.includes(filter);
+    const matchesSearch = search === '' || title.includes(search);
+
+    if (matchesCategory && matchesSearch) {
+      htmlCard.style.display = 'block';
+    } else {
+      htmlCard.style.display = 'none';
+    }
+  });
+}
 
 const playVideo = (videoId: string) => {
   currentVideoId.value = videoId;
+  currentVideo.value = videos[videoId];
   videoModalOpen.value = true;
 };
 
@@ -100,10 +112,8 @@ function observeFadeElements() {
 }
 
 onMounted(async () => {
-  // Fetch hero data from CMS
   await fetchHeroData();
 
-  // Wait for DOM to update, then observe elements
   setTimeout(() => {
     observeFadeElements();
   }, 100);
@@ -150,7 +160,6 @@ onMounted(async () => {
   />
 
   <main class="therapy-videos-content">
-    <!-- All Free Resources Section -->
     <section class="therapy-video-section">
       <h2 class="wellness-section-title fade-in">
         Complete Healing Resource Library
@@ -159,9 +168,10 @@ onMounted(async () => {
       <p class="section-description fade-in">
         Our entire collection of therapeutic content is now freely available. These resources are designed to support your mental health journey with evidence-based approaches and trauma-informed care.
       </p>
+      <!-- RENDER ALL VIDEOS - FILTER WITH DOM MANIPULATION -->
       <div class="therapy-videos-grid" id="allVideos">
         <VideoCard
-            v-for="video in filteredVideos"
+            v-for="video in Object.values(videos)"
             :key="video.id"
             :video="video"
             :playVideo="playVideo"
@@ -169,7 +179,6 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- Community Support Section -->
     <section class="therapy-community-section fade-in">
       <div class="community-content">
         <h3>🤝 Join Our Healing Community</h3>
@@ -196,7 +205,6 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- Therapeutic Disclaimer Section -->
     <section class="therapy-disclaimer fade-in">
       <div class="disclaimer-content">
         <h3>🏥 Important Therapeutic Information</h3>
@@ -222,7 +230,6 @@ onMounted(async () => {
     </section>
   </main>
 
-  <!-- Video Player Modal -->
   <ModalDialog
       :title="currentVideo?.title || 'Therapeutic Video'"
       :isOpen="videoModalOpen"
@@ -254,7 +261,6 @@ onMounted(async () => {
 <style scoped lang="scss">
 @import '../assets/common.scss';
 
-/* Therapy Videos Hero Section */
 .therapy-videos-hero {
   @extend .hero-base;
   background: var(--gradient);
@@ -294,7 +300,6 @@ onMounted(async () => {
   opacity: 0.8;
 }
 
-/* Main Content */
 .therapy-videos-content {
   @extend .container;
   padding: 4rem 2rem;
@@ -320,7 +325,6 @@ onMounted(async () => {
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
 }
 
-/* Community Support Section */
 .therapy-community-section {
   background: var(--bg-light);
   padding: 3rem;
@@ -376,7 +380,6 @@ onMounted(async () => {
   border-radius: 25px;
 }
 
-/* Therapeutic Disclaimer */
 .therapy-disclaimer {
   background: var(--bg-sage);
   padding: 3rem;
@@ -416,7 +419,6 @@ onMounted(async () => {
   }
 }
 
-/* Modal Styles */
 .therapy-modal-video {
   width: 100%;
   margin-bottom: 2rem;
@@ -502,7 +504,6 @@ onMounted(async () => {
   }
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .therapy-videos-grid {
     grid-template-columns: 1fr;
