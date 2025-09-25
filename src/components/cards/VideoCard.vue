@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { VideoData } from '@/types/video';
 
 interface Props {
@@ -8,6 +8,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Use a local ref for duration to ensure reactivity
+const duration = ref(props.video.duration);
+
+// Watch for changes to the video's duration and update the local ref
+watch(() => props.video.duration, (newDuration) => {
+  duration.value = newDuration;
+}, { immediate: true });
 
 const categoryDisplay = computed(() => {
   const category = props.video.category[1] || props.video.category[0];
@@ -46,7 +54,7 @@ const handleWatchClick = () => {
   >
     <div class="video-thumbnail" @click="handleClick">
       <div :class="['category-badge', categoryClass]">{{ categoryDisplay }}</div>
-      <div class="video-duration">{{ video.duration }}</div>
+      <div class="video-duration">{{ duration }}</div>
     </div>
     <div class="video-content">
       <h3 class="video-title">{{ video.title }}</h3>

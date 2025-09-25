@@ -124,14 +124,6 @@ const fetchVideos = async () => {
     for (const cmsVideo of cmsVideos) {
       const videoUrl = `https://getting-there-cms.onrender.com${cmsVideo.video.url}`;
 
-      // Get video duration
-      let duration = '00:00';
-      try {
-        duration = await getVideoDuration(videoUrl);
-      } catch (err) {
-        console.error(`Error getting duration for video ${cmsVideo.title}:`, err);
-      }
-
       // Extract tags and categories
       const tags = cmsVideo.tags.map(tag => tag.tag);
       const categories = cmsVideo.Categories.map(category => category.tag);
@@ -141,6 +133,33 @@ const fetchVideos = async () => {
                  cmsVideo.title.toLowerCase()
                    .replace(/[^\w\s-]/g, '')
                    .replace(/\s+/g, '-');
+
+      // Get video duration - initially set to '00:00' and update when available
+      let duration = '00:00';
+      try {
+        // Use the callback approach to update duration when available
+        getVideoDuration(videoUrl, (actualDuration) => {
+          // When the actual duration is available, update the video object
+          if (videos.value[id]) {
+            // Create a new object to ensure reactivity
+            const updatedVideo = { ...videos.value[id], duration: actualDuration };
+            // Use Vue's reactivity system to update the object
+            videos.value[id] = updatedVideo;
+          }
+        }).then(initialDuration => {
+          // This might already have the actual duration if it loaded quickly
+          if (initialDuration !== '00:00') {
+            if (videos.value[id]) {
+              // Create a new object to ensure reactivity
+              const updatedVideo = { ...videos.value[id], duration: initialDuration };
+              // Use Vue's reactivity system to update the object
+              videos.value[id] = updatedVideo;
+            }
+          }
+        });
+      } catch (err) {
+        console.error(`Error getting duration for video ${cmsVideo.title}:`, err);
+      }
 
       // Transform to VideoData format
       processedVideos[id] = {
