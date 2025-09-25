@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { videos, videoCategories } from '@/data/data';
+import { videoCategories } from '@/data/data';
 import VideoCard from '@/components/cards/VideoCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
+import { getVideoDuration } from '@/utils/videoUtils';
+import type { CMSVideo, VideoData } from '@/types/video';
 
 // Video filtering state
 const currentFilter = ref('all');
@@ -18,6 +20,12 @@ const heroTitle = ref('Free Healing Resources & Educational Content');
 const heroDescription = ref('Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your mental health journey');
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+
+// Videos from CMS
+
+const videos = ref<Record<string, VideoData>>({});
+const videosLoading = ref(true);
+const videosError = ref<string | null>(null);
 
 // Computed properties
 const currentVideo = ref(null as any);
@@ -57,7 +65,7 @@ function filterVideos() {
 
 const playVideo = (videoId: string) => {
   currentVideoId.value = videoId;
-  currentVideo.value = videos[videoId];
+  currentVideo.value = videos.value[videoId];
   videoModalOpen.value = true;
 };
 
@@ -91,6 +99,74 @@ const fetchHeroData = async () => {
   }
 };
 
+// Fetch videos from CMS
+const fetchVideos = async () => {
+  videosLoading.value = true;
+  videosError.value = null;
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/videos?populate=all`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch videos: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    const cmsVideos = json?.data as CMSVideo[];
+
+    if (!cmsVideos || !Array.isArray(cmsVideos)) {
+      throw new Error('Invalid video data received from CMS');
+    }
+
+    // Process videos and get durations
+    const processedVideos: Record<string, VideoData> = {};
+
+    for (const cmsVideo of cmsVideos) {
+      const videoUrl = `https://getting-there-cms.onrender.com${cmsVideo.video.url}`;
+
+      // Get video duration
+      let duration = '00:00';
+      try {
+        duration = await getVideoDuration(videoUrl);
+      } catch (err) {
+        console.error(`Error getting duration for video ${cmsVideo.title}:`, err);
+      }
+
+      // Extract tags and categories
+      const tags = cmsVideo.tags.map(tag => tag.tag);
+      const categories = cmsVideo.Categories.map(category => category.tag);
+
+      // Create a unique ID from the title (slug-like)
+      const id = cmsVideo.documentId || 
+                 cmsVideo.title.toLowerCase()
+                   .replace(/[^\w\s-]/g, '')
+                   .replace(/\s+/g, '-');
+
+      // Transform to VideoData format
+      processedVideos[id] = {
+        id,
+        title: cmsVideo.title,
+        presenter: cmsVideo.Author,
+        description: cmsVideo.Description,
+        fullDescription: cmsVideo.Description,
+        duration,
+        category: categories,
+        views: Math.floor(Math.random() * 5000 + 1000).toString(), // Random view count for now
+        isFree: true,
+        tags,
+        videoUrl
+      };
+    }
+
+    videos.value = processedVideos;
+  } catch (err) {
+    console.error('Error fetching videos:', err);
+    videosError.value = err instanceof Error ? err.message : 'Failed to load videos';
+  } finally {
+    videosLoading.value = false;
+  }
+};
+
 // Function to observe fade-in elements
 function observeFadeElements() {
   const observerOptions = {
@@ -112,7 +188,11 @@ function observeFadeElements() {
 }
 
 onMounted(async () => {
-  await fetchHeroData();
+  // Fetch both hero data and videos in parallel
+  await Promise.all([
+    fetchHeroData(),
+    fetchVideos()
+  ]);
 
   setTimeout(() => {
     observeFadeElements();
@@ -169,7 +249,17 @@ onMounted(async () => {
         Our entire collection of therapeutic content is now freely available. These resources are designed to support your mental health journey with evidence-based approaches and trauma-informed care.
       </p>
       <!-- RENDER ALL VIDEOS - FILTER WITH DOM MANIPULATION -->
-      <div class="therapy-videos-grid" id="allVideos">
+      <div v-if="videosLoading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading videos...</p>
+      </div>
+
+      <div v-else-if="videosError" class="error-container">
+        <p>{{ videosError }}</p>
+        <button @click="fetchVideos" class="retry-button">Retry</button>
+      </div>
+
+      <div v-else class="therapy-videos-grid" id="allVideos">
         <VideoCard
             v-for="video in Object.values(videos)"
             :key="video.id"
@@ -237,9 +327,18 @@ onMounted(async () => {
       @close="closeVideoModal"
   >
     <div class="therapy-modal-video">
-      <div class="video-placeholder">
+      <video 
+        v-if="currentVideo?.videoUrl" 
+        controls 
+        class="video-player"
+        :src="currentVideo.videoUrl"
+        preload="metadata"
+      >
+        Your browser does not support the video tag.
+      </video>
+      <div v-else class="video-placeholder">
         <div class="play-button">▶️</div>
-        <p>Therapeutic Video Player</p>
+        <p>Video loading...</p>
       </div>
     </div>
     <div class="therapy-modal-content">
@@ -441,6 +540,14 @@ onMounted(async () => {
   font-size: 4rem;
   margin-bottom: 1rem;
   opacity: 0.9;
+}
+
+.video-player {
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  background: #000;
+  object-fit: contain;
 }
 
 .therapy-modal-content {

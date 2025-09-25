@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { VideoData } from '@/data/data';
+import type { VideoData } from '@/types/video';
 
 interface Props {
   video: VideoData;
