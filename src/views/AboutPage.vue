@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+// CMS base URL
+const CMS_BASE = (import.meta.env.VITE_CMS_URL || '').toString().trim().replace(/\/$/, '');
+
 // State and data fetching
 const hero = ref<any>(null);
 const history = ref<any>(null);
@@ -21,6 +24,16 @@ function getStatSuffix(s: { name: string }) {
   if (name.includes('satisfaction')) return '%';
   if (name.includes('years')) return '+';
   return '';
+}
+
+function mediaUrl(file: any): string | null {
+  if (!file) return null;
+  const fmts = file.formats || {};
+  const url = (fmts.medium?.url) || (fmts.large?.url) || file.url || null;
+  if (!url) return null;
+  // If already absolute
+  if (/^https?:\/\//i.test(url)) return url;
+  return CMS_BASE + url;
 }
 
 async function fetchHero() {
@@ -65,7 +78,7 @@ function observeFadeElements() {
 
   // Observe all animated elements
   document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
-    observer.observe(el);
+    observer.observe(el as Element);
   });
 
   // Counter animation for stats
@@ -83,10 +96,10 @@ function observeFadeElements() {
       const timer = setInterval(() => {
         current += increment;
         if (current >= target) {
-          counter.textContent = target + suffix;
+          (counter as HTMLElement).textContent = target + suffix;
           clearInterval(timer);
         } else {
-          counter.textContent = Math.ceil(current) + suffix;
+          (counter as HTMLElement).textContent = Math.ceil(current) + suffix;
         }
       }, 50);
     });
@@ -148,7 +161,12 @@ onMounted(async () => {
         <div class="visual-circle"></div>
         <div class="visual-circle"></div>
         <div class="visual-circle"></div>
-        <div class="visual-center">🌱</div>
+        <div class="visual-center">
+          <template v-if="hero && hero.image">
+            <img :src="mediaUrl(hero.image) || ''" :alt="hero.image.alternativeText || hero.title || 'Hero image'" />
+          </template>
+          <template v-else>🌱</template>
+        </div>
       </div>
     </div>
   </section>
@@ -176,7 +194,10 @@ onMounted(async () => {
           </template>
         </div>
         <div class="story-visual slide-in-right">
-          🧠
+          <template v-if="history && history.picture">
+            <img class="story-image" :src="mediaUrl(history.picture) || ''" :alt="history.picture.alternativeText || history.title || 'History image'" />
+          </template>
+          <template v-else>🧠</template>
         </div>
       </div>
     </section>
@@ -418,6 +439,14 @@ onMounted(async () => {
   z-index: 3;
 }
 
+.visual-center img {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 10px 30px var(--shadow-medium);
+}
+
 @keyframes gentlePulse {
   0%, 100% { transform: scale(1); opacity: 0.3; }
   50% { transform: scale(1.05); opacity: 0.1; }
@@ -476,6 +505,14 @@ onMounted(async () => {
   bottom: 0;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(1px);
+}
+
+.story-visual img.story-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* Mission Section */
