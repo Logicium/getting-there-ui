@@ -319,7 +319,11 @@ onMounted(() => {
     <div v-if="featuredEvent" class="featured-therapy-event fade-in">
       <div class="featured-wellness-badge">Featured Program</div>
       <div class="featured-therapy-image">
-        <div class="featured-visual-icon">🌱</div>
+        <img v-if="featuredEvent.Image && featuredEvent.Image.formats && featuredEvent.Image.formats.large"
+             :src="'https://getting-there-cms.onrender.com' + featuredEvent.Image.formats.large.url"
+             :alt="featuredEvent.Title"
+             class="featured-event-img">
+        <div v-else class="featured-visual-icon">🌱</div>
       </div>
       <div class="featured-therapy-content">
         <h2 class="featured-therapy-title">{{ featuredEvent.Title }}</h2>
@@ -360,7 +364,11 @@ onMounted(() => {
       >
         <div class="therapy-event-image">
           <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">{{ getEventIcon(event.Title) }}</div>
+          <img v-if="event.Image && event.Image.formats && event.Image.formats.large"
+               :src="'https://getting-there-cms.onrender.com' + event.Image.formats.large.url"
+               :alt="event.Title"
+               class="event-img">
+          <div v-else class="event-visual-icon">{{ getEventIcon(event.Title) }}</div>
         </div>
         <div class="therapy-event-content">
           <div class="therapy-event-date" v-if="event.date || event.Frequency">
@@ -588,6 +596,13 @@ svg {
   opacity: 0.8;
 }
 
+.event-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
 .therapy-event-status {
   position: absolute;
   top: 1rem;
@@ -740,6 +755,13 @@ svg {
   font-size: 5rem;
   opacity: 0.8;
   color: white;
+}
+
+.featured-event-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .featured-therapy-content {

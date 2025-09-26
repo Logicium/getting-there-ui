@@ -70,7 +70,6 @@ function handleRegistration() {
 function addToCalendar() {
   if (!event.value) return;
 
-  // Get calendar event data from the updateCalendarEvent function
   const calendarEvent = {
     title: event.value.Title,
     start: event.value.date ? `${event.value.date}T${event.value.TimeStart}` : `${new Date().toISOString().split('T')[0]}T${event.value.TimeStart}`,
@@ -79,16 +78,13 @@ function addToCalendar() {
     description: event.value.Description
   };
 
-  // Create Google Calendar URL
   const startDate = calendarEvent.start.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const endDate = calendarEvent.end.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
   const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(calendarEvent.title)}&dates=${startDate}/${endDate}&location=${encodeURIComponent(calendarEvent.location)}&details=${encodeURIComponent(calendarEvent.description)}`;
 
-  // Create Outlook URL
   const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(calendarEvent.title)}&startdt=${calendarEvent.start}&enddt=${calendarEvent.end}&location=${encodeURIComponent(calendarEvent.location)}&body=${encodeURIComponent(calendarEvent.description)}`;
 
-  // Show options
   const choice = confirm('Add to Google Calendar? (OK for Google, Cancel for Outlook)');
   if (choice) {
     window.open(googleUrl, '_blank');
@@ -104,23 +100,17 @@ function initMap() {
   const mapContainer = document.getElementById('mapContainer');
   if (!mapContainer) return;
 
-  // Clear previous content
   mapContainer.innerHTML = '';
 
-  // Format the location query for the iframe
   let locationQuery;
   if (event.value.Address) {
-    // If we have both location and address, combine them
     locationQuery = encodeURIComponent(`${event.value.Location}, ${event.value.Address}`);
   } else {
-    // If we only have location, use that
     locationQuery = encodeURIComponent(event.value.Location);
   }
 
-  // Replace spaces with + for the query parameter
   locationQuery = locationQuery.replace(/%20/g, '+');
 
-  // Create the iframe with the Google Maps Embed API
   const iframe = document.createElement('iframe');
   iframe.style.border = '0';
   iframe.style.width = '100%';
@@ -130,7 +120,6 @@ function initMap() {
   iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
   iframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDN_20CLj-TUTeQHE0yTvWPNMVtxiXktfY&q=${locationQuery}`;
 
-  // Add the iframe to the map container
   mapContainer.appendChild(iframe);
 }
 
@@ -166,12 +155,10 @@ const fetchEventData = async () => {
     const data = await response.json();
     event.value = data.data;
 
-    // Update the calendar functionality with the event's actual data
     if (event.value) {
       updateCalendarEvent();
     }
 
-    // Wait for the DOM to update with the new data
     setTimeout(() => {
       observeFadeElements();
       initMap();
@@ -188,7 +175,7 @@ const fetchEventData = async () => {
 function updateCalendarEvent() {
   if (!event.value) return;
 
-  const eventDate = event.value.date || new Date().toISOString().split('T')[0]; // Use current date if not provided
+  const eventDate = event.value.date || new Date().toISOString().split('T')[0];
   const calendarEvent = {
     title: event.value.Title,
     start: `${eventDate}T${event.value.TimeStart}`,
@@ -197,13 +184,12 @@ function updateCalendarEvent() {
     description: event.value.Description
   };
 
-  // Update the addToCalendar function to use this data
   (window as any).calendarEvent = calendarEvent;
 }
 
 // Calculate duration between two time strings in minutes
 function calculateDuration(startTime: string, endTime: string): number {
-  if (!startTime || !endTime) return 90; // Default duration
+  if (!startTime || !endTime) return 90;
 
   try {
     const [startHours, startMinutes] = startTime.split(':').map(Number);
@@ -215,13 +201,13 @@ function calculateDuration(startTime: string, endTime: string): number {
     return endTotalMinutes - startTotalMinutes;
   } catch (error) {
     console.error('Error calculating duration:', error);
-    return 90; // Default duration
+    return 90;
   }
 }
 
-// Helper function to determine event price based on title (placeholder)
+// Helper function to determine event price based on title
 function getPriceFromTitle(title: string): string {
-  if (!title) return '60'; // Default price
+  if (!title) return '60';
 
   const lowerTitle = title.toLowerCase();
 
@@ -237,14 +223,12 @@ function getPriceFromTitle(title: string): string {
     return '45';
   }
 
-  return '60'; // Default price
+  return '60';
 }
 
 // Format about text from the API
 function formatAboutText(paragraph: EventAbout): string {
   if (!paragraph || !paragraph.children) return '';
-
-  // Join all the text from the children
   return paragraph.children.map(child => child.text).join('');
 }
 
@@ -268,20 +252,18 @@ const observeFadeElements = () => {
   });
 };
 
-// Initialize
-onMounted(() => {
-  // Fetch event data
-  fetchEventData();
-
-  // Initialize fade-in animation
-  observeFadeElements();
+onMounted(async () => {
+  await fetchEventData();
+  setTimeout(() => {
+    observeFadeElements();
+  }, 100);
 });
 </script>
 
 <template>
   <section class="therapy-breadcrumb">
     <div class="therapy-breadcrumb-content">
-      <router-link to="/">Home</router-link> → <router-link to="/events">Healing Programs</router-link> → {{ event ? event.Title : 'Loading...' }}
+      <a href="/">Home</a> → <a href="/events">Healing Programs</a> → {{ event ? event.Title : 'Loading...' }}
     </div>
   </section>
 
@@ -345,7 +327,7 @@ onMounted(() => {
 
         <ul class="therapy-registration-features">
           <li>Weekly therapeutic support sessions</li>
-          <li>Evidence-based anxiety management techniques</li>
+          <li>Evidence-based techniques</li>
           <li>Safe, confidential group environment</li>
           <li>Licensed mental health facilitators</li>
           <li>Take-home resources and workbooks</li>
@@ -366,10 +348,10 @@ onMounted(() => {
       <div class="therapy-content-section fade-in">
         <h2>About This Healing Circle</h2>
         <div v-if="event.about && event.about.length > 0">
-          <p v-for="(paragraph, index) in event.about" :key="index" v-html="formatAboutText(paragraph)"></p>
+          <p v-for="(paragraph, idx) in event.about" :key="idx" v-html="formatAboutText(paragraph)"></p>
         </div>
         <p v-else>
-          Join us for this transformative healing experience. Our program is designed to provide you with the tools, 
+          Join us for this transformative healing experience. Our program is designed to provide you with the tools,
           support, and community you need on your journey to wellness.
         </p>
       </div>
@@ -389,20 +371,20 @@ onMounted(() => {
 
       <div class="therapy-content-section fade-in">
         <h2>Therapeutic Approach & Benefits</h2>
-        <p><strong>Evidence-Based Methods:</strong> Our support circle integrates cognitive-behavioral therapy (CBT), mindfulness-based stress reduction (MBSR), and acceptance and commitment therapy (ACT) principles in a group setting.</p>
+        <p><strong>Evidence-Based Methods:</strong> Our programs integrate proven therapeutic approaches including cognitive-behavioral therapy (CBT), mindfulness-based stress reduction (MBSR), and acceptance and commitment therapy (ACT) principles adapted for group settings.</p>
 
-        <p><strong>Trauma-Informed Care:</strong> All facilitators are trained in trauma-informed approaches, ensuring that the group environment feels safe and supportive for all participants, including those with trauma histories.</p>
+        <p><strong>Trauma-Informed Care:</strong> All facilitators are trained in trauma-informed approaches, ensuring that the environment feels safe and supportive for all participants, including those with trauma histories or sensitive experiences.</p>
 
-        <p><strong>Peer Support Benefits:</strong> Research shows that group therapy can be as effective as individual therapy for anxiety, with the added benefits of peer connection, reduced isolation, and normalized experiences.</p>
+        <p><strong>Group Support Benefits:</strong> Research consistently shows that group-based therapeutic interventions can be as effective as individual therapy, with the added benefits of peer connection, reduced isolation, normalized experiences, and mutual learning.</p>
 
         <p>Key benefits participants often experience:</p>
         <ul style="margin: 1rem 0; padding-left: 2rem; color: var(--text-light);">
-          <li>Reduced feelings of isolation and shame around anxiety</li>
-          <li>Practical tools for managing panic attacks and anxiety symptoms</li>
+          <li>Reduced feelings of isolation through shared experiences</li>
+          <li>Practical, evidence-based tools and coping strategies</li>
           <li>Increased self-awareness and emotional regulation skills</li>
-          <li>A supportive community of peers who understand your experience</li>
-          <li>Improved confidence in social situations</li>
-          <li>Greater sense of hope and possibility for healing</li>
+          <li>A supportive community of peers on similar journeys</li>
+          <li>Improved confidence and interpersonal skills</li>
+          <li>Greater sense of hope and possibility for positive change</li>
         </ul>
       </div>
 
@@ -411,31 +393,31 @@ onMounted(() => {
 
         <div class="therapy-faq-item">
           <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            Is this group right for me if I have severe anxiety?
+            Is this program right for me?
             <span class="therapy-faq-toggle">▼</span>
           </div>
           <div class="therapy-faq-answer">
-            This group is designed for individuals with various levels of anxiety, from mild to more severe. Our licensed facilitators are experienced in supporting people with different needs. If you're currently in crisis or experiencing severe symptoms, we recommend starting with individual therapy alongside group participation.
+            Our programs are designed to support individuals at various stages of their mental health journey. Whether you're dealing with specific challenges, seeking personal growth, or looking for supportive community, our evidence-based approaches can be beneficial. If you're currently in crisis or experiencing severe symptoms, we recommend combining group participation with individual therapy support.
           </div>
         </div>
 
         <div class="therapy-faq-item">
           <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            What if I'm too anxious to speak in group?
+            What if I'm nervous about participating in a group?
             <span class="therapy-faq-toggle">▼</span>
           </div>
           <div class="therapy-faq-answer">
-            This is completely normal and welcomed! There's no pressure to share before you're ready. Many members start by simply listening and observing. Our facilitators create a gentle, non-pressured environment where you can participate at your own pace.
+            Feeling nervous about group participation is completely normal and valid. There's no pressure to share before you're ready - many participants start by simply listening and observing. Our facilitators create a gentle, non-judgmental environment where you can participate at your own pace and comfort level.
           </div>
         </div>
 
         <div class="therapy-faq-item">
           <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            How long do people typically attend the group?
+            How long do people typically attend?
             <span class="therapy-faq-toggle">▼</span>
           </div>
           <div class="therapy-faq-answer">
-            There's no set timeline - healing happens at different paces for everyone. Some members attend for a few months, others for a year or more. We encourage a minimum commitment of 4-6 sessions to give the group process time to work, but you can discontinue at any time.
+            There's no set timeline - healing and growth happen at different paces for everyone. Some participants attend for a few months, others for a year or more. We encourage a minimum commitment of 4-6 sessions to give the therapeutic process time to work, but you can discontinue participation at any time based on your needs.
           </div>
         </div>
 
@@ -445,7 +427,7 @@ onMounted(() => {
             <span class="therapy-faq-toggle">▼</span>
           </div>
           <div class="therapy-faq-answer">
-            Yes! We offer sliding scale fees based on income because we believe financial barriers shouldn't prevent access to healing. During registration, you can discuss fee adjustment options with our intake coordinator. Some insurance plans may also provide coverage.
+            Yes! We offer sliding scale fees based on income because we believe financial barriers shouldn't prevent access to mental health support. During registration, you can discuss fee adjustment options with our intake coordinator. Some insurance plans may also provide coverage - please check with your provider.
           </div>
         </div>
 
@@ -455,7 +437,17 @@ onMounted(() => {
             <span class="therapy-faq-toggle">▼</span>
           </div>
           <div class="therapy-faq-answer">
-            Confidentiality is paramount in our groups. All members agree to keep what's shared in group confidential. Our facilitators are bound by professional ethics, and we review confidentiality agreements at the start of participation. We also discuss healthy boundaries around sharing personal information.
+            Confidentiality is paramount in all our programs. All participants agree to keep what's shared in the group confidential. Our facilitators are bound by professional ethics and legal requirements. We review confidentiality agreements at the start of participation and discuss healthy boundaries around sharing personal information.
+          </div>
+        </div>
+
+        <div class="therapy-faq-item">
+          <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
+            Can I attend if I'm already in individual therapy?
+            <span class="therapy-faq-toggle">▼</span>
+          </div>
+          <div class="therapy-faq-answer">
+            Absolutely! Many participants find that group programs complement their individual therapy work. Group settings offer unique benefits like peer support and normalized experiences that enhance individual therapeutic progress. We encourage open communication between your individual therapist and our facilitators (with your permission) for coordinated care.
           </div>
         </div>
       </div>
@@ -467,12 +459,12 @@ onMounted(() => {
         <h3>Dr. Sarah Mitchell, PhD</h3>
         <p class="therapy-facilitator-title">Lead Group Facilitator</p>
         <p class="therapy-facilitator-bio">
-          Dr. Mitchell is a licensed clinical psychologist specializing in anxiety disorders and group therapy. With over 15 years of experience, she brings a warm, trauma-informed approach to creating safe spaces for healing and growth.
+          Dr. Mitchell is a licensed clinical psychologist with over 15 years of experience in group therapy and trauma-informed care. She brings a warm, compassionate approach to creating safe spaces for healing and growth.
         </p>
         <div class="therapy-facilitator-credentials">
           <span class="credential-badge">🎓 PhD Clinical Psychology</span>
           <span class="credential-badge">🏆 Licensed Therapist</span>
-          <span class="credential-badge">🧠 Anxiety Specialist</span>
+          <span class="credential-badge">🧠 Group Therapy Specialist</span>
         </div>
       </div>
 
