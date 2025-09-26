@@ -28,10 +28,63 @@ interface EventsPageData {
   meta: Record<string, any>;
 }
 
+// Interface for event data
+interface EventStep {
+  id: number;
+  Name: string;
+  starttime: string;
+  description: string;
+}
+
+interface EventAbout {
+  type: string;
+  children: {
+    text: string;
+    type: string;
+  }[];
+}
+
+interface Event {
+  id: number;
+  documentId: string;
+  Title: string;
+  Description: string;
+  TimeStart: string;
+  TimeEnd: string;
+  Location: string;
+  Address: string | null;
+  Frequency: string | null;
+  GroupSize: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  about: EventAbout[];
+  isFeatured: boolean | null;
+  date: string | null;
+  Image: any | null;
+  steps: EventStep[];
+}
+
+interface EventsResponse {
+  data: Event[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+}
+
 // State for hero section data
 const heroData = ref<HeroSection | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+
+// State for events data
+const events = ref<Event[]>([]);
+const featuredEvent = ref<Event | null>(null);
 
 // Filter functionality
 const currentFilter = ref('all');
@@ -39,6 +92,83 @@ const currentFilter = ref('all');
 function setFilter(filter: string) {
   currentFilter.value = filter;
   filterEvents();
+}
+
+// Format time from 24-hour format to 12-hour format
+function formatTime(timeString: string): string {
+  if (!timeString) return '';
+
+  try {
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return timeString;
+  }
+}
+
+// Helper function to determine event category based on title
+function getCategoryFromTitle(title: string): string {
+  const lowerTitle = title.toLowerCase();
+
+  if (lowerTitle.includes('mindful') || lowerTitle.includes('meditation') || lowerTitle.includes('compassion')) {
+    return 'mindfulness';
+  } else if (lowerTitle.includes('therapy') || lowerTitle.includes('couples') || lowerTitle.includes('communication')) {
+    return 'therapy';
+  } else if (lowerTitle.includes('support') || lowerTitle.includes('grief') || lowerTitle.includes('loss') || lowerTitle.includes('trauma') || lowerTitle.includes('anxiety') || lowerTitle.includes('depression')) {
+    return 'support';
+  } else if (lowerTitle.includes('virtual') || lowerTitle.includes('online')) {
+    return 'online';
+  }
+
+  return 'all';
+}
+
+// Helper function to determine event icon based on title
+function getEventIcon(title: string): string {
+  const lowerTitle = title.toLowerCase();
+
+  if (lowerTitle.includes('mindful') || lowerTitle.includes('meditation')) {
+    return '🧘‍♀️';
+  } else if (lowerTitle.includes('couples') || lowerTitle.includes('relationship')) {
+    return '💕';
+  } else if (lowerTitle.includes('grief') || lowerTitle.includes('loss')) {
+    return '💔';
+  } else if (lowerTitle.includes('virtual') || lowerTitle.includes('online')) {
+    return '💻';
+  } else if (lowerTitle.includes('trauma')) {
+    return '👥';
+  } else if (lowerTitle.includes('anxiety')) {
+    return '🌱';
+  } else if (lowerTitle.includes('depression')) {
+    return '☀️';
+  } else if (lowerTitle.includes('compassion')) {
+    return '🌸';
+  }
+
+  return '🌿';
+}
+
+// Helper function to determine event price based on title (placeholder)
+function getPriceFromTitle(title: string): string {
+  const lowerTitle = title.toLowerCase();
+
+  if (lowerTitle.includes('couples')) {
+    return '120';
+  } else if (lowerTitle.includes('virtual') || lowerTitle.includes('online')) {
+    return '50';
+  } else if (lowerTitle.includes('grief') || lowerTitle.includes('loss')) {
+    return '40';
+  } else if (lowerTitle.includes('trauma')) {
+    return '65';
+  } else if (lowerTitle.includes('mindful') || lowerTitle.includes('meditation') || lowerTitle.includes('compassion')) {
+    return '45';
+  }
+
+  return '60'; // Default price
 }
 
 function filterEvents() {
@@ -58,20 +188,13 @@ function filterEvents() {
 
 // Sort events by date
 function sortEventsByDate() {
-  const grid = document.getElementById('eventsGrid');
-  if (!grid) return;
-
-  const events = Array.from(document.querySelectorAll('.therapy-event-card'));
-
-  events.sort((a, b) => {
-    const htmlA = a as HTMLElement;
-    const htmlB = b as HTMLElement;
-    const dateA = new Date(htmlA.dataset.date || '');
-    const dateB = new Date(htmlB.dataset.date || '');
-    return dateA.getTime() - dateB.getTime();
+  // This function is now handled by Vue's reactivity system
+  // We'll sort the events array before rendering
+  events.value.sort((a, b) => {
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateA - dateB;
   });
-
-  events.forEach(event => grid.appendChild(event));
 }
 
 // Function to observe fade-in elements
@@ -101,21 +224,32 @@ const fetchPageData = async () => {
 
   try {
     const cmsUrl = import.meta.env.VITE_CMS_URL || 'https://getting-there-cms.onrender.com';
-    const response = await fetch(`${cmsUrl}/api/events-page?populate=all`);
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    // Fetch page data (hero section)
+    const pageResponse = await fetch(`${cmsUrl}/api/events-page?populate=all`);
+    if (!pageResponse.ok) {
+      throw new Error(`Failed to fetch page data: ${pageResponse.status} ${pageResponse.statusText}`);
     }
+    const pageData: EventsPageData = await pageResponse.json();
+    heroData.value = pageData.data.Hero;
 
-    const data: EventsPageData = await response.json();
-    heroData.value = data.data.Hero;
+    // Fetch events data
+    const eventsResponse = await fetch(`${cmsUrl}/api/events?populate=*`);
+    if (!eventsResponse.ok) {
+      throw new Error(`Failed to fetch events data: ${eventsResponse.status} ${eventsResponse.statusText}`);
+    }
+    const eventsData: EventsResponse = await eventsResponse.json();
+    events.value = eventsData.data;
+
+    // Find featured event
+    featuredEvent.value = events.value.find(event => event.isFeatured === true) || null;
 
     // Wait for the DOM to update with the new data
     setTimeout(() => {
       observeFadeElements();
     }, 100);
   } catch (err) {
-    console.error('Error fetching page data:', err);
+    console.error('Error fetching data:', err);
     error.value = err instanceof Error ? err.message : 'An unknown error occurred';
   } finally {
     isLoading.value = false;
@@ -182,234 +316,80 @@ onMounted(() => {
   <main class="therapy-events-content">
 
     <!-- Featured Event -->
-    <div class="featured-therapy-event fade-in">
+    <div v-if="featuredEvent" class="featured-therapy-event fade-in">
       <div class="featured-wellness-badge">Featured Program</div>
       <div class="featured-therapy-image">
         <div class="featured-visual-icon">🌱</div>
       </div>
       <div class="featured-therapy-content">
-        <h2 class="featured-therapy-title">Anxiety Support Circle</h2>
+        <h2 class="featured-therapy-title">{{ featuredEvent.Title }}</h2>
         <p class="featured-therapy-description">
-          A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by licensed therapists in a judgment-free space.
+          {{ featuredEvent.Description }}
         </p>
         <div class="featured-therapy-details">
-          <div class="therapy-event-detail">
+          <div v-if="featuredEvent.date || featuredEvent.Frequency" class="therapy-event-detail">
             <span class="therapy-event-detail-icon">📅</span>
-            <span>Every Tuesday, Starting April 15</span>
+            <span>{{ featuredEvent.date ? new Date(featuredEvent.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : featuredEvent.Frequency }}</span>
           </div>
-          <div class="therapy-event-detail">
+          <div v-if="featuredEvent.Location" class="therapy-event-detail">
             <span class="therapy-event-detail-icon">📍</span>
-            <span>Denver Wellness Center</span>
+            <span>{{ featuredEvent.Location }}</span>
           </div>
-          <div class="therapy-event-detail">
+          <div v-if="featuredEvent.TimeStart && featuredEvent.TimeEnd" class="therapy-event-detail">
             <span class="therapy-event-detail-icon">⏰</span>
-            <span>6:00 PM - 7:30 PM</span>
+            <span>{{ formatTime(featuredEvent.TimeStart) }} - {{ formatTime(featuredEvent.TimeEnd) }}</span>
           </div>
-          <div class="therapy-event-detail">
+          <div v-if="featuredEvent.GroupSize" class="therapy-event-detail">
             <span class="therapy-event-detail-icon">👥</span>
-            <span>Small group (8-10 participants)</span>
+            <span>{{ featuredEvent.GroupSize }}</span>
           </div>
         </div>
-        <router-link :to="'/events/anxiety-support'" class="featured-therapy-btn">Join Our Circle - $60/session</router-link>
+        <router-link :to="`/events/${featuredEvent.documentId}`" class="featured-therapy-btn">Learn More</router-link>
       </div>
     </div>
 
     <h2 class="wellness-section-title fade-in">All Programs & Support Groups</h2>
 
     <div class="therapy-events-grid" id="eventsGrid">
-
-      <div class="therapy-event-card fade-in" data-category="mindfulness" data-date="2024-04-20">
+      <div 
+        v-for="event in events.filter(e => !e.isFeatured)" 
+        :key="event.id" 
+        class="therapy-event-card fade-in" 
+        :data-category="getCategoryFromTitle(event.Title)" 
+        :data-date="event.date || ''"
+      >
         <div class="therapy-event-image">
           <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">🧘‍♀️</div>
+          <div class="event-visual-icon">{{ getEventIcon(event.Title) }}</div>
         </div>
         <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 Every Saturday, Starting April 20</div>
-          <h3 class="therapy-event-title">Mindful Healing Workshop</h3>
+          <div class="therapy-event-date" v-if="event.date || event.Frequency">
+            📅 {{ event.date ? new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : event.Frequency }}
+          </div>
+          <h3 class="therapy-event-title">{{ event.Title }}</h3>
           <p class="therapy-event-description">
-            Learn mindfulness-based stress reduction techniques in a supportive group setting. Perfect for beginners and those seeking deeper practice.
+            {{ event.Description }}
           </p>
           <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Colorado Springs Wellness Center</span>
+            <div class="therapy-event-detail" v-if="event.Location">
+              <span class="therapy-event-detail-icon">{{ event.Location.includes('Online') || event.Location.includes('Virtual') ? '💻' : '📍' }}</span>
+              <span>{{ event.Location }}</span>
             </div>
-            <div class="therapy-event-detail">
+            <div class="therapy-event-detail" v-if="event.TimeStart && event.TimeEnd">
               <span class="therapy-event-detail-icon">⏰</span>
-              <span>10:00 AM - 12:00 PM</span>
+              <span>{{ formatTime(event.TimeStart) }} - {{ formatTime(event.TimeEnd) }}</span>
             </div>
-            <div class="therapy-event-detail">
+            <div class="therapy-event-detail" v-if="event.GroupSize">
               <span class="therapy-event-detail-icon">👥</span>
-              <span>12 spots available</span>
+              <span>{{ event.GroupSize }}</span>
             </div>
           </div>
           <div class="therapy-event-footer">
-            <div class="therapy-event-price">$45/session</div>
-            <router-link :to="'/events/mindful-healing'" class="therapy-event-btn">Learn More</router-link>
+            <div class="therapy-event-price">${{ getPriceFromTitle(event.Title) }}/session</div>
+            <router-link :to="`/events/${event.documentId}`" class="therapy-event-btn">Learn More</router-link>
           </div>
         </div>
       </div>
-
-      <div class="therapy-event-card fade-in" data-category="support" data-date="2024-04-25">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">💔</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 Every Thursday, Starting April 25</div>
-          <h3 class="therapy-event-title">Grief & Loss Support Group</h3>
-          <p class="therapy-event-description">
-            A compassionate space for those navigating loss. Share your journey with others who understand, guided by experienced grief counselors.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Boulder Community Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>7:00 PM - 8:30 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>6-8 participants (intimate setting)</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$40/session</div>
-            <router-link :to="'/events/grief-support'" class="therapy-event-btn">Join Group</router-link>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="online" data-date="2024-05-02">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-filling">Filling Fast</div>
-          <div class="event-visual-icon">💻</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 2, 2024</div>
-          <h3 class="therapy-event-title">Virtual Depression Support Circle</h3>
-          <p class="therapy-event-description">
-            Connect with others from the comfort of your home. A safe, confidential online space for sharing experiences and learning coping strategies.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">💻</span>
-              <span>Secure Online Platform</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>6:00 PM - 7:30 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>3 spots remaining</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$50/session</div>
-            <router-link :to="'/events/virtual-depression'" class="therapy-event-btn">Register Now</router-link>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="therapy" data-date="2024-05-10">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">💕</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 10, 2024</div>
-          <h3 class="therapy-event-title">Couples Communication Workshop</h3>
-          <p class="therapy-event-description">
-            Strengthen your relationship with evidence-based communication techniques. Learn to express needs, resolve conflicts, and deepen intimacy.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Fort Collins Therapy Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>1:00 PM - 4:00 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>6 couples maximum</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$120/couple</div>
-            <router-link :to="'/events/couples-communication'" class="therapy-event-btn">Register</router-link>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="support" data-date="2024-05-18">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-waitlist">Waitlist</div>
-          <div class="event-visual-icon">👥</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 18, 2024</div>
-          <h3 class="therapy-event-title">Trauma Recovery Support Group</h3>
-          <p class="therapy-event-description">
-            A gentle, trauma-informed support group for survivors. Focus on healing, resilience, and post-traumatic growth in a safe environment.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Denver Trauma Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>6:00 PM - 7:30 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>Currently full - waitlist available</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$65/session</div>
-            <button class="therapy-event-btn waitlist-btn">Join Waitlist</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapy-event-card fade-in" data-category="mindfulness" data-date="2024-05-25">
-        <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
-          <div class="event-visual-icon">🌸</div>
-        </div>
-        <div class="therapy-event-content">
-          <div class="therapy-event-date">📅 May 25, 2024</div>
-          <h3 class="therapy-event-title">Self-Compassion & Healing Circle</h3>
-          <p class="therapy-event-description">
-            Learn to treat yourself with the same kindness you'd offer a good friend. Develop self-compassion practices that promote healing and growth.
-          </p>
-          <div class="therapy-event-details">
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">📍</span>
-              <span>Pueblo Wellness Center</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">⏰</span>
-              <span>2:00 PM - 4:00 PM</span>
-            </div>
-            <div class="therapy-event-detail">
-              <span class="therapy-event-detail-icon">👥</span>
-              <span>10 spots available</span>
-            </div>
-          </div>
-          <div class="therapy-event-footer">
-            <div class="therapy-event-price">$55/session</div>
-            <router-link :to="'/events/self-compassion'" class="therapy-event-btn">Join Circle</router-link>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <section class="therapy-private-workshops fade-in">

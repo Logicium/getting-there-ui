@@ -2,8 +2,48 @@
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
+// Interfaces for event data
+interface EventStep {
+  id: number;
+  Name: string;
+  starttime: string;
+  description: string;
+}
+
+interface EventAbout {
+  type: string;
+  children: {
+    text: string;
+    type: string;
+  }[];
+}
+
+interface Event {
+  id: number;
+  documentId: string;
+  Title: string;
+  Description: string;
+  TimeStart: string;
+  TimeEnd: string;
+  Location: string;
+  Address: string | null;
+  Frequency: string | null;
+  GroupSize: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  about: EventAbout[];
+  isFeatured: boolean | null;
+  date: string | null;
+  Image: any | null;
+  steps: EventStep[];
+}
+
 const route = useRoute();
 const eventId = ref(route.params.id);
+const event = ref<Event | null>(null);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
 
 // FAQ Toggle
 function toggleFAQ(element: HTMLElement) {
@@ -28,22 +68,25 @@ function handleRegistration() {
 
 // Add to Calendar functionality
 function addToCalendar() {
-  const event = {
-    title: 'Anxiety Support Circle',
-    start: '2024-04-15T18:00:00',
-    end: '2024-04-15T19:30:00',
-    location: 'Denver Wellness Center, 1234 Healing Way, Denver, CO 80202',
-    description: 'A gentle, supportive group environment for anxiety management and connection with others on similar journeys.'
+  if (!event.value) return;
+
+  // Get calendar event data from the updateCalendarEvent function
+  const calendarEvent = {
+    title: event.value.Title,
+    start: event.value.date ? `${event.value.date}T${event.value.TimeStart}` : `${new Date().toISOString().split('T')[0]}T${event.value.TimeStart}`,
+    end: event.value.date ? `${event.value.date}T${event.value.TimeEnd}` : `${new Date().toISOString().split('T')[0]}T${event.value.TimeEnd}`,
+    location: event.value.Address ? `${event.value.Location}, ${event.value.Address}` : event.value.Location,
+    description: event.value.Description
   };
 
   // Create Google Calendar URL
-  const startDate = event.start.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  const endDate = event.end.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const startDate = calendarEvent.start.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const endDate = calendarEvent.end.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
-  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate}/${endDate}&location=${encodeURIComponent(event.location)}&details=${encodeURIComponent(event.description)}`;
+  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(calendarEvent.title)}&dates=${startDate}/${endDate}&location=${encodeURIComponent(calendarEvent.location)}&details=${encodeURIComponent(calendarEvent.description)}`;
 
   // Create Outlook URL
-  const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(event.title)}&startdt=${event.start}&enddt=${event.end}&location=${encodeURIComponent(event.location)}&body=${encodeURIComponent(event.description)}`;
+  const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(calendarEvent.title)}&startdt=${calendarEvent.start}&enddt=${calendarEvent.end}&location=${encodeURIComponent(calendarEvent.location)}&body=${encodeURIComponent(calendarEvent.description)}`;
 
   // Show options
   const choice = confirm('Add to Google Calendar? (OK for Google, Cancel for Outlook)');
@@ -56,22 +99,138 @@ function addToCalendar() {
 
 // Initialize map (placeholder)
 function initMap() {
+  if (!event.value || !event.value.Location) return;
+
   const mapContainer = document.getElementById('mapContainer');
   if (mapContainer) {
     mapContainer.innerHTML = `
             <div style="width: 100%; height: 100%; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: white; text-align: center; border-radius: 12px;">
                 <div>
                     <div style="font-size: 3rem; margin-bottom: 1rem;">📍</div>
-                    <div style="font-weight: 600;">Denver Wellness Center</div>
-                    <div style="opacity: 0.9; font-size: 0.9rem;">1234 Healing Way, Denver, CO</div>
+                    <div style="font-weight: 600;">${event.value.Location}</div>
+                    <div style="opacity: 0.9; font-size: 0.9rem;">${event.value.Address || ''}</div>
                 </div>
             </div>
         `;
   }
 }
 
+// Format time from 24-hour format to 12-hour format
+function formatTime(timeString: string): string {
+  if (!timeString) return '';
+
+  try {
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return timeString;
+  }
+}
+
+// Function to fetch event data from CMS
+const fetchEventData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const cmsUrl = import.meta.env.VITE_CMS_URL || 'https://getting-there-cms.onrender.com';
+    const response = await fetch(`${cmsUrl}/api/events/${eventId.value}?populate=*`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch event data: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    event.value = data.data;
+
+    // Update the calendar functionality with the event's actual data
+    if (event.value) {
+      updateCalendarEvent();
+    }
+
+    // Wait for the DOM to update with the new data
+    setTimeout(() => {
+      observeFadeElements();
+      initMap();
+    }, 100);
+  } catch (err) {
+    console.error('Error fetching event data:', err);
+    error.value = err instanceof Error ? err.message : 'An unknown error occurred';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Update calendar event with actual data
+function updateCalendarEvent() {
+  if (!event.value) return;
+
+  const eventDate = event.value.date || new Date().toISOString().split('T')[0]; // Use current date if not provided
+  const calendarEvent = {
+    title: event.value.Title,
+    start: `${eventDate}T${event.value.TimeStart}`,
+    end: `${eventDate}T${event.value.TimeEnd}`,
+    location: event.value.Address ? `${event.value.Location}, ${event.value.Address}` : event.value.Location,
+    description: event.value.Description
+  };
+
+  // Update the addToCalendar function to use this data
+  (window as any).calendarEvent = calendarEvent;
+}
+
+// Calculate duration between two time strings in minutes
+function calculateDuration(startTime: string, endTime: string): number {
+  if (!startTime || !endTime) return 90; // Default duration
+
+  try {
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+    const startTotalMinutes = startHours * 60 + startMinutes;
+    const endTotalMinutes = endHours * 60 + endMinutes;
+
+    return endTotalMinutes - startTotalMinutes;
+  } catch (error) {
+    console.error('Error calculating duration:', error);
+    return 90; // Default duration
+  }
+}
+
+// Helper function to determine event price based on title (placeholder)
+function getPriceFromTitle(title: string): string {
+  if (!title) return '60'; // Default price
+
+  const lowerTitle = title.toLowerCase();
+
+  if (lowerTitle.includes('couples')) {
+    return '120';
+  } else if (lowerTitle.includes('virtual') || lowerTitle.includes('online')) {
+    return '50';
+  } else if (lowerTitle.includes('grief') || lowerTitle.includes('loss')) {
+    return '40';
+  } else if (lowerTitle.includes('trauma')) {
+    return '65';
+  } else if (lowerTitle.includes('mindful') || lowerTitle.includes('meditation') || lowerTitle.includes('compassion')) {
+    return '45';
+  }
+
+  return '60'; // Default price
+}
+
+// Format about text from the API
+function formatAboutText(paragraph: EventAbout): string {
+  if (!paragraph || !paragraph.children) return '';
+
+  // Join all the text from the children
+  return paragraph.children.map(child => child.text).join('');
+}
+
 // Fade-in animation
-onMounted(() => {
+const observeFadeElements = () => {
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -88,53 +247,69 @@ onMounted(() => {
   document.querySelectorAll('.fade-in').forEach(el => {
     observer.observe(el);
   });
+};
 
-  // Initialize
-  initMap();
+// Initialize
+onMounted(() => {
+  // Fetch event data
+  fetchEventData();
+
+  // Initialize fade-in animation
+  observeFadeElements();
 });
 </script>
 
 <template>
   <section class="therapy-breadcrumb">
     <div class="therapy-breadcrumb-content">
-      <router-link to="/">Home</router-link> → <router-link to="/events">Healing Programs</router-link> → Anxiety Support Circle
+      <router-link to="/">Home</router-link> → <router-link to="/events">Healing Programs</router-link> → {{ event ? event.Title : 'Loading...' }}
     </div>
   </section>
 
-  <section class="therapy-event-hero">
+  <section v-if="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading event details...</p>
+  </section>
+
+  <section v-else-if="error" class="error-container">
+    <p>{{ error }}</p>
+    <button @click="fetchEventData" class="retry-button">Retry</button>
+  </section>
+
+  <section v-else-if="event" class="therapy-event-hero">
     <div class="therapy-event-hero-content">
       <div class="therapy-event-main-info">
         <div class="therapy-event-status-badge">Open Registration - Safe Space</div>
-        <h1>Anxiety Support Circle</h1>
-        <p class="therapy-event-subtitle">A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by licensed therapists in a judgment-free space.</p>
+        <h1>{{ event.Title }}</h1>
+        <p class="therapy-event-subtitle">{{ event.Description }}</p>
 
         <div class="therapy-event-quick-info">
-          <div class="therapy-quick-info-item">
+          <div class="therapy-quick-info-item" v-if="event.date || event.Frequency">
             <div class="therapy-quick-info-icon">📅</div>
             <div class="therapy-quick-info-text">
               <h4>Schedule</h4>
-              <p>Every Tuesday, Starting April 15<br>Ongoing weekly sessions</p>
+              <p>{{ event.date ? new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : event.Frequency }}</p>
             </div>
           </div>
-          <div class="therapy-quick-info-item">
+          <div class="therapy-quick-info-item" v-if="event.Location">
             <div class="therapy-quick-info-icon">📍</div>
             <div class="therapy-quick-info-text">
               <h4>Location</h4>
-              <p>Denver Wellness Center<br>Private, comfortable setting</p>
+              <p>{{ event.Location }}<br>{{ event.Address || 'Private, comfortable setting' }}</p>
             </div>
           </div>
-          <div class="therapy-quick-info-item">
+          <div class="therapy-quick-info-item" v-if="event.TimeStart && event.TimeEnd">
             <div class="therapy-quick-info-icon">⏰</div>
             <div class="therapy-quick-info-text">
               <h4>Time</h4>
-              <p>6:00 PM - 7:30 PM<br>90 minutes per session</p>
+              <p>{{ formatTime(event.TimeStart) }} - {{ formatTime(event.TimeEnd) }}<br>{{ calculateDuration(event.TimeStart, event.TimeEnd) }} minutes per session</p>
             </div>
           </div>
-          <div class="therapy-quick-info-item">
+          <div class="therapy-quick-info-item" v-if="event.GroupSize">
             <div class="therapy-quick-info-icon">👥</div>
             <div class="therapy-quick-info-text">
               <h4>Group Size</h4>
-              <p>8-10 participants maximum<br>Intimate, supportive environment</p>
+              <p>{{ event.GroupSize }}</p>
             </div>
           </div>
         </div>
@@ -142,7 +317,7 @@ onMounted(() => {
 
       <div class="therapy-registration-card">
         <div class="therapy-price-section">
-          <div class="therapy-price">$60</div>
+          <div class="therapy-price">${{ getPriceFromTitle(event.Title) }}</div>
           <p class="therapy-price-subtitle">Per session • Sliding scale available</p>
         </div>
 
@@ -167,53 +342,27 @@ onMounted(() => {
     </div>
   </section>
 
-  <main class="therapy-event-content">
+  <main v-if="event" class="therapy-event-content">
     <div class="therapy-main-content">
       <div class="therapy-content-section fade-in">
         <h2>About This Healing Circle</h2>
-        <p>Our Anxiety Support Circle provides a compassionate, trauma-informed space where individuals can come together to learn, share, and heal. This ongoing group combines evidence-based therapeutic approaches with peer support to help participants develop practical tools for managing anxiety while building meaningful connections.</p>
-
-        <p>Led by licensed mental health professionals, each session focuses on different aspects of anxiety management, from understanding triggers and physical symptoms to developing coping strategies and building resilience. The group provides a non-judgmental environment where participants can share their experiences and learn from others on similar journeys.</p>
-
-        <p>Whether you're dealing with generalized anxiety, social anxiety, panic symptoms, or stress-related concerns, this group offers support, education, and hope for your healing journey.</p>
+        <div v-if="event.about && event.about.length > 0">
+          <p v-for="(paragraph, index) in event.about" :key="index" v-html="formatAboutText(paragraph)"></p>
+        </div>
+        <p v-else>
+          Join us for this transformative healing experience. Our program is designed to provide you with the tools, 
+          support, and community you need on your journey to wellness.
+        </p>
       </div>
 
-      <div class="therapy-content-section fade-in">
+      <div class="therapy-content-section fade-in" v-if="event.steps && event.steps.length > 0">
         <h2>What to Expect in Each Session</h2>
         <ul class="therapy-session-agenda">
-          <li class="therapy-agenda-item">
-            <div class="therapy-agenda-time">6:00 PM</div>
+          <li v-for="step in event.steps" :key="step.id" class="therapy-agenda-item">
+            <div class="therapy-agenda-time">{{ formatTime(step.starttime) }}</div>
             <div class="therapy-agenda-content">
-              <h4>Welcome & Check-In Circle</h4>
-              <p>Gentle opening where each member can share how they're feeling and what they'd like from the session</p>
-            </div>
-          </li>
-          <li class="therapy-agenda-item">
-            <div class="therapy-agenda-time">6:15 PM</div>
-            <div class="therapy-agenda-content">
-              <h4>Mindfulness & Grounding</h4>
-              <p>Brief guided meditation or grounding exercise to center the group and create a safe space</p>
-            </div>
-          </li>
-          <li class="therapy-agenda-item">
-            <div class="therapy-agenda-time">6:30 PM</div>
-            <div class="therapy-agenda-content">
-              <h4>Educational Component</h4>
-              <p>Learn about anxiety, coping strategies, or therapeutic techniques in an accessible, supportive way</p>
-            </div>
-          </li>
-          <li class="therapy-agenda-item">
-            <div class="therapy-agenda-time">7:00 PM</div>
-            <div class="therapy-agenda-content">
-              <h4>Group Sharing & Support</h4>
-              <p>Facilitated discussion where members can share experiences, challenges, and successes</p>
-            </div>
-          </li>
-          <li class="therapy-agenda-item">
-            <div class="therapy-agenda-time">7:20 PM</div>
-            <div class="therapy-agenda-content">
-              <h4>Closing & Intention Setting</h4>
-              <p>Gentle close with takeaways and intention setting for the week ahead</p>
+              <h4>{{ step.Name }}</h4>
+              <p>{{ step.description }}</p>
             </div>
           </li>
         </ul>
@@ -308,11 +457,11 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="therapy-location-section fade-in">
+      <div class="therapy-location-section fade-in" v-if="event && event.Location">
         <h3>🏥 Healing Environment</h3>
         <div class="therapy-venue-info">
-          <h4>Denver Wellness Center</h4>
-          <p>1234 Healing Way<br>Denver, CO 80202</p>
+          <h4>{{ event.Location }}</h4>
+          <p v-if="event.Address">{{ event.Address }}</p>
           <p>Quiet, private group room</p>
         </div>
 
@@ -342,7 +491,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <a href="https://www.google.com/maps/dir//Denver+Wellness+Center,+1234+Healing+Way,+Denver,+CO+80202" target="_blank" class="therapy-directions-btn">Get Directions</a>
+        <a :href="`https://www.google.com/maps/dir//${encodeURIComponent(event.Location)}${event.Address ? ',' + encodeURIComponent(event.Address) : ''}`" target="_blank" class="therapy-directions-btn">Get Directions</a>
       </div>
 
       <div class="therapy-crisis-support fade-in">
@@ -977,6 +1126,54 @@ onMounted(() => {
   .therapy-facilitator-credentials {
     flex-direction: column;
   }
+}
+
+/* Loading and Error States */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 300px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--bg-light);
+  border-top: 5px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container p {
+  color: var(--warning-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
 }
 
 /* Animations */
