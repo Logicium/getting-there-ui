@@ -288,10 +288,9 @@ onMounted(async () => {
     <!-- CTA Section -->
     <div class="cta-section fade-in">
       <h2>{{ (action && action.actiontext) || 'Ready to begin your wellness journey?' }}</h2>
-      <p>{{ (action && action.Description) || 'Take the first step towards emotional wellness and personal growth. Our compassionate team is here to support you with evidence-based approaches and genuine care.' }}</p>
+      <p>{{ (action && action.Description) }}</p>
       <div class="cta-buttons">
         <router-link to="/events" class="cta-btn">{{ (action && action.buttontext) || 'Explore Our Programs' }}</router-link>
-        <a href="mailto:support@gthere.net" class="cta-btn secondary">Get Support Today</a>
       </div>
     </div>
   </main>

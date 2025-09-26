@@ -43,18 +43,17 @@ onMounted(async () => {
         </div>
         <div class="footer-section">
           <h3>Services</h3>
-          <p><RouterLink to="/about">Mindset Coaching</RouterLink></p>
-          <p><RouterLink to="/about">Goal Setting Support</RouterLink></p>
-          <p><RouterLink to="/about">Emotional Resilience</RouterLink></p>
-          <p><RouterLink to="/events">Group Workshops</RouterLink></p>
-          <p><RouterLink to="/videos">Resource Library</RouterLink></p>
+          <p><RouterLink to="/about">Personal Growth</RouterLink></p>
+          <p><RouterLink to="/about">Coping With Loss</RouterLink></p>
+          <p><RouterLink to="/about">Setting and Reaching Goals</RouterLink></p>
+          <p><RouterLink to="/events">Just for Fun</RouterLink></p>
         </div>
         <div class="footer-section">
           <h3>Resources</h3>
-          <p><RouterLink to="/blog">Wellness Blog</RouterLink></p>
-          <p><RouterLink to="/store">Self-Help Books</RouterLink></p>
-          <p><RouterLink to="/videos">Video Library</RouterLink></p>
-          <p><RouterLink to="/events">Upcoming Events</RouterLink></p>
+          <p><RouterLink to="/blog">Blog</RouterLink></p>
+          <p><RouterLink to="/store">Booklets</RouterLink></p>
+          <p><RouterLink to="/videos">Videos</RouterLink></p>
+          <p><RouterLink to="/events">Workshops</RouterLink></p>
         </div>
       </div>
       <div class="footer-bottom">
