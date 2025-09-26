@@ -9,6 +9,14 @@ const currentFilter = ref('all');
 
 const heroTitle = ref('Healing Through Knowledge');
 const heroDescription = ref('Discover evidence-based books on mental health, personal growth, and emotional wellness written by our licensed professionals');
+// Author bio (defaults; will be overridden by CMS if available)
+const bioTitle = ref('About Dr. Sarah Mitchell');
+const bioDescription = ref('Dr. Sarah Mitchell holds a PhD in Clinical Psychology and has over 20 years of experience in trauma-informed therapy and emotional wellness. Her compassionate, evidence-based approach has helped thousands of individuals on their healing journeys. She specializes in anxiety disorders, depression treatment, and post-traumatic growth.');
+const bioBadges = ref<string[]>([
+  'PhD Clinical Psychology',
+  'Licensed Therapist',
+  'Bestselling Author'
+]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
@@ -66,6 +74,20 @@ const fetchHeroData = async () => {
     const json = await res.json();
     heroTitle.value = json?.data?.Hero?.title ?? heroTitle.value;
     heroDescription.value = json?.data?.Hero?.description ?? heroDescription.value;
+
+    // Populate author bio from CMS
+    const bio = json?.data?.bio;
+    if (bio) {
+      bioTitle.value = bio.title ?? bioTitle.value;
+      bioDescription.value = bio.Description ?? bioDescription.value;
+      if (Array.isArray(bio.cards)) {
+        const titles = bio.cards
+          .map((c: any) => (c?.title ?? ''))
+          .map((t: string) => t.trim())
+          .filter((t: string) => !!t);
+        if (titles.length) bioBadges.value = titles;
+      }
+    }
   } catch (err) {
     console.error('Error fetching books page hero:', err);
     error.value = err instanceof Error ? err.message : 'Failed to load content';
@@ -194,12 +216,10 @@ onMounted(async () => {
           <div class="author-avatar-large">👩‍⚕️</div>
         </div>
         <div class="author-details">
-          <h3>About Dr. Sarah Mitchell</h3>
-          <p>Dr. Sarah Mitchell holds a PhD in Clinical Psychology and has over 20 years of experience in trauma-informed therapy and emotional wellness. Her compassionate, evidence-based approach has helped thousands of individuals on their healing journeys. She specializes in anxiety disorders, depression treatment, and post-traumatic growth.</p>
+          <h3>{{ bioTitle }}</h3>
+          <p>{{ bioDescription }}</p>
           <div class="author-credentials">
-            <span class="credential-badge">🎓 PhD Clinical Psychology</span>
-            <span class="credential-badge">🏆 Licensed Therapist</span>
-            <span class="credential-badge">📚 Bestselling Author</span>
+            <span v-for="(badge, idx) in bioBadges" :key="idx" class="credential-badge">{{ badge }}</span>
           </div>
         </div>
       </div>
