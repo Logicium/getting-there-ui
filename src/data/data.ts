@@ -365,6 +365,7 @@ export interface BlogData {
   authorCredentials: string;
   authorAvatar: string;
   slug?: string;
+  tags?: string[];
 }
 
 export const blogArticles: BlogData[] = [
@@ -381,7 +382,8 @@ export const blogArticles: BlogData[] = [
     authorName: 'Dr. Sarah Mitchell',
     authorCredentials: 'Licensed Clinical Psychologist',
     authorAvatar: '👩‍⚕️',
-    slug: 'anxiety-daily-life'
+    slug: 'anxiety-daily-life',
+    tags:["anxiety","anxiety management","anxiety support","anxiety triggers","coping strategies","daily life","health","healthcare","psychology","therapy"]
   },
   {
     id: 'depression-recovery',
@@ -396,7 +398,8 @@ export const blogArticles: BlogData[] = [
     authorName: 'Dr. Michael Chen',
     authorCredentials: 'Licensed Therapist, LCSW',
     authorAvatar: '👨‍⚕️',
-    slug: 'depression-recovery'
+    slug: 'depression-recovery',
+    tags:["depression","depression care","depression recovery","health","healthcare","psychology","therapy"]
   },
   {
     id: 'healthy-communication',
@@ -411,7 +414,8 @@ export const blogArticles: BlogData[] = [
     authorName: 'Lisa Rodriguez',
     authorCredentials: 'Marriage & Family Therapist',
     authorAvatar: '👩‍🏫',
-    slug: 'healthy-communication'
+    slug: 'healthy-communication',
+    tags:["communication","communication skills","health","healthcare","marriage","marriage therapy","relationships","therapy"]
   },
   {
     id: 'mindfulness-busy-lives',
@@ -426,7 +430,8 @@ export const blogArticles: BlogData[] = [
     authorName: 'Dr. James Wilson',
     authorCredentials: 'Mindfulness-Based Therapist',
     authorAvatar: '👨‍🎓',
-    slug: 'mindfulness-busy-lives'
+    slug: 'mindfulness-busy-lives',
+    tags:[""]
   },
   {
     id: 'stress-relief-toolkit',
@@ -441,7 +446,8 @@ export const blogArticles: BlogData[] = [
     authorName: 'Dr. Sarah Mitchell',
     authorCredentials: 'Licensed Clinical Psychologist',
     authorAvatar: '👩‍⚕️',
-    slug: 'stress-relief-toolkit'
+    slug: 'stress-relief-toolkit',
+    tags:["health","healthcare","psychology","stress","stress management","stress relief","therapy"]
   },
   {
     id: 'anxiety-seeking-support',
@@ -456,7 +462,8 @@ export const blogArticles: BlogData[] = [
     authorName: 'Dr. Michael Chen',
     authorCredentials: 'Licensed Therapist, LCSW',
     authorAvatar: '👨‍⚕️',
-    slug: 'anxiety-seeking-support'
+    slug: 'anxiety-seeking-support',
+    tags:["anxiety","anxiety management","anxiety support","anxiety triggers","coping strategies","health","healthcare","psychology","therapy"]
   }
 ];
 

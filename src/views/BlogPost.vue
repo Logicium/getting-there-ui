@@ -3,20 +3,47 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
+const isLoading = ref(true);
+const error = ref<string | null>(null);
 
-// Blog post data - in a real app, this would come from CMS/API based on route params
-const blogPost = ref({
-  id: 'anxiety-daily-life',
-  title: 'Understanding and Managing Anxiety in Daily Life',
-  author: 'Dr. Sarah Mitchell',
-  authorCredentials: 'Licensed Clinical Psychologist',
-  authorBio: 'Dr. Sarah Mitchell is a licensed clinical psychologist with over 15 years of experience specializing in anxiety disorders and trauma-informed care. She has helped thousands of individuals develop practical coping strategies for managing anxiety.',
-  publishDate: 'March 15, 2024',
-  readTime: '7 min read',
-  category: 'anxiety',
-  categoryLabel: 'Anxiety Support',
-  featuredImage: '/path/to/featured-image.jpg',
-  excerpt: 'Learn practical, evidence-based techniques to recognize anxiety triggers and develop healthy coping strategies that fit into your everyday routine.',
+interface BlogArticle {
+  id: number;
+  documentId: string;
+  title: string;
+  Description: string;
+  Author: string;
+  ArticleBody: any[];
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  Category: string;
+  Image: {
+    formats: {
+      small: {
+        url: string;
+      };
+    };
+    url: string;
+  };
+  topics: {
+    id: number;
+    tag: string;
+  }[];
+}
+
+// Blog post data that will be populated from the API
+const blogPost = ref<any>({
+  id: '',
+  title: '',
+  author: '',
+  authorCredentials: 'Licensed Professional',
+  authorBio: '',
+  publishDate: '',
+  readTime: '',
+  category: '',
+  categoryLabel: '',
+  featuredImage: '',
+  excerpt: '',
   content: [
     {
       type: 'paragraph',
@@ -302,8 +329,118 @@ const copyLink = () => {
   alert('Article link copied to clipboard!');
 };
 
+// Fetch blog post data from API
+const fetchBlogPost = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const documentId = route.params.id;
+    if (!documentId) {
+      throw new Error('Blog post ID is missing');
+    }
+
+    // Fetch blog post by documentId
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/blogs?filters[documentId][$eq]=${documentId}`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch blog post: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    const articles = json?.data || [];
+
+    if (articles.length === 0) {
+      throw new Error('Blog post not found');
+    }
+
+    const article = articles[0];
+
+    // Calculate read time (rough estimate: 200 words per minute)
+    const wordCount = article.ArticleBody.reduce((count: number, item: any) => {
+      if (item.type === 'paragraph' && item.children && item.children.length > 0) {
+        return count + item.children[0].text.split(' ').length;
+      }
+      return count;
+    }, 0);
+
+    const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+    // Format the date
+    const date = new Date(article.publishedAt);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Map API response to the format expected by the template
+    blogPost.value = {
+      id: article.documentId,
+      title: article.title,
+      author: article.Author,
+      authorCredentials: 'Licensed Professional',
+      authorBio: 'An experienced professional dedicated to mental health and wellness.',
+      publishDate: formattedDate,
+      readTime: `${readTime} min read`,
+      category: article.Category.toLowerCase().replace(/\s+/g, '-'),
+      categoryLabel: article.Category,
+      featuredImage: article.Image?.url || '/backgrounds/therapy1.jpg',
+      excerpt: article.Description,
+      content: mapArticleBodyToContent(article.ArticleBody)
+    };
+  } catch (e) {
+    console.error('Error fetching blog post:', e);
+    error.value = e instanceof Error ? e.message : 'Failed to load blog post';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Helper function to map ArticleBody to content format
+const mapArticleBodyToContent = (articleBody: any[]) => {
+  return articleBody.map(item => {
+    if (item.type === 'paragraph') {
+      return {
+        type: 'paragraph',
+        content: item.children[0].text
+      };
+    } else if (item.type === 'heading') {
+      return {
+        type: 'heading',
+        level: item.level,
+        content: item.children[0].text
+      };
+    } else if (item.type === 'list') {
+      // Extract text from each list item
+      const items = item.children.map((listItem: any) => {
+        // Each list item has children, and we need to extract the text from the first child
+        if (listItem.children && listItem.children.length > 0) {
+          return listItem.children[0].text;
+        }
+        return 'List item content not available';
+      });
+
+      return {
+        type: 'list',
+        style: item.format || 'unordered',
+        items: items
+      };
+    } else {
+      // Default case for unsupported types
+      console.log('Unsupported content type:', item.type);
+      return {
+        type: 'paragraph',
+        content: 'Content type not supported'
+      };
+    }
+  });
+};
+
 // Fade-in animation
-onMounted(() => {
+onMounted(async () => {
+  // Fetch blog post data
+  await fetchBlogPost();
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -340,47 +477,63 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Reading Progress Bar -->
-  <div class="reading-progress">
-    <div class="reading-progress-bar"></div>
+  <!-- Loading State -->
+  <div v-if="isLoading" class="blog-loading-container">
+    <div class="blog-loading-spinner"></div>
+    <p>Loading article...</p>
   </div>
 
-  <!-- Breadcrumb -->
-  <section class="blog-breadcrumb">
-    <div class="blog-breadcrumb-content">
-      <router-link to="/">Home</router-link> →
-      <router-link to="/blog">Wellness Blog</router-link> →
-      {{ blogPost.categoryLabel }}
-    </div>
-  </section>
+  <!-- Error State -->
+  <div v-else-if="error" class="blog-error-container">
+    <h2>Error Loading Article</h2>
+    <p>{{ error }}</p>
+    <button @click="fetchBlogPost" class="blog-retry-button">Try Again</button>
+    <router-link to="/blog" class="blog-back-button">Back to Blog</router-link>
+  </div>
 
-  <!-- Blog Post Hero -->
-  <section class="blog-post-hero">
-    <div class="blog-post-hero-content">
-      <div class="blog-category-badge" :class="blogPost.category">
+  <!-- Content State -->
+  <template v-else>
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress">
+      <div class="reading-progress-bar"></div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <section class="blog-breadcrumb">
+      <div class="blog-breadcrumb-content">
+        <router-link to="/">Home</router-link> →
+        <router-link to="/blog">Wellness Blog</router-link> →
         {{ blogPost.categoryLabel }}
       </div>
-      <h1>{{ blogPost.title }}</h1>
-      <div class="blog-meta">
-        <div class="blog-author-info">
-          <div class="author-avatar">👩‍⚕️</div>
-          <div class="author-details">
-            <span class="author-name">{{ blogPost.author }}</span>
-            <span class="author-credentials">{{ blogPost.authorCredentials }}</span>
+    </section>
+
+    <!-- Blog Post Hero -->
+    <section class="blog-post-hero">
+      <div class="blog-post-hero-content">
+        <div class="blog-category-badge" :class="blogPost.category">
+          {{ blogPost.categoryLabel }}
+        </div>
+        <h1>{{ blogPost.title }}</h1>
+        <div class="blog-meta">
+          <div class="blog-author-info">
+            <div class="author-avatar">👩‍⚕️</div>
+            <div class="author-details">
+              <span class="author-name">{{ blogPost.author }}</span>
+              <span class="author-credentials">{{ blogPost.authorCredentials }}</span>
+            </div>
+          </div>
+          <div class="blog-post-meta">
+            <span class="publish-date">📅 {{ blogPost.publishDate }}</span>
+            <span class="read-time">⏱️ {{ blogPost.readTime }}</span>
           </div>
         </div>
-        <div class="blog-post-meta">
-          <span class="publish-date">📅 {{ blogPost.publishDate }}</span>
-          <span class="read-time">⏱️ {{ blogPost.readTime }}</span>
-        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <main class="blog-post-main">
-    <div class="blog-post-container">
-      <!-- Article Content -->
-      <article class="blog-content fade-in">
+    <main class="blog-post-main">
+      <div class="blog-post-container">
+        <!-- Article Content -->
+        <article class="blog-content fade-in">
         <div class="article-excerpt">
           <p>{{ blogPost.excerpt }}</p>
         </div>
@@ -638,6 +791,7 @@ onMounted(() => {
       </div>
     </section>
   </main>
+  </template>
 </template>
 
 <style scoped>
@@ -1481,6 +1635,75 @@ onMounted(() => {
   color: var(--text-dark);
   font-size: 0.9rem;
   line-height: 1.6;
+}
+
+/* Loading and Error States */
+.blog-loading-container, .blog-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 3rem;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 2rem auto;
+  max-width: 800px;
+}
+
+.blog-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(74, 124, 89, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  margin: 0 auto 1.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.blog-error-container h2 {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+}
+
+.blog-retry-button, .blog-back-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin: 1rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.blog-retry-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.blog-retry-button:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.blog-back-button {
+  background: white;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.blog-back-button:hover {
+  background: var(--bg-sage);
+  transform: translateY(-2px);
 }
 
 /* Mobile Responsiveness */

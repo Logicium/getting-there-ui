@@ -1,7 +1,33 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { blogArticles } from '@/data/data';
 import BlogCard from '@/components/cards/BlogCard.vue';
+
+interface BlogArticle {
+  id: number;
+  documentId: string;
+  title: string;
+  Description: string;
+  Author: string;
+  ArticleBody: any[];
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  Category: string;
+  Image: {
+    formats: {
+      small: {
+        url: string;
+      };
+    };
+    url: string;
+  };
+  topics: {
+    id: number;
+    tag: string;
+  }[];
+}
+
+const blogArticles = ref<any[]>([]);
 
 const heroTitle = ref<string>('Wellness Insights & Resources');
 const heroDescription = ref<string>('Expert guidance on mental health, emotional wellness, and personal growth from our licensed professionals');
@@ -12,7 +38,6 @@ const searchInput = ref('');
 const currentFilter = ref('all');
 
 const fetchBlogHero = async () => {
-  isLoading.value = true;
   error.value = null;
 
   try {
@@ -31,8 +56,90 @@ const fetchBlogHero = async () => {
   } catch (e) {
     console.error('Error fetching blog hero:', e);
     error.value = e instanceof Error ? e.message : 'Failed to load content';
-  } finally {
-    isLoading.value = false;
+  }
+};
+
+const fetchBlogArticles = async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/blogs?populate=all`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch blog articles: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    const articles = json?.data || [];
+
+    // Map API response to the format expected by BlogCard component
+    blogArticles.value = articles.map((article: BlogArticle) => {
+      // Get the first paragraph of the article body for the excerpt
+      const firstParagraph = article.ArticleBody.find(
+        (item: any) => item.type === 'paragraph'
+      );
+
+      const excerpt = firstParagraph 
+        ? firstParagraph.children[0].text.substring(0, 150) + '...' 
+        : article.Description;
+
+      // Format the date
+      const date = new Date(article.publishedAt);
+      const formattedDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      // Calculate read time (rough estimate: 200 words per minute)
+      const wordCount = article.ArticleBody.reduce((count: number, item: any) => {
+        if (item.type === 'paragraph' && item.children && item.children.length > 0) {
+          return count + item.children[0].text.split(' ').length;
+        }
+        return count;
+      }, 0);
+
+      const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+      // Map topics to tags
+      const tags = article.topics.map((topic: any) => topic.tag);
+
+      return {
+        id: article.documentId,
+        title: article.title,
+        excerpt: article.Description || excerpt,
+        category: article.Category.toLowerCase().replace(/\s+/g, '-'),
+        categoryLabel: article.Category,
+        icon: getCategoryIcon(article.Category),
+        imageUrl: article.Image?.formats?.small?.url || article.Image?.url || '/backgrounds/therapy1.jpg',
+        date: formattedDate,
+        readTime: readTime,
+        authorName: article.Author,
+        authorCredentials: 'Licensed Professional',
+        authorAvatar: '👩‍⚕️',
+        slug: article.documentId,
+        tags: tags
+      };
+    });
+  } catch (e) {
+    console.error('Error fetching blog articles:', e);
+    error.value = e instanceof Error ? e.message : 'Failed to load blog articles';
+  }
+};
+
+// Helper function to get category icon
+const getCategoryIcon = (category: string): string => {
+  switch (category.toLowerCase()) {
+    case 'anxiety support':
+      return '🧘‍♀️';
+    case 'depression care':
+      return '🌱';
+    case 'relationships':
+      return '💕';
+    case 'mindfulness':
+      return '🧘';
+    case 'stress management':
+      return '🌸';
+    default:
+      return '📝';
   }
 };
 
@@ -89,11 +196,20 @@ function observeFadeElements() {
 }
 
 onMounted(async () => {
-  await fetchBlogHero();
+  isLoading.value = true;
 
-  setTimeout(() => {
-    observeFadeElements();
-  }, 100);
+  try {
+    // Fetch both blog hero and articles in parallel
+    await Promise.all([fetchBlogHero(), fetchBlogArticles()]);
+  } catch (e) {
+    console.error('Error during data fetching:', e);
+  } finally {
+    isLoading.value = false;
+
+    setTimeout(() => {
+      observeFadeElements();
+    }, 100);
+  }
 });
 </script>
 
@@ -147,14 +263,24 @@ onMounted(async () => {
     <section class="articles-section">
       <h2 class="wellness-section-title">Latest Wellness Articles</h2>
       <!-- RENDER ALL ARTICLES - FILTER WITH DOM MANIPULATION -->
-      <div class="therapy-articles-grid" id="articlesGrid">
+      <div v-if="isLoading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading blog articles...</p>
+      </div>
+
+      <div v-else-if="error" class="error-container">
+        <p>{{ error }}</p>
+        <button @click="fetchBlogArticles" class="retry-button">Retry</button>
+      </div>
+
+      <div v-else class="therapy-articles-grid" id="articlesGrid">
         <BlogCard
             v-for="article in blogArticles"
             :key="article.id"
             :category="article.category"
             :category-label="article.categoryLabel"
             :icon="article.icon"
-            :image-url="article.imageUrl"
+            :image-url="'https://getting-there-cms.onrender.com'+article.imageUrl"
             :date="article.date"
             :read-time="article.readTime"
             :title="article.title"
@@ -164,6 +290,10 @@ onMounted(async () => {
             :author-credentials="article.authorCredentials"
             :slug="article.slug"
         />
+
+        <div v-if="blogArticles.length === 0" class="no-articles-message">
+          No articles found. Please try a different search or filter.
+        </div>
       </div>
     </section>
 
@@ -304,6 +434,58 @@ onMounted(async () => {
 .therapy-articles-grid {
   display: grid;
   gap: 2rem;
+}
+
+.loading-container, .error-container, .no-articles-message {
+  padding: 3rem;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 2rem 0;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(74, 124, 89, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  color: #d32f2f;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.no-articles-message {
+  grid-column: 1 / -1;
+  padding: 2rem;
+  color: var(--text-light);
+  font-style: italic;
 }
 
 .therapy-sidebar {
