@@ -97,22 +97,41 @@ function addToCalendar() {
   }
 }
 
-// Initialize map (placeholder)
+// Initialize Google Maps using iframe with API key
 function initMap() {
   if (!event.value || !event.value.Location) return;
 
   const mapContainer = document.getElementById('mapContainer');
-  if (mapContainer) {
-    mapContainer.innerHTML = `
-            <div style="width: 100%; height: 100%; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: white; text-align: center; border-radius: 12px;">
-                <div>
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">📍</div>
-                    <div style="font-weight: 600;">${event.value.Location}</div>
-                    <div style="opacity: 0.9; font-size: 0.9rem;">${event.value.Address || ''}</div>
-                </div>
-            </div>
-        `;
+  if (!mapContainer) return;
+
+  // Clear previous content
+  mapContainer.innerHTML = '';
+
+  // Format the location query for the iframe
+  let locationQuery;
+  if (event.value.Address) {
+    // If we have both location and address, combine them
+    locationQuery = encodeURIComponent(`${event.value.Location}, ${event.value.Address}`);
+  } else {
+    // If we only have location, use that
+    locationQuery = encodeURIComponent(event.value.Location);
   }
+
+  // Replace spaces with + for the query parameter
+  locationQuery = locationQuery.replace(/%20/g, '+');
+
+  // Create the iframe with the Google Maps Embed API
+  const iframe = document.createElement('iframe');
+  iframe.style.border = '0';
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  iframe.setAttribute('loading', 'lazy');
+  iframe.setAttribute('allowfullscreen', '');
+  iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+  iframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDN_20CLj-TUTeQHE0yTvWPNMVtxiXktfY&q=${locationQuery}`;
+
+  // Add the iframe to the map container
+  mapContainer.appendChild(iframe);
 }
 
 // Format time from 24-hour format to 12-hour format
