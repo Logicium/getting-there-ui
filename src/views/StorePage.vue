@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { books, bookCategories } from '@/data/data';
+import { ref, onMounted, computed } from 'vue';
+import { books as localBooks, bookCategories as localBookCategories, type BookData } from '@/data/data';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
 import ProductCard from "@/components/cards/ProductCard.vue";
@@ -19,6 +19,11 @@ const bioBadges = ref<string[]>([
 ]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+
+// CMS-driven state
+const cmsBooks = ref<Record<string, BookData>>({});
+const categories = ref(localBookCategories);
+const usingCMS = ref(false);
 
 interface CartItem {
   id: string;
@@ -96,8 +101,80 @@ const fetchHeroData = async () => {
   }
 };
 
+// Build a lookup from local (hardcoded) books to preserve categories/badges
+const titleToCategoryMap = computed(() => {
+  const map: Record<string, string[]> = {};
+  Object.values(localBooks).forEach(b => {
+    map[b.title] = b.category;
+  });
+  return map;
+});
+
+function slugifyTitle(t: string) {
+  return String(t || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .substring(0, 60);
+}
+
+function getSpecsFromCMS(item: any, category: string[]): Record<string, string> {
+  const publishedYear = (item?.publishedAt || item?.createdAt || '').slice(0, 4);
+  return {
+    'Published': publishedYear || '—',
+    'Language': 'English',
+    'Category': category.join(', ') || '—'
+  };
+}
+
+const fetchBooks = async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/books?populate=picture,file`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch books: ${res.status} ${res.statusText}`);
+    }
+    const json = await res.json();
+
+    const out: Record<string, BookData> = {};
+    (json?.data || []).forEach((it: any) => {
+      const id: string = it?.documentId || slugifyTitle(it?.Title);
+      const cat = titleToCategoryMap.value[it?.Title] || [];
+      out[id] = {
+        id,
+        title: it?.Title || 'Untitled',
+        author: it?.author || 'Unknown',
+        description: it?.Description || '',
+        fullDescription: it?.Description || '',
+        specs: getSpecsFromCMS(it, cat),
+        category: cat,
+        formats: {
+          digital: {
+            price: typeof it?.price === 'number' ? it.price : 0,
+            delivery: 'Instant download'
+          },
+          print: {
+            price: typeof it?.price === 'number' ? it.price + 10 : 0,
+            delivery: '3-5 business days'
+          }
+        }
+      } as BookData;
+    });
+
+    if (Object.keys(out).length) {
+      cmsBooks.value = out;
+      usingCMS.value = true;
+    }
+  } catch (err) {
+    console.error('Error fetching books list:', err);
+    // Keep using localBooks as fallback; don't surface error to visitor here
+  }
+};
+
+const sourceBooks = computed(() => (usingCMS.value && Object.keys(cmsBooks.value).length) ? cmsBooks.value : localBooks);
+
 const addToCart = (bookId: string, button: HTMLElement) => {
-  const book = books[bookId];
+  const book = sourceBooks.value[bookId];
   if (!book) return;
 
   const format = 'digital';
@@ -159,7 +236,7 @@ const checkout = () => {
 
 const showBookPreview = (bookId: string) => {
   currentBookId.value = bookId;
-  currentBook.value = books[bookId];
+  currentBook.value = sourceBooks.value[bookId];
   bookModalOpen.value = true;
 };
 
@@ -188,6 +265,7 @@ function observeFadeElements() {
 
 onMounted(async () => {
   await fetchHeroData();
+  await fetchBooks();
 
   setTimeout(() => {
     observeFadeElements();
@@ -227,7 +305,7 @@ onMounted(async () => {
   </section>
 
   <FilterSection
-      :categories="bookCategories"
+      :categories="categories"
       @filter="handleFilter"
   />
 
@@ -241,7 +319,7 @@ onMounted(async () => {
       <!-- RENDER ALL BOOKS - FILTER WITH DOM MANIPULATION -->
       <div class="therapy-books-grid" id="productsGrid">
         <ProductCard
-            v-for="book in Object.values(books)"
+            v-for="book in Object.values(sourceBooks)"
             :key="book.id"
             :book="book"
             :addToCart="addToCart"
