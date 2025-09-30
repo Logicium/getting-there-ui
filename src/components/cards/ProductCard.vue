@@ -14,8 +14,9 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const isBestseller = computed(() => props.book.category?.toLowerCase() === 'bestseller');
-const isNewRelease = computed(() => props.book.category?.toLowerCase() === 'new');
+// Use the exact category values from the CMS
+const isBestseller = computed(() => props.book.category === 'Best Seller');
+const isNewRelease = computed(() => props.book.category === 'New Releases');
 const badgeClass = computed(() => isBestseller.value ? 'bestseller-badge' : isNewRelease.value ? 'new-badge' : '');
 const badgeText = computed(() => isBestseller.value ? 'Bestseller' : isNewRelease.value ? 'New Release' : '');
 

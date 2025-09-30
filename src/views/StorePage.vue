@@ -196,7 +196,7 @@ const fetchBooks = async () => {
   error.value = null;
 
   try {
-    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/books?populate=*`);
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/books?populate=all`);
 
     if (!res.ok) {
       throw new Error(`Failed to fetch books: ${res.status} ${res.statusText}`);
@@ -210,19 +210,8 @@ const fetchBooks = async () => {
 
     booksData.forEach((book: any) => {
       const bookId = `book-${book.id}`;
-      let category = book.Category || '';
-
-      // Convert CMS categories to our internal category values
-      if (book.Category === 'Best Seller') {
-        category = 'bestseller';
-      } else if (book.Category === 'New Releases') {
-        category = 'new';
-      } else if (book.Category === 'Goal-Setting') {
-        category = 'goals';
-      } else if (!category) {
-        // Default to psychology if no category is provided
-        category = 'psychology';
-      }
+      // Use the category directly from the CMS without transformation
+      const category = book.Category || '';
 
       transformedBooks[bookId] = {
         id: bookId,
@@ -473,8 +462,8 @@ onMounted(async () => {
         <img v-if="currentBook.imageUrl" :src="`https://getting-there-cms.onrender.com${currentBook.imageUrl}`" alt="Book cover" class="book-cover-img" />
         <div v-else class="book-cover">📱</div>
         <div class="book-badges">
-          <span v-if="currentBook.category?.toLowerCase() === 'bestseller'" class="preview-badge bestseller">Bestseller</span>
-          <span v-if="currentBook.category?.toLowerCase() === 'new'" class="preview-badge new">New Release</span>
+          <span v-if="currentBook.category === 'Best Seller'" class="preview-badge bestseller">Bestseller</span>
+          <span v-if="currentBook.category === 'New Releases'" class="preview-badge new">New Release</span>
           <span class="preview-badge digital">Digital Only</span>
         </div>
       </div>

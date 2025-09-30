@@ -345,10 +345,10 @@ export const videoCategories = [
 
 export const bookCategories = [
   { id: 'all', label: 'All Books', icon: '📚' },
-  { id: 'bestseller', label: 'Bestsellers', icon: '⭐' },
-  { id: 'new', label: 'New Releases', icon: '🆕' },
-  { id: 'psychology', label: 'Psychology', icon: '🧠' },
-  { id: 'goals', label: 'Goal Setting', icon: '🎯' }
+  { id: 'Best Seller', label: 'Bestsellers', icon: '⭐' },
+  { id: 'New Releases', label: 'New Releases', icon: '🆕' },
+  { id: 'Psychology', label: 'Psychology', icon: '🧠' },
+  { id: 'Goal-Setting', label: 'Goal Setting', icon: '🎯' }
 ];
 
 // Blog data
