@@ -66,6 +66,13 @@ interface CTAComponent {
   buttontext: string;
 }
 
+// Interface for Action Button
+interface ActionButton {
+  id: number;
+  buttonText: string;
+  linkLocation: string;
+}
+
 // Interface for the home page data
 interface HomePageData {
   data: {
@@ -79,6 +86,7 @@ interface HomePageData {
     servicescomponent: ServicesComponent;
     resourcescomponent: ResourcesComponent;
     ctacomponent: CTAComponent;
+    actionbutton: ActionButton;
   };
   meta: Record<string, any>;
 }
@@ -89,6 +97,7 @@ const howItWorksData = ref<HowItWorks | null>(null);
 const servicesData = ref<ServicesComponent | null>(null);
 const resourcesData = ref<ResourcesComponent | null>(null);
 const ctaData = ref<CTAComponent | null>(null);
+const actionButtonData = ref<ActionButton | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
@@ -132,6 +141,7 @@ const fetchPageData = async () => {
     servicesData.value = data.data.servicescomponent;
     resourcesData.value = data.data.resourcescomponent;
     ctaData.value = data.data.ctacomponent;
+    actionButtonData.value = data.data.actionbutton;
 
     // Wait for the DOM to update with the new data
     setTimeout(() => {
@@ -218,7 +228,7 @@ onMounted(() => {
           <h1>{{ heroData.title }}</h1>
           <p>{{ heroData.description }}</p>
           <div class="hero-cta">
-            <router-link to="/events" class="cta-primary">Start Your Journey</router-link>
+            <router-link :to="actionButtonData ? '/' + actionButtonData.linkLocation : '/events'" class="cta-primary">{{ actionButtonData ? actionButtonData.buttonText : 'Start Your Journey' }}</router-link>
             <router-link to="/about" class="cta-secondary">Learn How It Works</router-link>
           </div>
         </div>

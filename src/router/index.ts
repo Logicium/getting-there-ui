@@ -11,6 +11,8 @@ import TermsPage from "@/views/TermsPage.vue";
 import PrivacyPage from "@/views/PrivacyPage.vue";
 import AccessibilityPage from "@/views/AccessibilityPage.vue";
 import CheckoutPage from "@/views/CheckoutPage.vue";
+import SuccessPage from "@/views/SuccessPage.vue";
+import CancelPage from "@/views/CancelPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -78,7 +80,16 @@ const router = createRouter({
       name:'checkout',
       component: CheckoutPage
     },
-
+    {
+      path: '/checkout/success',
+      name: 'CheckoutSuccess',
+      component: SuccessPage,
+    },
+    {
+      path: '/checkout/cancel',
+      name: 'CheckoutCancel',
+      component: CancelPage,
+    }
   ],
 })
 
