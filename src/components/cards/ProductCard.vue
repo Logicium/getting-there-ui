@@ -14,10 +14,16 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const isBestseller = computed(() => props.book.category?.toLowerCase() === 'bestseller');
-const isNewRelease = computed(() => props.book.category?.toLowerCase() === 'new');
+const isBestseller = computed(() => props.book.category === 'Best Seller');
+const isNewRelease = computed(() => props.book.category === 'New Releases');
 const badgeClass = computed(() => isBestseller.value ? 'bestseller-badge' : isNewRelease.value ? 'new-badge' : '');
 const badgeText = computed(() => isBestseller.value ? 'Bestseller' : isNewRelease.value ? 'New Release' : '');
+
+console.log('ProductCard - Book Category:', props.book.category);
+console.log('ProductCard - isBestseller:', isBestseller.value);
+console.log('ProductCard - isNewRelease:', isNewRelease.value);
+console.log('ProductCard - badgeClass:', badgeClass.value);
+console.log('ProductCard - badgeText:', badgeText.value);
 
 const handleAddToCart = (event: Event) => {
   props.addToCart(props.book.id, event.target as HTMLElement);
