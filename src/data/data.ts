@@ -167,7 +167,7 @@ export interface BookData {
   description: string;
   fullDescription: string;
   specs: Record<string, string>;
-  category: string[];
+  category: string;
   formats: {
     digital: {
       price: number;
@@ -178,6 +178,7 @@ export interface BookData {
       delivery: string;
     };
   };
+  imageUrl?: string;
 }
 
 export const books: Record<string, BookData> = {
@@ -194,7 +195,7 @@ export const books: Record<string, BookData> = {
       'Language': 'English',
       'Category': 'Psychology, Self-Help'
     },
-    category: ['bestseller', 'psychology', 'goals'],
+    category: 'bestseller',
     formats: {
       digital: {
         price: 19.99,
@@ -219,7 +220,7 @@ export const books: Record<string, BookData> = {
       'Language': 'English',
       'Category': 'Psychology, Mental Health'
     },
-    category: ['new', 'psychology'],
+    category: 'new',
     formats: {
       digital: {
         price: 22.99,
@@ -244,7 +245,7 @@ export const books: Record<string, BookData> = {
       'Language': 'English',
       'Category': 'Self-Help, Productivity'
     },
-    category: ['bestseller', 'goals'],
+    category: 'bestseller',
     formats: {
       digital: {
         price: 24.99,
@@ -269,7 +270,7 @@ export const books: Record<string, BookData> = {
       'Language': 'English',
       'Category': 'Mindfulness, Success'
     },
-    category: ['psychology'],
+    category: 'psychology',
     formats: {
       digital: {
         price: 21.99,
@@ -294,7 +295,7 @@ export const books: Record<string, BookData> = {
       'Language': 'English',
       'Category': 'Psychology, Mindset'
     },
-    category: ['psychology', 'goals'],
+    category: 'psychology',
     formats: {
       digital: {
         price: 20.99,
@@ -319,7 +320,7 @@ export const books: Record<string, BookData> = {
       'Language': 'English',
       'Category': 'Goal Setting, Transformation'
     },
-    category: ['new', 'goals'],
+    category: 'new',
     formats: {
       digital: {
         price: 27.99,

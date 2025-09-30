@@ -2,6 +2,9 @@
 import { computed } from 'vue';
 import type { BookData } from '@/data/data';
 
+// Add base URL for image paths
+const baseUrl = import.meta.env.VITE_CMS_URL || '';
+
 interface Props {
   book: BookData;
   addToCart: (bookId: string, target: HTMLElement) => void;
@@ -11,8 +14,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const isBestseller = computed(() => props.book.category.includes('bestseller'));
-const isNewRelease = computed(() => props.book.category.includes('new'));
+const isBestseller = computed(() => props.book.category?.toLowerCase() === 'bestseller');
+const isNewRelease = computed(() => props.book.category?.toLowerCase() === 'new');
 const badgeClass = computed(() => isBestseller.value ? 'bestseller-badge' : isNewRelease.value ? 'new-badge' : '');
 const badgeText = computed(() => isBestseller.value ? 'Bestseller' : isNewRelease.value ? 'New Release' : '');
 
@@ -26,10 +29,11 @@ const handlePreview = () => {
 </script>
 
 <template>
-  <div class="product-card fade-in" :data-category="book.category.join(' ')">
+  <div class="product-card fade-in" :data-category="book.category">
     <div class="product-image">
       <div v-if="badgeClass" :class="badgeClass">{{ badgeText }}</div>
-      {{ book.id.charAt(0).toUpperCase() }}📱
+      <img v-if="book.imageUrl" :src="'https://getting-there-cms.onrender.com' + book.imageUrl" alt="Book cover" class="book-cover-image" />
+      <div v-else class="fallback-image">{{ book.id.charAt(0).toUpperCase() }}📱</div>
     </div>
     <div class="product-content">
       <h3 class="product-title">{{ book.title }}</h3>
@@ -77,6 +81,27 @@ const handlePreview = () => {
   color: white;
   font-size: 3rem;
   position: relative;
+  overflow: hidden;
+}
+
+.book-cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .book-cover-image {
+  transform: scale(1.05);
+}
+
+.fallback-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .bestseller-badge {

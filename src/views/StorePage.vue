@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { books, bookCategories } from '@/data/data';
+import { bookCategories } from '@/data/data';
+import type { BookData } from '@/data/data';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
 import ProductCard from "@/components/cards/ProductCard.vue";
@@ -19,6 +20,7 @@ const bioBadges = ref<string[]>([
 ]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+const books = ref<Record<string, BookData>>({});
 
 interface CartItem {
   id: string;
@@ -26,6 +28,7 @@ interface CartItem {
   title: string;
   format: string;
   price: number;
+  imageUrl?: string;
 }
 
 const cart = ref<CartItem[]>([]);
@@ -52,7 +55,7 @@ function filterBooks() {
     const htmlCard = card as HTMLElement;
     const category = htmlCard.dataset.category || '';
 
-    if (filter === 'all' || category.includes(filter)) {
+    if (filter === 'all' || category.toLowerCase() === filter.toLowerCase()) {
       htmlCard.style.display = 'block';
     } else {
       htmlCard.style.display = 'none';
@@ -97,7 +100,7 @@ const fetchHeroData = async () => {
 };
 
 const addToCart = (bookId: string, button: HTMLElement) => {
-  const book = books[bookId];
+  const book = Object.values(books.value).find(book => book.id === bookId);
   if (!book) return;
 
   const format = 'digital';
@@ -108,7 +111,8 @@ const addToCart = (bookId: string, button: HTMLElement) => {
     bookId: bookId,
     title: book.title,
     format: 'Digital Edition',
-    price: price
+    price: price,
+    imageUrl: book.imageUrl
   };
 
   const existingItemIndex = cart.value.findIndex(item => item.id === cartItem.id);
@@ -159,7 +163,8 @@ const checkout = () => {
 
 const showBookPreview = (bookId: string) => {
   currentBookId.value = bookId;
-  currentBook.value = books[bookId];
+  const foundBook = Object.values(books.value).find(book => book.id === bookId);
+  currentBook.value = foundBook || null;
   bookModalOpen.value = true;
 };
 
@@ -186,8 +191,79 @@ function observeFadeElements() {
   });
 }
 
+const fetchBooks = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/books?populate=*`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch books: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    const booksData = json?.data || [];
+
+    // Transform CMS data to match our BookData format
+    const transformedBooks: Record<string, BookData> = {};
+
+    booksData.forEach((book: any) => {
+      const bookId = `book-${book.id}`;
+      let category = book.Category || '';
+
+      // Convert CMS categories to our internal category values
+      if (book.Category === 'Best Seller') {
+        category = 'bestseller';
+      } else if (book.Category === 'New Releases') {
+        category = 'new';
+      } else if (book.Category === 'Goal-Setting') {
+        category = 'goals';
+      } else if (!category) {
+        // Default to psychology if no category is provided
+        category = 'psychology';
+      }
+
+      transformedBooks[bookId] = {
+        id: bookId,
+        title: book.Title,
+        author: book.author,
+        description: book.Description.substring(0, 150) + '...',
+        fullDescription: book.Description,
+        specs: {
+          'Pages': '300+',
+          'Published': new Date().getFullYear().toString(),
+          'ISBN': '978-1-234567-89-0',
+          'Language': 'English',
+          'Category': 'Psychology, Self-Help'
+        },
+        category: category,
+        formats: {
+          digital: {
+            price: book.price,
+            delivery: 'Instant download'
+          },
+          print: {
+            price: book.price + 10,
+            delivery: '3-5 business days'
+          }
+        },
+        imageUrl: book.picture?.formats?.small?.url || book.picture?.url || null
+      };
+    });
+
+    books.value = transformedBooks;
+  } catch (err) {
+    console.error('Error fetching books:', err);
+    error.value = err instanceof Error ? err.message : 'Failed to load books';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 onMounted(async () => {
   await fetchHeroData();
+  await fetchBooks();
 
   setTimeout(() => {
     observeFadeElements();
@@ -362,7 +438,10 @@ onMounted(async () => {
 
       <div v-else>
         <div v-for="(item, index) in cart" :key="item.id" class="therapy-cart-item">
-          <div class="therapy-cart-item-image">📱</div>
+          <div class="therapy-cart-item-image">
+            <img v-if="item.imageUrl" :src="`https://getting-there-cms.onrender.com${item.imageUrl}`" alt="Book cover" class="cart-item-cover" />
+            <div v-else class="cart-item-fallback">📱</div>
+          </div>
           <div class="therapy-cart-item-details">
             <div class="therapy-cart-item-title">{{ item.title }}</div>
             <div class="therapy-cart-item-format">{{ item.format }}</div>
@@ -391,10 +470,11 @@ onMounted(async () => {
   >
     <div v-if="currentBook" class="therapy-book-preview">
       <div class="therapy-book-preview-image">
-        <div class="book-cover">📱</div>
+        <img v-if="currentBook.imageUrl" :src="`https://getting-there-cms.onrender.com${currentBook.imageUrl}`" alt="Book cover" class="book-cover-img" />
+        <div v-else class="book-cover">📱</div>
         <div class="book-badges">
-          <span v-if="currentBook.category.includes('bestseller')" class="preview-badge bestseller">Bestseller</span>
-          <span v-if="currentBook.category.includes('new')" class="preview-badge new">New Release</span>
+          <span v-if="currentBook.category?.toLowerCase() === 'bestseller'" class="preview-badge bestseller">Bestseller</span>
+          <span v-if="currentBook.category?.toLowerCase() === 'new'" class="preview-badge new">New Release</span>
           <span class="preview-badge digital">Digital Only</span>
         </div>
       </div>
@@ -922,6 +1002,21 @@ onMounted(async () => {
   justify-content: center;
   color: white;
   font-size: 1.5rem;
+  overflow: hidden;
+}
+
+.cart-item-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-item-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .therapy-cart-item-details {
@@ -1053,6 +1148,15 @@ onMounted(async () => {
   justify-content: center;
   color: white;
   font-size: 3rem;
+  box-shadow: 0 10px 30px var(--shadow-light);
+}
+
+.book-cover-img {
+  width: 150px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 0 auto;
   box-shadow: 0 10px 30px var(--shadow-light);
 }
 
