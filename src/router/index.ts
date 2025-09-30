@@ -7,6 +7,9 @@ import AboutPage from "@/views/AboutPage.vue";
 import VideosPage from "@/views/VideosPage.vue";
 import StorePage from "@/views/StorePage.vue";
 import BlogPost from "@/views/BlogPost.vue";
+import TermsPage from "@/views/TermsPage.vue";
+import PrivacyPage from "@/views/PrivacyPage.vue";
+import AccessibilityPage from "@/views/AccessibilityPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,7 +56,23 @@ const router = createRouter({
       path: '/store',
       name: 'store',
       component: StorePage,
-    }
+    },
+    {
+      path: '/terms',
+      name:'terms',
+      component: TermsPage,
+    },
+    {
+      path: '/privacy',
+      name:'privacy',
+      component: PrivacyPage,
+    },
+    {
+      path: '/accessibility',
+      name:'accessibility',
+      component: AccessibilityPage
+    },
+
   ],
 })
 
