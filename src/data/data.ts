@@ -162,6 +162,7 @@ export const videos: Record<string, VideoData> = {
 // Book data
 export interface BookData {
   id: string;
+  documentId?: string;
   title: string;
   author: string;
   description: string;

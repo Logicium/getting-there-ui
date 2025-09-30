@@ -33,6 +33,7 @@ const handlePreview = () => {
   <div class="product-card fade-in" :data-category="book.category">
     <div class="product-image">
       <div v-if="badgeClass" :class="badgeClass">{{ badgeText }}</div>
+      <div v-if="book.imageUrl" class="blurred-background" :style="{ backgroundImage: `url('https://getting-there-cms.onrender.com${book.imageUrl}')` }"></div>
       <img v-if="book.imageUrl" :src="'https://getting-there-cms.onrender.com' + book.imageUrl" alt="Book cover" class="book-cover-image" />
       <div v-else class="fallback-image">{{ book.id.charAt(0).toUpperCase() }}📱</div>
     </div>
@@ -85,12 +86,27 @@ const handlePreview = () => {
   overflow: hidden;
 }
 
-.book-cover-image {
+.blurred-background {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
+  background-size: cover;
+  background-position: center;
+  filter: blur(15px);
+  transform: scale(1.1); /* Prevent blur edges from showing */
+  z-index: 1;
+}
+
+.book-cover-image {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  z-index: 2;
   transition: transform 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .product-card:hover .book-cover-image {
@@ -115,7 +131,7 @@ const handlePreview = () => {
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 700;
-  z-index: 2;
+  z-index: 3;
 }
 
 .new-badge {
@@ -128,7 +144,7 @@ const handlePreview = () => {
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 700;
-  z-index: 2;
+  z-index: 3;
 }
 
 .digital-only-badge {

@@ -10,6 +10,7 @@ import BlogPost from "@/views/BlogPost.vue";
 import TermsPage from "@/views/TermsPage.vue";
 import PrivacyPage from "@/views/PrivacyPage.vue";
 import AccessibilityPage from "@/views/AccessibilityPage.vue";
+import CheckoutPage from "@/views/CheckoutPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +72,11 @@ const router = createRouter({
       path: '/accessibility',
       name:'accessibility',
       component: AccessibilityPage
+    },
+    {
+      path: '/checkout',
+      name:'checkout',
+      component: CheckoutPage
     },
 
   ],

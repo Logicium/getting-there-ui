@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { bookCategories } from '@/data/data';
 import type { BookData } from '@/data/data';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
 import ProductCard from "@/components/cards/ProductCard.vue";
 
+const router = useRouter();
 const currentFilter = ref('all');
 
 const heroTitle = ref('Healing Through Knowledge');
 const heroDescription = ref('Discover evidence-based books on mental health, personal growth, and emotional wellness written by our licensed professionals');
-// Author bio (defaults; will be overridden by CMS if available)
 const bioTitle = ref('About Dr. Sarah Mitchell');
 const bioDescription = ref('Dr. Sarah Mitchell holds a PhD in Clinical Psychology and has over 20 years of experience in trauma-informed therapy and emotional wellness. Her compassionate, evidence-based approach has helped thousands of individuals on their healing journeys. She specializes in anxiety disorders, depression treatment, and post-traumatic growth.');
 const bioBadges = ref<string[]>([
@@ -29,6 +30,7 @@ interface CartItem {
   format: string;
   price: number;
   imageUrl?: string;
+  documentId?: string;
 }
 
 const cart = ref<CartItem[]>([]);
@@ -40,6 +42,24 @@ const currentBook = ref(null as any);
 
 const cartCount = ref(0);
 const cartTotal = ref(0);
+
+// Load cart from localStorage
+const loadCart = () => {
+  try {
+    const savedCart = localStorage.getItem('gettingThereCart');
+    if (savedCart) {
+      cart.value = JSON.parse(savedCart);
+      updateCartTotals();
+    }
+  } catch (err) {
+    console.error('Error loading cart:', err);
+  }
+};
+
+// Save cart to localStorage
+const saveCart = () => {
+  localStorage.setItem('gettingThereCart', JSON.stringify(cart.value));
+};
 
 // DOM MANIPULATION APPROACH LIKE WORKSHOPS
 const handleFilter = (filter: string) => {
@@ -78,16 +98,15 @@ const fetchHeroData = async () => {
     heroTitle.value = json?.data?.Hero?.title ?? heroTitle.value;
     heroDescription.value = json?.data?.Hero?.description ?? heroDescription.value;
 
-    // Populate author bio from CMS
     const bio = json?.data?.bio;
     if (bio) {
       bioTitle.value = bio.title ?? bioTitle.value;
       bioDescription.value = bio.Description ?? bioDescription.value;
       if (Array.isArray(bio.cards)) {
         const titles = bio.cards
-          .map((c: any) => (c?.title ?? ''))
-          .map((t: string) => t.trim())
-          .filter((t: string) => !!t);
+            .map((c: any) => (c?.title ?? ''))
+            .map((t: string) => t.trim())
+            .filter((t: string) => !!t);
         if (titles.length) bioBadges.value = titles;
       }
     }
@@ -102,7 +121,7 @@ const fetchHeroData = async () => {
 const addToCart = (bookId: string, button: HTMLElement) => {
   const book = Object.values(books.value).find(book => book.id === bookId);
   if (!book) return;
-
+  console.log(book);
   const format = 'digital';
   const price = book.formats.digital.price;
 
@@ -112,13 +131,16 @@ const addToCart = (bookId: string, button: HTMLElement) => {
     title: book.title,
     format: 'Digital Edition',
     price: price,
-    imageUrl: book.imageUrl
+    imageUrl: book.imageUrl,
+    documentId: book.documentId
   };
+
 
   const existingItemIndex = cart.value.findIndex(item => item.id === cartItem.id);
   if (existingItemIndex === -1) {
     cart.value.push(cartItem);
     updateCartTotals();
+    saveCart();
     showAddedToCartFeedback(button);
   } else {
     alert('This item is already in your cart!');
@@ -144,6 +166,7 @@ const showAddedToCartFeedback = (button: HTMLElement) => {
 const removeFromCart = (index: number) => {
   cart.value.splice(index, 1);
   updateCartTotals();
+  saveCart();
 };
 
 const openCart = () => {
@@ -157,8 +180,8 @@ const closeCart = () => {
 const checkout = () => {
   if (cart.value.length === 0) return;
 
-  const total = cartTotal.value;
-  alert(`Checkout functionality would integrate with payment processor here.\n\nOrder Summary:\n${cart.value.map(item => `• ${item.title} (${item.format}) - $${item.price.toFixed(2)}`).join('\n')}\n\nTotal: $${total.toFixed(2)}\n\nThis would redirect to secure payment with Stripe, PayPal, or similar service.`);
+  saveCart();
+  router.push('/checkout');
 };
 
 const showBookPreview = (bookId: string) => {
@@ -205,16 +228,15 @@ const fetchBooks = async () => {
     const json = await res.json();
     const booksData = json?.data || [];
 
-    // Transform CMS data to match our BookData format
     const transformedBooks: Record<string, BookData> = {};
 
     booksData.forEach((book: any) => {
       const bookId = `book-${book.id}`;
-      // Use the category directly from the CMS without transformation
       const category = book.Category || '';
 
       transformedBooks[bookId] = {
         id: bookId,
+        documentId: book.documentId,
         title: book.Title,
         author: book.author,
         description: book.Description.substring(0, 150) + '...',
@@ -251,6 +273,7 @@ const fetchBooks = async () => {
 };
 
 onMounted(async () => {
+  loadCart();
   await fetchHeroData();
   await fetchBooks();
 
@@ -303,7 +326,6 @@ onMounted(async () => {
         <div class="section-divider"></div>
       </h2>
 
-      <!-- RENDER ALL BOOKS - FILTER WITH DOM MANIPULATION -->
       <div class="therapy-books-grid" id="productsGrid">
         <ProductCard
             v-for="book in Object.values(books)"
@@ -446,7 +468,7 @@ onMounted(async () => {
         <span>Total Investment: </span>
         <span>${{ cartTotal.toFixed(2) }}</span>
       </div>
-      <button class="therapy-checkout-btn" @click="checkout">Get Instant Access</button>
+      <button class="therapy-checkout-btn" @click="checkout">Proceed to Checkout</button>
       <p class="therapy-cart-note">📱 Instant download • 30-day money-back guarantee</p>
     </div>
   </div>
@@ -599,9 +621,6 @@ onMounted(async () => {
   margin-bottom: 4rem;
 }
 
-/* Cart and other styles remain the same as original... */
-/* I'll include essential ones for completeness */
-
 .therapy-cart-button {
   position: fixed;
   bottom: 2rem;
@@ -663,8 +682,6 @@ onMounted(async () => {
     animation: gentleFloat 20s ease-in-out infinite;
   }
 }
-/* Cart and other styles remain the same as original... */
-/* I'll include essential ones for completeness */
 
 .bulk-print-content {
   max-width: 1000px;
@@ -744,7 +761,6 @@ onMounted(async () => {
   font-size: 1.2rem;
 }
 
-/* Bulk Print CTA Card */
 .bulk-print-cta-card {
   @extend .card-base;
   text-align: center;
@@ -811,7 +827,6 @@ onMounted(async () => {
   margin: 0;
 }
 
-/* Reading Benefits Section */
 .therapy-reading-benefits {
   background: var(--bg-sage);
   padding: 3rem;
@@ -863,48 +878,6 @@ onMounted(async () => {
 .benefit-item p {
   color: var(--text-light);
   line-height: 1.5;
-}
-
-/* Cart Styles */
-.therapy-cart-button {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 65px;
-  height: 65px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 8px 25px var(--shadow-medium);
-  transition: all 0.3s ease;
-  z-index: 100;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px var(--shadow-medium);
-  }
-}
-
-.therapy-cart-count {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: var(--accent-color);
-  color: white;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
 }
 
 .therapy-cart-sidebar {
@@ -1114,7 +1087,6 @@ onMounted(async () => {
   }
 }
 
-/* Book Preview Modal */
 .therapy-book-preview {
   display: flex;
   flex-direction: column;
@@ -1243,5 +1215,55 @@ onMounted(async () => {
     font-size: 0.9rem;
     line-height: 1.5;
   }
+}
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 2rem auto;
+  max-width: 500px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(74, 124, 89, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  margin: 0 auto 1.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  color: #d32f2f;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
 }
 </style>
