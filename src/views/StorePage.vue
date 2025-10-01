@@ -31,6 +31,7 @@ interface CartItem {
   price: number;
   imageUrl?: string;
   documentId?: string;
+  pdfUrl?: string;
 }
 
 const cart = ref<CartItem[]>([]);
@@ -132,7 +133,8 @@ const addToCart = (bookId: string, button: HTMLElement) => {
     format: 'Digital Edition',
     price: price,
     imageUrl: book.imageUrl,
-    documentId: book.documentId
+    documentId: book.documentId,
+    pdfUrl: 'https://getting-there-cms.onrender.com'+book.pdfUrl
   };
 
 
@@ -259,7 +261,8 @@ const fetchBooks = async () => {
             delivery: '3-5 business days'
           }
         },
-        imageUrl: book.picture?.formats?.small?.url || book.picture?.url || null
+        imageUrl: book.picture?.formats?.small?.url || book.picture?.url || null,
+        pdfUrl: book.file?.url || null
       };
     });
 

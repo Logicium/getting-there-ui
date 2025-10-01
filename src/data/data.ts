@@ -180,6 +180,7 @@ export interface BookData {
     };
   };
   imageUrl?: string;
+  pdfUrl?: string;
 }
 
 export const books: Record<string, BookData> = {

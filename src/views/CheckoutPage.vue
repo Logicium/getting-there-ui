@@ -12,6 +12,7 @@ interface CartItem {
   price: number;
   imageUrl?: string;
   documentId?: string;
+  pdfUrl?: string;
 }
 
 // Cart state
@@ -132,7 +133,8 @@ const processCheckout = async () => {
         quantity: 1,
         amount: Math.round(item.price * 100), // Convert to cents
         currency: 'USD',
-        documentId: item.documentId
+        documentId: item.documentId,
+        pdfUrl: item.pdfUrl
       })),
       customer: {
         email: customerInfo.value.email,
@@ -146,7 +148,7 @@ const processCheckout = async () => {
     console.log('Checkout data:', checkoutData);
 
     // Call your backend API
-    const response = await fetch(`http://localhost:3000/checkout`, {
+    const response = await fetch(`https://getting-there-service.onrender.com/checkout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
