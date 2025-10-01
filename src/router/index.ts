@@ -13,6 +13,7 @@ import AccessibilityPage from "@/views/AccessibilityPage.vue";
 import CheckoutPage from "@/views/CheckoutPage.vue";
 import SuccessPage from "@/views/SuccessPage.vue";
 import CancelPage from "@/views/CancelPage.vue";
+import CommentManagementPage from "@/views/CommentManagementPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -89,6 +90,22 @@ const router = createRouter({
       path: '/checkout/cancel',
       name: 'CheckoutCancel',
       component: CancelPage,
+    },
+    {
+      path: '/api/comments/approve',
+      name: 'CommentApprove',
+      component: CommentManagementPage,
+      meta: {
+        title: 'Approve Comment - Getting There'
+      }
+    },
+    {
+      path: '/api/comments/delete',
+      name: 'CommentDelete',
+      component: CommentManagementPage,
+      meta: {
+        title: 'Delete Comment - Getting There'
+      }
     }
   ],
 })
