@@ -23,15 +23,14 @@ const verifyOrder = async () => {
     }
 
     // Verify order with backend
-    const response = await fetch(`http://localhost:3000/checkout/verify?orderId=${orderId}`);
+    const response = await fetch(`http://localhost:3000/checkout/verify-payment?orderId=${orderId}`);
 
     if (!response.ok) {
       throw new Error('Failed to verify order');
     }
 
     const data = await response.json();
-    orderDetails.value = data.order;
-
+    orderDetails.value = data;
     // Load customer info from localStorage
     const savedCustomer = localStorage.getItem('gettingThereCustomer');
     if (savedCustomer) {
@@ -97,7 +96,7 @@ onMounted(() => {
       <div class="order-details-card">
         <div class="card-header">
           <h2>📧 Order Confirmation</h2>
-          <span class="order-number">Order #{{ orderDetails?.id || 'Processing' }}</span>
+          <span class="order-number">Order ID: {{ orderDetails?.orderId || 'Processing' }}</span>
         </div>
 
         <div class="confirmation-message">

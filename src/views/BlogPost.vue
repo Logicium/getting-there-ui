@@ -6,6 +6,13 @@ const route = useRoute();
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
+// Call fetchComments when the component is mounted
+onMounted(async () => {
+  if (route.params.id) {
+    await fetchComments(route.params.id as string);
+  }
+});
+
 interface BlogArticle {
   id: number;
   documentId: string;
@@ -216,89 +223,86 @@ const blogPost = ref<any>({
 // Comments data and functionality
 interface Comment {
   id: string;
-  author: string;
+  name: string;
   content: string;
-  timestamp: string;
+  createdAt: string;
   replies?: Comment[];
-  isApproved: boolean;
 }
 
-const comments = ref<Comment[]>([
-  {
-    id: '1',
-    author: 'Sarah J.',
-    content: 'This article really resonated with me. I\'ve been struggling with anxiety for months, and the breathing techniques you mentioned have already helped me feel more grounded. Thank you for sharing such practical advice.',
-    timestamp: 'March 16, 2024 at 2:30 PM',
-    isApproved: true,
-    replies: [
-      {
-        id: '1-1',
-        author: 'Dr. Sarah Mitchell',
-        content: 'Thank you for sharing, Sarah. I\'m so glad you found the breathing techniques helpful! Remember to be patient with yourself as you practice these skills. Small, consistent steps can lead to significant improvements over time.',
-        timestamp: 'March 16, 2024 at 4:15 PM',
-        isApproved: true
-      }
-    ]
-  },
-  {
-    id: '2',
-    author: 'Michael R.',
-    content: 'The 5-4-3-2-1 grounding technique has become my go-to when I feel overwhelmed at work. It\'s amazing how something so simple can be so effective. Could you write more about workplace anxiety specifically?',
-    timestamp: 'March 17, 2024 at 10:45 AM',
-    isApproved: true
-  },
-  {
-    id: '3',
-    author: 'Lisa M.',
-    content: 'I appreciate how you emphasize that anxiety is a normal response and not a sign of weakness. That perspective shift alone has been so helpful for my self-compassion journey.',
-    timestamp: 'March 18, 2024 at 8:20 AM',
-    isApproved: true
+const comments = ref<Comment[]>([]);
+const isLoadingComments = ref(false);
+const commentError = ref<string | null>(null);
+
+// Function to fetch comments from the API
+const fetchComments = async (documentId: string) => {
+  isLoadingComments.value = true;
+  commentError.value = null;
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/comments/document/${documentId}`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch comments: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    comments.value = data;
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    commentError.value = 'Failed to load comments. Please try again later.';
+  } finally {
+    isLoadingComments.value = false;
   }
-]);
+};
 
 // Comment form
 const newComment = ref({
-  author: '',
+  name: '',
   email: '',
   content: ''
 });
 
 const isSubmittingComment = ref(false);
+const submitError = ref<string | null>(null);
 
 // Functions
 const submitComment = async () => {
-  if (!newComment.value.author.trim() || !newComment.value.content.trim()) {
-    alert('Please fill in your name and comment.');
+  if (!newComment.value.name.trim() || !newComment.value.email.trim() || !newComment.value.content.trim()) {
+    alert('Please fill in your name, email, and comment.');
     return;
   }
 
   isSubmittingComment.value = true;
+  submitError.value = null;
 
-  // Simulate API call
-  setTimeout(() => {
-    const comment: Comment = {
-      id: Date.now().toString(),
-      author: newComment.value.author,
-      content: newComment.value.content,
-      timestamp: new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: newComment.value.name,
+        email: newComment.value.email,
+        content: newComment.value.content,
+        documentId: route.params.id as string,
       }),
-      isApproved: false // Comments would need moderation
-    };
+    });
 
-    // In a real app, this would be sent to an API for moderation
-    // comments.value.push(comment);
+    if (!response.ok) {
+      throw new Error(`Failed to submit comment: ${response.status} ${response.statusText}`);
+    }
 
     // Reset form
-    newComment.value = { author: '', email: '', content: '' };
-    isSubmittingComment.value = false;
+    newComment.value = { name: '', email: '', content: '' };
 
     alert('Thank you for your comment! It has been submitted for review and will appear once approved by our moderation team.');
-  }, 1000);
+  } catch (error) {
+    console.error('Error submitting comment:', error);
+    submitError.value = 'Failed to submit your comment. Please try again later.';
+  } finally {
+    isSubmittingComment.value = false;
+  }
 };
 
 const shareArticle = (platform: string) => {
@@ -687,19 +691,20 @@ onMounted(async () => {
                 <input
                     type="text"
                     id="comment-name"
-                    v-model="newComment.author"
+                    v-model="newComment.name"
                     placeholder="Your name"
                     required
                     class="form-input"
                 >
               </div>
               <div class="form-group">
-                <label for="comment-email">Email (optional)</label>
+                <label for="comment-email">Email *</label>
                 <input
                     type="email"
                     id="comment-email"
                     v-model="newComment.email"
                     placeholder="your@email.com"
+                    required
                     class="form-input"
                 >
                 <small>Email won't be published but helps us prevent spam</small>
@@ -737,52 +742,82 @@ onMounted(async () => {
 
         <!-- Comments List -->
         <div class="comments-list">
-          <div class="comments-count">
-            {{ comments.length }} {{ comments.length === 1 ? 'reflection' : 'reflections' }}
+          <!-- Loading state -->
+          <div v-if="isLoadingComments" class="comments-loading">
+            <div class="loading-spinner"></div>
+            <p>Loading comments...</p>
           </div>
 
-          <div v-for="comment in comments" :key="comment.id" class="comment">
-            <div class="comment-header">
-              <div class="commenter-avatar">
-                {{ comment.author.charAt(0).toUpperCase() }}
-              </div>
-              <div class="comment-meta">
-                <span class="commenter-name">{{ comment.author }}</span>
-                <span class="comment-time">{{ comment.timestamp }}</span>
-              </div>
-            </div>
-            <div class="comment-content">
-              <p>{{ comment.content }}</p>
+          <!-- Error state -->
+          <div v-else-if="commentError" class="comments-error">
+            <p>{{ commentError }}</p>
+            <button @click="fetchComments(route.params.id as string)" class="retry-btn">
+              Try Again
+            </button>
+          </div>
+
+          <!-- No comments state -->
+          <div v-else-if="comments.length === 0" class="no-comments">
+            <p>No comments yet. Be the first to share your thoughts!</p>
+          </div>
+
+          <!-- Comments display -->
+          <template v-else>
+            <div class="comments-count">
+              {{ comments.length }} {{ comments.length === 1 ? 'reflection' : 'reflections' }}
             </div>
 
-            <!-- Replies -->
-            <div v-if="comment.replies && comment.replies.length > 0" class="replies">
-              <div
-                  v-for="reply in comment.replies"
-                  :key="reply.id"
-                  class="reply"
-                  :class="{ 'author-reply': reply.author.includes('Dr.') }"
-              >
-                <div class="comment-header">
-                  <div class="commenter-avatar" :class="{ professional: reply.author.includes('Dr.') }">
-                    {{ reply.author.charAt(0).toUpperCase() }}
-                  </div>
-                  <div class="comment-meta">
-                    <span class="commenter-name">
-                      {{ reply.author }}
-                      <span v-if="reply.author.includes('Dr.')" class="professional-badge">
-                        🩺 Professional
+            <div v-for="comment in comments" :key="comment.id" class="comment">
+              <div class="comment-header">
+                <div class="commenter-avatar">
+                  {{ comment.name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="comment-meta">
+                  <span class="commenter-name">{{ comment.name }}</span>
+                  <span class="comment-time">{{ new Date(comment.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  }) }}</span>
+                </div>
+              </div>
+              <div class="comment-content">
+                <p>{{ comment.content }}</p>
+              </div>
+
+              <!-- Replies -->
+              <div v-if="comment.replies && comment.replies.length > 0" class="replies">
+                <div
+                    v-for="reply in comment.replies"
+                    :key="reply.id"
+                    class="reply"
+                >
+                  <div class="comment-header">
+                    <div class="commenter-avatar">
+                      {{ reply.name.charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="comment-meta">
+                      <span class="commenter-name">
+                        {{ reply.name }}
                       </span>
-                    </span>
-                    <span class="comment-time">{{ reply.timestamp }}</span>
+                      <span class="comment-time">{{ new Date(reply.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) }}</span>
+                    </div>
                   </div>
-                </div>
-                <div class="comment-content">
-                  <p>{{ reply.content }}</p>
+                  <div class="comment-content">
+                    <p>{{ reply.content }}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </template>
 
           <div class="comments-note">
             <p><strong>Moderation Notice:</strong> All comments are reviewed before publication to ensure a safe, supportive environment for our community.</p>

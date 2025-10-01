@@ -26,14 +26,12 @@ function getStatSuffix(s: { name: string }) {
   return '';
 }
 
-function mediaUrl(file: any): string | null {
-  if (!file) return null;
+function mediaUrl(file: any): string {
   const fmts = file.formats || {};
-  const url = (fmts.medium?.url) || (fmts.large?.url) || file.url || null;
-  if (!url) return null;
+  const url = (fmts.medium?.url) || (fmts.large?.url) || file.url;
   // If already absolute
   if (/^https?:\/\//i.test(url)) return url;
-  return CMS_BASE + url;
+  return 'https://getting-there-cms.onrender.com' + url;
 }
 
 async function fetchHero() {
