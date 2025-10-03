@@ -329,7 +329,7 @@ onMounted(async () => {
           <li>Weekly therapeutic support sessions</li>
           <li>Evidence-based techniques</li>
           <li>Safe, confidential group environment</li>
-          <li>Licensed mental health facilitators</li>
+          <li>PhD educated mental health professionals</li>
           <li>Take-home resources and workbooks</li>
           <li>Crisis support access</li>
           <li>Sliding scale fee assistance</li>
@@ -459,11 +459,11 @@ onMounted(async () => {
         <h3>Dr. Sarah Mitchell, PhD</h3>
         <p class="therapy-facilitator-title">Lead Group Facilitator</p>
         <p class="therapy-facilitator-bio">
-          Dr. Mitchell is a licensed clinical psychologist with over 15 years of experience in group therapy and trauma-informed care. She brings a warm, compassionate approach to creating safe spaces for healing and growth.
+          Dr. Mitchell is a PhD clinical psychologist with over 15 years of experience in group therapy and trauma-informed care. She brings a warm, compassionate approach to creating safe spaces for healing and growth.
         </p>
         <div class="therapy-facilitator-credentials">
           <span class="credential-badge">🎓 PhD Clinical Psychology</span>
-          <span class="credential-badge">🏆 Licensed Therapist</span>
+          <span class="credential-badge">🏆 Professional Therapist</span>
           <span class="credential-badge">🧠 Group Therapy Specialist</span>
         </div>
       </div>

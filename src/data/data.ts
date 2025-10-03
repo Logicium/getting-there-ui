@@ -383,7 +383,7 @@ export const blogArticles: BlogData[] = [
     date: 'March 15, 2024',
     readTime: 7,
     authorName: 'Dr. Sarah Mitchell',
-    authorCredentials: 'Licensed Clinical Psychologist',
+    authorCredentials: 'PhD Clinical Psychologist',
     authorAvatar: '👩‍⚕️',
     slug: 'anxiety-daily-life',
     tags:["anxiety","anxiety management","anxiety support","anxiety triggers","coping strategies","daily life","health","healthcare","psychology","therapy"]
@@ -399,7 +399,7 @@ export const blogArticles: BlogData[] = [
     date: 'March 12, 2024',
     readTime: 6,
     authorName: 'Dr. Michael Chen',
-    authorCredentials: 'Licensed Therapist, LCSW',
+    authorCredentials: 'PhD Professional Therapist',
     authorAvatar: '👨‍⚕️',
     slug: 'depression-recovery',
     tags:["depression","depression care","depression recovery","health","healthcare","psychology","therapy"]
@@ -447,7 +447,7 @@ export const blogArticles: BlogData[] = [
     date: 'March 5, 2024',
     readTime: 6,
     authorName: 'Dr. Sarah Mitchell',
-    authorCredentials: 'Licensed Clinical Psychologist',
+    authorCredentials: 'PhD Clinical Psychologist',
     authorAvatar: '👩‍⚕️',
     slug: 'stress-relief-toolkit',
     tags:["health","healthcare","psychology","stress","stress management","stress relief","therapy"]
@@ -463,7 +463,7 @@ export const blogArticles: BlogData[] = [
     date: 'March 3, 2024',
     readTime: 7,
     authorName: 'Dr. Michael Chen',
-    authorCredentials: 'Licensed Therapist, LCSW',
+    authorCredentials: 'PhD Professional Therapist',
     authorAvatar: '👨‍⚕️',
     slug: 'anxiety-seeking-support',
     tags:["anxiety","anxiety management","anxiety support","anxiety triggers","coping strategies","health","healthcare","psychology","therapy"]
@@ -490,7 +490,7 @@ export const events: EventData[] = [
   {
     id: 'anxiety-support',
     title: 'Anxiety Support Circle',
-    description: 'A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by licensed therapists in a judgment-free space.',
+    description: 'A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by PhD educated professionals in a judgment-free space.',
     category: 'therapy',
     date: 'Every Tuesday, Starting April 15',
     location: 'Denver Wellness Center',

@@ -284,7 +284,7 @@ onMounted(() => {
       <h1>{{ heroData.title }}</h1>
       <p>{{ heroData.description }}</p>
       <div class="hero-wellness-indicators">
-        <span class="trust-badge">🏆 Licensed Facilitators</span>
+        <span class="trust-badge">🏆 PhD Educated Professionals</span>
         <span class="trust-badge">🤝 Safe Spaces</span>
         <span class="trust-badge">💚 Evidence-Based Approaches</span>
       </div>
@@ -435,7 +435,7 @@ onMounted(() => {
           <div class="workshop-features">
             <div class="feature-item">
               <span class="feature-icon">🩺</span>
-              <span>Licensed mental health professionals</span>
+              <span>PhD educated mental health professionals</span>
             </div>
             <div class="feature-item">
               <span class="feature-icon">🎯</span>
@@ -471,8 +471,8 @@ onMounted(() => {
             <p>All our groups maintain strict confidentiality. What's shared in group stays in group.</p>
           </div>
           <div class="support-info-item">
-            <h4>Licensed Facilitators</h4>
-            <p>Every group is led by licensed mental health professionals with specialized training.</p>
+            <h4>PhD Educated Professionals</h4>
+            <p>Every group is led by PhD educated mental health professionals with specialized training.</p>
           </div>
           <div class="support-info-item">
             <h4>Trauma-Informed Care</h4>
