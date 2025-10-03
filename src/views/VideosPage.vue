@@ -366,7 +366,7 @@ onMounted(async () => {
         <div class="presenter-avatar">👩‍⚕️</div>
         <div class="presenter-info">
           <p><strong>{{ currentVideo?.presenter }}</strong></p>
-          <p>Licensed Mental Health Professional</p>
+          <p>PhD Educated Sociologist</p>
         </div>
       </div>
       <div class="therapy-modal-warning">

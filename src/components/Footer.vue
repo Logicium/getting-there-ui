@@ -6,17 +6,17 @@ import Plant2Icon from "@/components/icons/Plant2Icon.vue";
 
 // Default values shown until CMS data loads (or if it fails)
 const footerContent = ref(
-  "Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change."
+    "Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change."
 );
 const footerDisclaimer = ref(
-  "Getting There provides educational resources and support. We are not a substitute for professional medical or mental health treatment. Please consult with qualified healthcare providers for clinical concerns."
+    "Getting There provides educational resources and support. We are not a substitute for professional medical or mental health treatment. Please consult with qualified healthcare providers for clinical concerns."
 );
 
 onMounted(async () => {
   try {
     const res = await fetch(
-      "https://getting-there-cms.onrender.com/api/footer?populate=all",
-      { headers: { "Accept": "application/json" } }
+        "https://getting-there-cms.onrender.com/api/footer?populate=all",
+        { headers: { "Accept": "application/json" } }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
@@ -55,6 +55,16 @@ onMounted(async () => {
           <p><RouterLink to="/videos">Videos</RouterLink></p>
           <p><RouterLink to="/events">Workshops</RouterLink></p>
         </div>
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <p>We'd love to hear from you.</p>
+          <div class="contact-info">
+            <a href="mailto:support@gthere.net" class="contact-link">
+              support@gthere.net
+            </a>
+          </div>
+          <p class="contact-note">Mon-Fri, 9AM-5PM MT</p>
+        </div>
       </div>
       <div class="footer-bottom">
         <div class="footer-legal">
@@ -89,7 +99,7 @@ footer {
 
 .footer-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 3rem;
   margin-bottom: 3rem;
 }
@@ -135,6 +145,40 @@ footer {
   font-weight: 600;
 }
 
+/* Contact Section */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.contact-link:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.contact-icon {
+  font-size: 1.2rem;
+}
+
+.contact-note {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+}
+
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 2rem;
@@ -173,6 +217,12 @@ footer {
 }
 
 /* Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .footer-content {
     grid-template-columns: 1fr;
@@ -193,6 +243,9 @@ footer {
   .credentials {
     justify-content: center;
   }
-}
 
+  .contact-link:hover {
+    transform: none;
+  }
+}
 </style>
