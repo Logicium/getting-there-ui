@@ -33,6 +33,7 @@ interface ServiceCard {
   id: number;
   title: string;
   description: string;
+  linkLocation: string | null;
   icon: null | any;
 }
 
@@ -228,7 +229,7 @@ onMounted(() => {
           <h1>{{ heroData.title }}</h1>
           <p>{{ heroData.description }}</p>
           <div class="hero-cta">
-            <router-link :to="actionButtonData ? '/' + actionButtonData.linkLocation : '/events'" class="cta-primary">{{ actionButtonData ? actionButtonData.buttonText : 'Start Your Journey' }}</router-link>
+            <router-link :to="actionButtonData ? (actionButtonData.linkLocation === 'home' ? '/' : '/' + actionButtonData.linkLocation) : '/events'" class="cta-primary">{{ actionButtonData ? actionButtonData.buttonText : 'Start Your Journey' }}</router-link>
             <router-link to="/about" class="cta-secondary">Learn How It Works</router-link>
           </div>
         </div>
@@ -283,6 +284,7 @@ onMounted(() => {
             :key="card.id"
             :title="card.title"
             :description="card.description"
+            :link-location="card.linkLocation"
             :icon-index="index"
             :icon="card.icon"
           />

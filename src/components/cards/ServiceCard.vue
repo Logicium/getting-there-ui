@@ -6,12 +6,13 @@
     </div>
     <h3>{{ title }}</h3>
     <p>{{ description }}</p>
-    <a href="/about" class="service-link">Learn More →</a>
+    <router-link :to="linkLocation ? (linkLocation === 'home' ? '/' : '/' + linkLocation) : '/about'" class="service-link">Learn More →</router-link>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
 import ThoughtIcon from '@/components/icons/ThoughtIcon.vue';
 import FallingStarIcon from '@/components/icons/FallingStarIcon.vue';
 import HandDrawnPlantIcon from '@/components/icons/HandDrawnPlantIcon.vue';
@@ -23,6 +24,7 @@ const props = defineProps<{
   title: string;
   description: string;
   iconIndex: number;
+  linkLocation?: string | null;
   icon?: {
     url: string;
     width: number;
