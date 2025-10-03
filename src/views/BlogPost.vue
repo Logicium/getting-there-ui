@@ -1,17 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const isLoading = ref(true);
 const error = ref<string | null>(null);
-
-// Call fetchComments when the component is mounted
-onMounted(async () => {
-  if (route.params.id) {
-    await fetchComments(route.params.id as string);
-  }
-});
 
 interface BlogArticle {
   id: number;
@@ -38,7 +31,17 @@ interface BlogArticle {
   }[];
 }
 
-// Blog post data that will be populated from the API
+// Category mapping
+const categoryMap: Record<string, string> = {
+  'Managing Anxiety': 'anxiety',
+  'Depression Care': 'depression',
+  'Relationship Health': 'relationships',
+  'Mindfulness': 'mindfulness',
+  'Stress & Burnout': 'stress',
+  'Self Care Strategies': 'selfcare'
+};
+
+// Blog post data
 const blogPost = ref<any>({
   id: '',
   title: '',
@@ -51,176 +54,46 @@ const blogPost = ref<any>({
   categoryLabel: '',
   featuredImage: '',
   excerpt: '',
-  content: [
-    {
-      type: 'paragraph',
-      content: 'Anxiety is one of the most common mental health challenges we face today, affecting millions of people worldwide. While it\'s a natural response to stress and potential threats, chronic anxiety can significantly impact our daily lives, relationships, and overall well-being. The good news is that with the right understanding and tools, anxiety can be managed effectively.'
-    },
-    {
-      type: 'heading',
-      level: 2,
-      content: 'What Is Anxiety and Why Does It Happen?'
-    },
-    {
-      type: 'paragraph',
-      content: 'Anxiety is our body\'s natural alarm system, designed to keep us safe from danger. When we perceive a threat, our sympathetic nervous system activates, releasing stress hormones like cortisol and adrenaline. This "fight or flight" response can be lifesaving in genuinely dangerous situations.'
-    },
-    {
-      type: 'paragraph',
-      content: 'However, in our modern world, this system can become overactive, responding to everyday stressors as if they were life-threatening emergencies. Work deadlines, social interactions, financial concerns, or even positive changes like a new job can trigger this response.'
-    },
-    {
-      type: 'callout',
-      style: 'info',
-      content: 'Remember: Experiencing anxiety doesn\'t mean you\'re weak or flawed. It\'s a normal human response that can be understood and managed with the right approach.'
-    },
-    {
-      type: 'heading',
-      level: 2,
-      content: 'Common Signs and Symptoms of Anxiety'
-    },
-    {
-      type: 'paragraph',
-      content: 'Anxiety manifests differently for everyone, but common symptoms include:'
-    },
-    {
-      type: 'list',
-      style: 'unordered',
-      items: [
-        'Physical symptoms: rapid heartbeat, sweating, trembling, shortness of breath',
-        'Emotional symptoms: feelings of dread, irritability, restlessness',
-        'Cognitive symptoms: racing thoughts, difficulty concentrating, catastrophic thinking',
-        'Behavioral symptoms: avoidance, seeking excessive reassurance, procrastination'
-      ]
-    },
-    {
-      type: 'heading',
-      level: 2,
-      content: 'Evidence-Based Strategies for Managing Anxiety'
-    },
-    {
-      type: 'heading',
-      level: 3,
-      content: '1. Deep Breathing and Grounding Techniques'
-    },
-    {
-      type: 'paragraph',
-      content: 'When anxiety strikes, our breathing often becomes shallow and rapid. Practicing deep, diaphragmatic breathing can help activate your body\'s relaxation response.'
-    },
-    {
-      type: 'callout',
-      style: 'technique',
-      title: 'Try the 4-7-8 Breathing Technique:',
-      content: 'Inhale through your nose for 4 counts, hold your breath for 7 counts, then exhale through your mouth for 8 counts. Repeat 3-4 times.'
-    },
-    {
-      type: 'paragraph',
-      content: 'Grounding techniques can also help bring you back to the present moment. Try the 5-4-3-2-1 technique: name 5 things you can see, 4 things you can touch, 3 things you can hear, 2 things you can smell, and 1 thing you can taste.'
-    },
-    {
-      type: 'heading',
-      level: 3,
-      content: '2. Cognitive Restructuring'
-    },
-    {
-      type: 'paragraph',
-      content: 'Our thoughts significantly influence our emotions and behaviors. Anxiety often involves patterns of negative or catastrophic thinking. Cognitive restructuring helps us identify and challenge these unhelpful thought patterns.'
-    },
-    {
-      type: 'paragraph',
-      content: 'When you notice anxious thoughts, ask yourself: Is this thought realistic? What evidence do I have for and against this thought? What would I tell a friend in this situation?'
-    },
-    {
-      type: 'heading',
-      level: 3,
-      content: '3. Progressive Muscle Relaxation'
-    },
-    {
-      type: 'paragraph',
-      content: 'This technique involves systematically tensing and then relaxing different muscle groups in your body. It can help reduce physical tension associated with anxiety and promote overall relaxation.'
-    },
-    {
-      type: 'heading',
-      level: 2,
-      content: 'Building Long-Term Resilience'
-    },
-    {
-      type: 'paragraph',
-      content: 'Managing anxiety isn\'t just about crisis intervention – it\'s about building daily practices that support your mental health:'
-    },
-    {
-      type: 'list',
-      style: 'unordered',
-      items: [
-        'Maintain a consistent sleep schedule',
-        'Engage in regular physical activity',
-        'Practice mindfulness or meditation',
-        'Limit caffeine and alcohol consumption',
-        'Build and maintain social connections',
-        'Engage in activities that bring you joy and meaning'
-      ]
-    },
-    {
-      type: 'heading',
-      level: 2,
-      content: 'When to Seek Professional Help'
-    },
-    {
-      type: 'paragraph',
-      content: 'While self-help strategies can be very effective, sometimes professional support is necessary. Consider reaching out to a mental health professional if:'
-    },
-    {
-      type: 'list',
-      style: 'unordered',
-      items: [
-        'Your anxiety interferes with work, relationships, or daily activities',
-        'You experience panic attacks',
-        'You avoid situations or activities due to anxiety',
-        'You use alcohol or substances to cope with anxiety',
-        'You have thoughts of self-harm'
-      ]
-    },
-    {
-      type: 'callout',
-      style: 'support',
-      title: 'Crisis Support',
-      content: 'If you\'re experiencing a mental health crisis, please reach out immediately: National Suicide Prevention Lifeline: 988 | Crisis Text Line: Text HOME to 741741'
-    },
-    {
-      type: 'heading',
-      level: 2,
-      content: 'Moving Forward with Hope'
-    },
-    {
-      type: 'paragraph',
-      content: 'Remember that managing anxiety is a journey, not a destination. Some days will be easier than others, and that\'s perfectly normal. Be patient and compassionate with yourself as you develop these new skills.'
-    },
-    {
-      type: 'paragraph',
-      content: 'With practice, the strategies outlined in this article can become powerful tools in your mental health toolkit. You don\'t have to face anxiety alone – support is available, and recovery is possible.'
-    }
-  ],
-  tags: ['anxiety', 'coping strategies', 'mental health', 'self-care', 'breathing techniques'],
-  relatedPosts: [
-    {
-      id: 'depression-recovery',
-      title: 'Small Steps to Brighter Days: Depression Recovery',
-      category: 'depression'
-    },
-    {
-      id: 'mindfulness-busy-lives',
-      title: '5-Minute Mindfulness for Busy Lives',
-      category: 'mindfulness'
-    },
-    {
-      id: 'stress-relief-toolkit',
-      title: 'Creating Your Personal Stress Relief Toolkit',
-      category: 'stress'
-    }
-  ]
+  content: [],
+  tags: [],
+  relatedPosts: []
 });
 
-// Comments data and functionality
+// All blog articles for related posts
+const allBlogArticles = ref<BlogArticle[]>([]);
+
+// Computed related posts
+const relatedPosts = computed(() => {
+  if (!blogPost.value.category || !allBlogArticles.value.length) {
+    return [];
+  }
+
+  // Filter articles from the same category, excluding current article
+  const sameCategory = allBlogArticles.value.filter(article => {
+    const articleCategory = categoryMap[article.Category] || article.Category.toLowerCase().replace(/\s+/g, '-');
+    return articleCategory === blogPost.value.category && article.documentId !== blogPost.value.id;
+  });
+
+  // If we have articles in the same category, return up to 3
+  if (sameCategory.length > 0) {
+    return sameCategory.slice(0, 3).map(article => ({
+      id: article.documentId,
+      title: article.title,
+      category: categoryMap[article.Category] || article.Category.toLowerCase().replace(/\s+/g, '-')
+    }));
+  }
+
+  // Otherwise, return random articles (excluding current)
+  const otherArticles = allBlogArticles.value.filter(article => article.documentId !== blogPost.value.id);
+  const shuffled = otherArticles.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 3).map(article => ({
+    id: article.documentId,
+    title: article.title,
+    category: categoryMap[article.Category] || article.Category.toLowerCase().replace(/\s+/g, '-')
+  }));
+});
+
+// Comments data
 interface Comment {
   id: string;
   name: string;
@@ -233,7 +106,7 @@ const comments = ref<Comment[]>([]);
 const isLoadingComments = ref(false);
 const commentError = ref<string | null>(null);
 
-// Function to fetch comments from the API
+// Fetch comments
 const fetchComments = async (documentId: string) => {
   isLoadingComments.value = true;
   commentError.value = null;
@@ -265,7 +138,7 @@ const newComment = ref({
 const isSubmittingComment = ref(false);
 const submitError = ref<string | null>(null);
 
-// Functions
+// Submit comment
 const submitComment = async () => {
   if (!newComment.value.name.trim() || !newComment.value.email.trim() || !newComment.value.content.trim()) {
     alert('Please fill in your name, email, and comment.');
@@ -293,9 +166,7 @@ const submitComment = async () => {
       throw new Error(`Failed to submit comment: ${response.status} ${response.statusText}`);
     }
 
-    // Reset form
     newComment.value = { name: '', email: '', content: '' };
-
     alert('Thank you for your comment! It has been submitted for review and will appear once approved by our moderation team.');
   } catch (error) {
     console.error('Error submitting comment:', error);
@@ -305,6 +176,7 @@ const submitComment = async () => {
   }
 };
 
+// Share functions
 const shareArticle = (platform: string) => {
   const url = encodeURIComponent(window.location.href);
   const title = encodeURIComponent(blogPost.value.title);
@@ -333,7 +205,23 @@ const copyLink = () => {
   alert('Article link copied to clipboard!');
 };
 
-// Fetch blog post data from API
+// Fetch all blog articles
+const fetchAllBlogArticles = async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/blogs?populate=all`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch blog articles: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    allBlogArticles.value = json?.data || [];
+  } catch (err) {
+    console.error('Error fetching all blog articles:', err);
+  }
+};
+
+// Fetch blog post
 const fetchBlogPost = async () => {
   isLoading.value = true;
   error.value = null;
@@ -344,8 +232,11 @@ const fetchBlogPost = async () => {
       throw new Error('Blog post ID is missing');
     }
 
-    // Fetch blog post by documentId
-    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/blogs?filters[documentId][$eq]=${documentId}`);
+    // Fetch all articles first for related posts
+    await fetchAllBlogArticles();
+
+    // Fetch current blog post
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/blogs?filters[documentId][$eq]=${documentId}&populate=all`);
 
     if (!res.ok) {
       throw new Error(`Failed to fetch blog post: ${res.status} ${res.statusText}`);
@@ -360,7 +251,7 @@ const fetchBlogPost = async () => {
 
     const article = articles[0];
 
-    // Calculate read time (rough estimate: 200 words per minute)
+    // Calculate read time
     const wordCount = article.ArticleBody.reduce((count: number, item: any) => {
       if (item.type === 'paragraph' && item.children && item.children.length > 0) {
         return count + item.children[0].text.split(' ').length;
@@ -370,7 +261,7 @@ const fetchBlogPost = async () => {
 
     const readTime = Math.max(1, Math.ceil(wordCount / 200));
 
-    // Format the date
+    // Format date
     const date = new Date(article.publishedAt);
     const formattedDate = date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -378,7 +269,10 @@ const fetchBlogPost = async () => {
       day: 'numeric'
     });
 
-    // Map API response to the format expected by the template
+    // Get mapped category
+    const mappedCategory = categoryMap[article.Category] || article.Category.toLowerCase().replace(/\s+/g, '-');
+
+    // Map API response
     blogPost.value = {
       id: article.documentId,
       title: article.title,
@@ -387,21 +281,22 @@ const fetchBlogPost = async () => {
       authorBio: 'An experienced professional dedicated to mental health and wellness.',
       publishDate: formattedDate,
       readTime: `${readTime} min read`,
-      category: article.Category.toLowerCase().replace(/\s+/g, '-'),
+      category: mappedCategory,
       categoryLabel: article.Category,
       featuredImage: article.Image?.url || '/backgrounds/therapy1.jpg',
       excerpt: article.Description,
-      content: mapArticleBodyToContent(article.ArticleBody)
+      content: mapArticleBodyToContent(article.ArticleBody),
+      tags: article.topics.map((topic: any) => topic.tag)
     };
   } catch (e) {
-    console.error('Error fetching blog post:', e);
+    console.error('Error fetching blog post:', error);
     error.value = e instanceof Error ? e.message : 'Failed to load blog post';
   } finally {
     isLoading.value = false;
   }
 };
 
-// Helper function to map ArticleBody to content format
+// Map article body to content
 const mapArticleBodyToContent = (articleBody: any[]) => {
   return articleBody.map(item => {
     if (item.type === 'paragraph') {
@@ -416,9 +311,7 @@ const mapArticleBodyToContent = (articleBody: any[]) => {
         content: item.children[0].text
       };
     } else if (item.type === 'list') {
-      // Extract text from each list item
       const items = item.children.map((listItem: any) => {
-        // Each list item has children, and we need to extract the text from the first child
         if (listItem.children && listItem.children.length > 0) {
           return listItem.children[0].text;
         }
@@ -431,7 +324,6 @@ const mapArticleBodyToContent = (articleBody: any[]) => {
         items: items
       };
     } else {
-      // Default case for unsupported types
       console.log('Unsupported content type:', item.type);
       return {
         type: 'paragraph',
@@ -442,9 +334,32 @@ const mapArticleBodyToContent = (articleBody: any[]) => {
 };
 
 // Fade-in animation
+const observeFadeElements = () => {
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.fade-in').forEach(el => {
+    observer.observe(el);
+  });
+};
+
 onMounted(async () => {
-  // Fetch blog post data
   await fetchBlogPost();
+
+  if (route.params.id) {
+    await fetchComments(route.params.id as string);
+  }
+
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -538,294 +453,297 @@ onMounted(async () => {
       <div class="blog-post-container">
         <!-- Article Content -->
         <article class="blog-content fade-in">
-        <div class="article-excerpt">
-          <p>{{ blogPost.excerpt }}</p>
-        </div>
+          <div class="article-excerpt">
+            <p>{{ blogPost.excerpt }}</p>
+          </div>
 
-        <div class="article-body">
-          <template v-for="(section, index) in blogPost.content" :key="index">
-            <!-- Paragraph -->
-            <p v-if="section.type === 'paragraph'" class="content-paragraph">
-              {{ section.content }}
-            </p>
+          <div class="article-body">
+            <template v-for="(section, index) in blogPost.content" :key="index">
+              <!-- Paragraph -->
+              <p v-if="section.type === 'paragraph'" class="content-paragraph">
+                {{ section.content }}
+              </p>
 
-            <!-- Heading -->
-            <component
-                v-else-if="section.type === 'heading'"
-                :is="`h${section.level}`"
-                class="content-heading"
-                :class="`level-${section.level}`"
-            >
-              {{ section.content }}
-            </component>
+              <!-- Heading -->
+              <component
+                  v-else-if="section.type === 'heading'"
+                  :is="`h${section.level}`"
+                  class="content-heading"
+                  :class="`level-${section.level}`"
+              >
+                {{ section.content }}
+              </component>
 
-            <!-- List -->
-            <ul v-else-if="section.type === 'list' && section.style === 'unordered'" class="content-list">
-              <li v-for="(item, itemIndex) in section.items" :key="itemIndex">
-                {{ item }}
-              </li>
-            </ul>
+              <!-- List -->
+              <ul v-else-if="section.type === 'list' && section.style === 'unordered'" class="content-list">
+                <li v-for="(item, itemIndex) in section.items" :key="itemIndex">
+                  {{ item }}
+                </li>
+              </ul>
 
-            <!-- Callout Box -->
-            <div v-else-if="section.type === 'callout'" class="content-callout" :class="section.style">
-              <div v-if="section.title" class="callout-title">{{ section.title }}</div>
-              <div class="callout-content">{{ section.content }}</div>
-            </div>
-          </template>
-        </div>
+              <!-- Callout Box -->
+              <div v-else-if="section.type === 'callout'" class="content-callout" :class="section.style">
+                <div v-if="section.title" class="callout-title">{{ section.title }}</div>
+                <div class="callout-content">{{ section.content }}</div>
+              </div>
+            </template>
+          </div>
 
-        <!-- Article Footer -->
-        <div class="article-footer">
-          <div class="article-tags">
-            <h4>Related Topics:</h4>
-            <div class="tags-list">
+          <!-- Article Footer -->
+          <div class="article-footer">
+            <div class="article-tags">
+              <h4>Related Topics:</h4>
+              <div class="tags-list">
               <span v-for="tag in blogPost.tags" :key="tag" class="tag">
                 {{ tag }}
               </span>
-            </div>
-          </div>
-
-          <div class="social-sharing">
-            <h4>Share this article:</h4>
-            <div class="share-buttons">
-              <button @click="shareArticle('twitter')" class="share-btn twitter">
-                🐦 Twitter
-              </button>
-              <button @click="shareArticle('facebook')" class="share-btn facebook">
-                📘 Facebook
-              </button>
-              <button @click="shareArticle('linkedin')" class="share-btn linkedin">
-                💼 LinkedIn
-              </button>
-              <button @click="copyLink" class="share-btn copy">
-                🔗 Copy Link
-              </button>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- Sidebar -->
-      <aside class="blog-sidebar">
-        <!-- Author Info -->
-        <div class="sidebar-section author-card fade-in">
-          <div class="author-card-header">
-            <div class="author-avatar-large">👩‍⚕️</div>
-            <div class="author-info">
-              <h3>{{ blogPost.author }}</h3>
-              <p class="author-title">{{ blogPost.authorCredentials }}</p>
-            </div>
-          </div>
-          <p class="author-bio">{{ blogPost.authorBio }}</p>
-          <div class="author-contact">
-            <a href="mailto:sarah@gthere.net" class="contact-btn">📧 Contact Dr. Mitchell</a>
-          </div>
-        </div>
-
-        <!-- Crisis Support -->
-        <div class="sidebar-section crisis-support fade-in">
-          <h3>🚨 Need Immediate Support?</h3>
-          <div class="crisis-contacts">
-            <a href="tel:988" class="crisis-contact">
-              <span class="crisis-icon">📞</span>
-              <div>
-                <strong>988 - Crisis Lifeline</strong>
-                <p>24/7 confidential support</p>
-              </div>
-            </a>
-            <a href="tel:741741" class="crisis-contact">
-              <span class="crisis-icon">💬</span>
-              <div>
-                <strong>Text HOME to 741741</strong>
-                <p>Crisis Text Line</p>
-              </div>
-            </a>
-          </div>
-          <p class="crisis-note">Remember: Seeking help is a sign of strength.</p>
-        </div>
-
-        <!-- Related Articles -->
-        <div class="sidebar-section related-articles fade-in">
-          <h3>Related Articles</h3>
-          <div class="related-posts">
-            <article
-                v-for="post in blogPost.relatedPosts"
-                :key="post.id"
-                class="related-post"
-            >
-              <div class="related-post-category" :class="post.category">
-                {{ post.category }}
-              </div>
-              <h4>{{ post.title }}</h4>
-              <router-link :to="`/blog/${post.id}`" class="related-link">
-                Read Article →
-              </router-link>
-            </article>
-          </div>
-        </div>
-
-        <!-- Newsletter Signup -->
-        <div class="sidebar-section newsletter-signup fade-in">
-          <h3>💚 Weekly Wellness Tips</h3>
-          <p>Get gentle reminders and mental health insights delivered to your inbox.</p>
-          <input type="email" placeholder="Your email address" class="newsletter-input">
-          <button class="newsletter-btn">Subscribe to Healing</button>
-          <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
-        </div>
-      </aside>
-    </div>
-
-    <!-- Comments Section -->
-    <section class="comments-section fade-in">
-      <div class="comments-container">
-        <h2 class="comments-title">Community Reflections</h2>
-        <p class="comments-subtitle">Share your thoughts and experiences to support others on their healing journey.</p>
-
-        <!-- Comment Form -->
-        <div class="comment-form-container">
-          <h3>Share Your Thoughts</h3>
-          <form @submit.prevent="submitComment" class="comment-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="comment-name">Name *</label>
-                <input
-                    type="text"
-                    id="comment-name"
-                    v-model="newComment.name"
-                    placeholder="Your name"
-                    required
-                    class="form-input"
-                >
-              </div>
-              <div class="form-group">
-                <label for="comment-email">Email *</label>
-                <input
-                    type="email"
-                    id="comment-email"
-                    v-model="newComment.email"
-                    placeholder="your@email.com"
-                    required
-                    class="form-input"
-                >
-                <small>Email won't be published but helps us prevent spam</small>
               </div>
             </div>
-            <div class="form-group">
-              <label for="comment-content">Your thoughts *</label>
-              <textarea
-                  id="comment-content"
-                  v-model="newComment.content"
-                  placeholder="Share your experience, ask a question, or offer support to others..."
-                  required
-                  rows="4"
-                  class="form-textarea"
-              ></textarea>
-            </div>
-            <div class="comment-guidelines">
-              <h4>💚 Community Guidelines</h4>
-              <ul>
-                <li>Be kind, supportive, and respectful</li>
-                <li>Share your own experiences, not medical advice</li>
-                <li>Comments are moderated for safety</li>
-                <li>Crisis situations require immediate professional help</li>
-              </ul>
-            </div>
-            <button
-                type="submit"
-                class="submit-comment-btn"
-                :disabled="isSubmittingComment"
-            >
-              {{ isSubmittingComment ? 'Submitting...' : 'Share Your Thoughts' }}
-            </button>
-          </form>
-        </div>
 
-        <!-- Comments List -->
-        <div class="comments-list">
-          <!-- Loading state -->
-          <div v-if="isLoadingComments" class="comments-loading">
-            <div class="loading-spinner"></div>
-            <p>Loading comments...</p>
+            <div class="social-sharing">
+              <h4>Share this article:</h4>
+              <div class="share-buttons">
+                <button @click="shareArticle('twitter')" class="share-btn twitter">
+                  🐦 Twitter
+                </button>
+                <button @click="shareArticle('facebook')" class="share-btn facebook">
+                  📘 Facebook
+                </button>
+                <button @click="shareArticle('linkedin')" class="share-btn linkedin">
+                  💼 LinkedIn
+                </button>
+                <button @click="copyLink" class="share-btn copy">
+                  🔗 Copy Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Sidebar -->
+        <aside class="blog-sidebar">
+          <!-- Author Info -->
+          <div class="sidebar-section author-card fade-in">
+            <div class="author-card-header">
+              <div class="author-avatar-large">👩‍⚕️</div>
+              <div class="author-info">
+                <h3>{{ blogPost.author }}</h3>
+                <p class="author-title">{{ blogPost.authorCredentials }}</p>
+              </div>
+            </div>
+            <p class="author-bio">{{ blogPost.authorBio }}</p>
+            <div class="author-contact">
+              <a href="mailto:sarah@gthere.net" class="contact-btn">📧 Contact {{ blogPost.author }}</a>
+            </div>
           </div>
 
-          <!-- Error state -->
-          <div v-else-if="commentError" class="comments-error">
-            <p>{{ commentError }}</p>
-            <button @click="fetchComments(route.params.id as string)" class="retry-btn">
-              Try Again
-            </button>
-          </div>
-
-          <!-- No comments state -->
-          <div v-else-if="comments.length === 0" class="no-comments">
-            <p>No comments yet. Be the first to share your thoughts!</p>
-          </div>
-
-          <!-- Comments display -->
-          <template v-else>
-            <div class="comments-count">
-              {{ comments.length }} {{ comments.length === 1 ? 'reflection' : 'reflections' }}
-            </div>
-
-            <div v-for="comment in comments" :key="comment.id" class="comment">
-              <div class="comment-header">
-                <div class="commenter-avatar">
-                  {{ comment.name.charAt(0).toUpperCase() }}
+          <!-- Crisis Support -->
+          <div class="sidebar-section crisis-support fade-in">
+            <h3>🚨 Need Immediate Support?</h3>
+            <div class="crisis-contacts">
+              <a href="tel:988" class="crisis-contact">
+                <span class="crisis-icon">📞</span>
+                <div>
+                  <strong>988 - Crisis Lifeline</strong>
+                  <p>24/7 confidential support</p>
                 </div>
-                <div class="comment-meta">
-                  <span class="commenter-name">{{ comment.name }}</span>
-                  <span class="comment-time">{{ new Date(comment.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }) }}</span>
+              </a>
+              <a href="tel:741741" class="crisis-contact">
+                <span class="crisis-icon">💬</span>
+                <div>
+                  <strong>Text HOME to 741741</strong>
+                  <p>Crisis Text Line</p>
+                </div>
+              </a>
+            </div>
+            <p class="crisis-note">Remember: Seeking help is a sign of strength.</p>
+          </div>
+
+          <!-- Related Articles -->
+          <div class="sidebar-section related-articles fade-in">
+            <h3>Related Articles</h3>
+            <div v-if="relatedPosts.length > 0" class="related-posts">
+              <article
+                  v-for="post in relatedPosts"
+                  :key="post.id"
+                  class="related-post"
+              >
+                <div class="related-post-category" :class="post.category">
+                  {{ post.category }}
+                </div>
+                <h4>{{ post.title }}</h4>
+                <router-link :to="`/blog/${post.id}`" class="related-link">
+                  Read Article →
+                </router-link>
+              </article>
+            </div>
+            <div v-else class="no-related-posts">
+              <p>No related articles available at this time.</p>
+            </div>
+          </div>
+
+          <!-- Newsletter Signup -->
+          <div class="sidebar-section newsletter-signup fade-in">
+            <h3>💚 Weekly Wellness Tips</h3>
+            <p>Get gentle reminders and mental health insights delivered to your inbox.</p>
+            <input type="email" placeholder="Your email address" class="newsletter-input">
+            <button class="newsletter-btn">Subscribe to Healing</button>
+            <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Comments Section -->
+      <section class="comments-section fade-in">
+        <div class="comments-container">
+          <h2 class="comments-title">Community Reflections</h2>
+          <p class="comments-subtitle">Share your thoughts and experiences to support others on their healing journey.</p>
+
+          <!-- Comment Form -->
+          <div class="comment-form-container">
+            <h3>Share Your Thoughts</h3>
+            <form @submit.prevent="submitComment" class="comment-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="comment-name">Name *</label>
+                  <input
+                      type="text"
+                      id="comment-name"
+                      v-model="newComment.name"
+                      placeholder="Your name"
+                      required
+                      class="form-input"
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="comment-email">Email *</label>
+                  <input
+                      type="email"
+                      id="comment-email"
+                      v-model="newComment.email"
+                      placeholder="your@email.com"
+                      required
+                      class="form-input"
+                  >
+                  <small>Email won't be published but helps us prevent spam</small>
                 </div>
               </div>
-              <div class="comment-content">
-                <p>{{ comment.content }}</p>
+              <div class="form-group">
+                <label for="comment-content">Your thoughts *</label>
+                <textarea
+                    id="comment-content"
+                    v-model="newComment.content"
+                    placeholder="Share your experience, ask a question, or offer support to others..."
+                    required
+                    rows="4"
+                    class="form-textarea"
+                ></textarea>
+              </div>
+              <div class="comment-guidelines">
+                <h4>💚 Community Guidelines</h4>
+                <ul>
+                  <li>Be kind, supportive, and respectful</li>
+                  <li>Share your own experiences, not medical advice</li>
+                  <li>Comments are moderated for safety</li>
+                  <li>Crisis situations require immediate professional help</li>
+                </ul>
+              </div>
+              <button
+                  type="submit"
+                  class="submit-comment-btn"
+                  :disabled="isSubmittingComment"
+              >
+                {{ isSubmittingComment ? 'Submitting...' : 'Share Your Thoughts' }}
+              </button>
+            </form>
+          </div>
+
+          <!-- Comments List -->
+          <div class="comments-list">
+            <!-- Loading state -->
+            <div v-if="isLoadingComments" class="comments-loading">
+              <div class="loading-spinner"></div>
+              <p>Loading comments...</p>
+            </div>
+
+            <!-- Error state -->
+            <div v-else-if="commentError" class="comments-error">
+              <p>{{ commentError }}</p>
+              <button @click="fetchComments(route.params.id as string)" class="retry-btn">
+                Try Again
+              </button>
+            </div>
+
+            <!-- No comments state -->
+            <div v-else-if="comments.length === 0" class="no-comments">
+              <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
+
+            <!-- Comments display -->
+            <template v-else>
+              <div class="comments-count">
+                {{ comments.length }} {{ comments.length === 1 ? 'reflection' : 'reflections' }}
               </div>
 
-              <!-- Replies -->
-              <div v-if="comment.replies && comment.replies.length > 0" class="replies">
-                <div
-                    v-for="reply in comment.replies"
-                    :key="reply.id"
-                    class="reply"
-                >
-                  <div class="comment-header">
-                    <div class="commenter-avatar">
-                      {{ reply.name.charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="comment-meta">
+              <div v-for="comment in comments" :key="comment.id" class="comment">
+                <div class="comment-header">
+                  <div class="commenter-avatar">
+                    {{ comment.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="comment-meta">
+                    <span class="commenter-name">{{ comment.name }}</span>
+                    <span class="comment-time">{{ new Date(comment.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) }}</span>
+                  </div>
+                </div>
+                <div class="comment-content">
+                  <p>{{ comment.content }}</p>
+                </div>
+
+                <!-- Replies -->
+                <div v-if="comment.replies && comment.replies.length > 0" class="replies">
+                  <div
+                      v-for="reply in comment.replies"
+                      :key="reply.id"
+                      class="reply"
+                  >
+                    <div class="comment-header">
+                      <div class="commenter-avatar">
+                        {{ reply.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <div class="comment-meta">
                       <span class="commenter-name">
                         {{ reply.name }}
                       </span>
-                      <span class="comment-time">{{ new Date(reply.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) }}</span>
+                        <span class="comment-time">{{ new Date(reply.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) }}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div class="comment-content">
-                    <p>{{ reply.content }}</p>
+                    <div class="comment-content">
+                      <p>{{ reply.content }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </template>
+            </template>
 
-          <div class="comments-note">
-            <p><strong>Moderation Notice:</strong> All comments are reviewed before publication to ensure a safe, supportive environment for our community.</p>
+            <div class="comments-note">
+              <p><strong>Moderation Notice:</strong> All comments are reviewed before publication to ensure a safe, supportive environment for our community.</p>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
   </template>
 </template>
 
@@ -898,6 +816,27 @@ onMounted(async () => {
 
 .blog-category-badge.anxiety {
   background: var(--soft-blue);
+}
+
+.blog-category-badge.depression {
+  background: var(--success-color);
+}
+
+.blog-category-badge.relationships {
+  background: var(--accent-color);
+}
+
+.blog-category-badge.mindfulness {
+  background: var(--lavender);
+  color: var(--text-dark);
+}
+
+.blog-category-badge.stress {
+  background: var(--warning-color);
+}
+
+.blog-category-badge.selfcare {
+  background: #9b59b6;
 }
 
 .blog-post-hero h1 {
@@ -1328,6 +1267,18 @@ onMounted(async () => {
   background: var(--warning-color);
 }
 
+.related-post-category.anxiety {
+  background: var(--soft-blue);
+}
+
+.related-post-category.relationships {
+  background: var(--accent-color);
+}
+
+.related-post-category.selfcare {
+  background: #9b59b6;
+}
+
 .related-post h4 {
   color: var(--text-dark);
   margin-bottom: 1rem;
@@ -1345,6 +1296,19 @@ onMounted(async () => {
 
 .related-link:hover {
   color: var(--secondary-color);
+}
+
+.no-related-posts {
+  padding: 1.5rem;
+  background: var(--bg-light);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.no-related-posts p {
+  margin: 0;
+  color: var(--text-light);
+  font-style: italic;
 }
 
 /* Newsletter Signup */
@@ -1591,10 +1555,6 @@ onMounted(async () => {
   font-size: 1.1rem;
 }
 
-.commenter-avatar.professional {
-  background: var(--accent-color);
-}
-
 .comment-meta {
   display: flex;
   flex-direction: column;
@@ -1603,18 +1563,6 @@ onMounted(async () => {
 .commenter-name {
   font-weight: 600;
   color: var(--text-dark);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.professional-badge {
-  background: var(--accent-color);
-  color: white;
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 10px;
-  font-weight: 600;
 }
 
 .comment-time {
@@ -1649,14 +1597,6 @@ onMounted(async () => {
   border-bottom: none;
 }
 
-.reply.author-reply {
-  background: var(--bg-sage);
-  padding: 1.5rem;
-  border-radius: 15px;
-  border: 1px solid var(--border-light);
-  margin-bottom: 1rem;
-}
-
 .comments-note {
   background: var(--bg-sage);
   padding: 1.5rem;
@@ -1670,6 +1610,46 @@ onMounted(async () => {
   color: var(--text-dark);
   font-size: 0.9rem;
   line-height: 1.6;
+}
+
+.comments-loading,
+.comments-error,
+.no-comments {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(74, 124, 89, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
 }
 
 /* Loading and Error States */
@@ -1696,11 +1676,6 @@ onMounted(async () => {
   border-top-color: var(--primary-color);
   margin: 0 auto 1.5rem;
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .blog-error-container h2 {
