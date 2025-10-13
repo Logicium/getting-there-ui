@@ -211,4 +211,5 @@ defineProps<{
     min-height: 150px;
   }
 }
+
 </style>

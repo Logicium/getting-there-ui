@@ -1784,4 +1784,7 @@ onMounted(async () => {
   opacity: 1;
   transform: translateY(0);
 }
+.content-paragraph {
+  text-align: justify;
+}
 </style>

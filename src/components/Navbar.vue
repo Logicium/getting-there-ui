@@ -1,13 +1,53 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
+import { onMounted, ref } from 'vue'
+
+interface GlobalResponse {
+  data?: {
+    siteName?: string
+    logo?: {
+      url?: string
+      formats?: {
+        small?: { url?: string }
+        thumbnail?: { url?: string }
+      }
+      alternativeText?: string | null
+    }
+  }
+}
+
+const siteName = ref<string>('Getting There')
+const logoUrl = ref<string | null>(null)
+const logoAlt = ref<string>('')
+
+onMounted(async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/global?populate=all`)
+    if (!res.ok) throw new Error(`Failed to fetch global: ${res.status}`)
+    const json = (await res.json()) as GlobalResponse
+    const data = json?.data
+    if (data?.siteName) siteName.value = data.siteName
+    const logo = data?.logo
+    // Prefer small variant, fall back to original
+    const relativeUrl = logo?.formats?.small?.url || logo?.url || null
+    const cmsBase = "https://getting-there-cms.onrender.com"
+    if (relativeUrl) {
+      logoUrl.value = cmsBase ? `${cmsBase}${relativeUrl}` : relativeUrl
+    }
+    logoAlt.value = (logo?.alternativeText || `${siteName.value} logo`).toString()
+  } catch (e) {
+    // Silently fail per requirements (no loading state/animation needed)
+    console.error(e)
+  }
+})
 </script>
 
 <template>
   <header>
     <nav>
       <div class="logoWrap">
-        <div class="image logo"/>
-        Getting There
+        <img v-if="logoUrl" class="logo" :src="logoUrl" :alt="logoAlt" />
+        <span>{{ siteName }}</span>
       </div>
       <ul class="nav-links">
         <li><RouterLink to="/">Home</RouterLink></li>
@@ -46,14 +86,17 @@ nav {
 
 .logo{
   height: 50px;
-  width: 150px;
-  background-image: url('/Gemini_Generated_Image_pw80a7pw80a7pw80.png');
-  background-size: cover;
-  background-position: center;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  margin-right: 12px;
+  filter: hue-rotate(-90deg) brightness(90%);
 }
 
 .logoWrap {
   display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.8rem;
   font-weight: 700;
   background: var(--gradient);
