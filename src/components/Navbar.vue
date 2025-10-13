@@ -15,7 +15,7 @@ import { RouterLink } from "vue-router";
         <li><RouterLink to="/videos">Videos</RouterLink></li>
         <li><RouterLink to="/events">Workshops</RouterLink></li>
         <li><RouterLink to="/blog">Blog</RouterLink></li>
-        <li><RouterLink to="/store">Booklets</RouterLink></li>
+        <li><RouterLink to="/store">Store</RouterLink></li>
       </ul>
     </nav>
   </header>

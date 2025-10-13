@@ -14,6 +14,7 @@ import CheckoutPage from "@/views/CheckoutPage.vue";
 import SuccessPage from "@/views/SuccessPage.vue";
 import CancelPage from "@/views/CancelPage.vue";
 import CommentManagementPage from "@/views/CommentManagementPage.vue";
+import ReplyCommentPage from "@/views/ReplyCommentPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -105,6 +106,14 @@ const router = createRouter({
       component: CommentManagementPage,
       meta: {
         title: 'Delete Comment - Getting There'
+      }
+    },
+    {
+      path: '/api/comments/reply',
+      name: 'CommentReply',
+      component: ReplyCommentPage,
+      meta: {
+        title: 'Reply to Comment - Getting There'
       }
     }
   ],

@@ -261,12 +261,9 @@ onMounted(async () => {
   <main class="therapy-videos-content">
     <section class="therapy-video-section">
       <h2 class="wellness-section-title fade-in">
-        Complete Healing Resource Library
+        Complete Video Library
         <div class="section-divider"></div>
       </h2>
-      <p class="section-description fade-in">
-        Our entire collection of therapeutic content is now freely available. These resources are designed to support your mental health journey with evidence-based approaches and trauma-informed care.
-      </p>
       <!-- RENDER ALL VIDEOS - FILTER WITH DOM MANIPULATION -->
       <div v-if="videosLoading" class="loading-container">
         <div class="loading-spinner"></div>
