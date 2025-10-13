@@ -22,7 +22,7 @@ const logoAlt = ref<string>('')
 
 onMounted(async () => {
   try {
-    const res = await fetch('/api/global')
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/global?populate=all`)
     if (!res.ok) throw new Error(`Failed to fetch global: ${res.status}`)
     const json = (await res.json()) as GlobalResponse
     const data = json?.data
@@ -30,7 +30,7 @@ onMounted(async () => {
     const logo = data?.logo
     // Prefer small variant, fall back to original
     const relativeUrl = logo?.formats?.small?.url || logo?.url || null
-    const cmsBase = import.meta.env.VITE_CMS_URL as string | undefined
+    const cmsBase = "https://getting-there-cms.onrender.com"
     if (relativeUrl) {
       logoUrl.value = cmsBase ? `${cmsBase}${relativeUrl}` : relativeUrl
     }
@@ -90,6 +90,7 @@ nav {
   display: block;
   object-fit: contain;
   margin-right: 12px;
+  filter: hue-rotate(-90deg) brightness(90%);
 }
 
 .logoWrap {
