@@ -63,6 +63,8 @@ interface Event {
   date: string | null;
   Image: any | null;
   steps: EventStep[];
+  Price: number | null;
+  availabilityStatus: string | null;
 }
 
 interface EventsResponse {
@@ -152,24 +154,6 @@ function getEventIcon(title: string): string {
   return '🌿';
 }
 
-// Helper function to determine event price based on title (placeholder)
-function getPriceFromTitle(title: string): string {
-  const lowerTitle = title.toLowerCase();
-
-  if (lowerTitle.includes('couples')) {
-    return '120';
-  } else if (lowerTitle.includes('virtual') || lowerTitle.includes('online')) {
-    return '50';
-  } else if (lowerTitle.includes('grief') || lowerTitle.includes('loss')) {
-    return '40';
-  } else if (lowerTitle.includes('trauma')) {
-    return '65';
-  } else if (lowerTitle.includes('mindful') || lowerTitle.includes('meditation') || lowerTitle.includes('compassion')) {
-    return '45';
-  }
-
-  return '60'; // Default price
-}
 
 function filterEvents() {
   const filter = currentFilter.value;
@@ -318,6 +302,16 @@ onMounted(() => {
     <!-- Featured Event -->
     <div v-if="featuredEvent" class="featured-therapy-event fade-in">
       <div class="featured-wellness-badge">Featured Program</div>
+      <div class="therapy-event-status featured-event-status" 
+           :class="{
+             'status-available': featuredEvent.availabilityStatus === 'available',
+             'status-filling': featuredEvent.availabilityStatus === 'filling',
+             'status-waitlist': featuredEvent.availabilityStatus === 'waitlist'
+           }">
+        {{ featuredEvent.availabilityStatus === 'available' ? 'Open' : 
+           featuredEvent.availabilityStatus === 'filling' ? 'Filling' : 
+           featuredEvent.availabilityStatus === 'waitlist' ? 'Waitlist' : 'Open' }}
+      </div>
       <div class="featured-therapy-image">
         <img v-if="featuredEvent.Image && featuredEvent.Image.formats && featuredEvent.Image.formats.large"
              :src="'https://getting-there-cms.onrender.com' + featuredEvent.Image.formats.large.url"
@@ -348,6 +342,12 @@ onMounted(() => {
             <span>{{ featuredEvent.GroupSize }}</span>
           </div>
         </div>
+        <div class="featured-therapy-price" v-if="featuredEvent.Price !== null && featuredEvent.Price > 0">
+          ${{ featuredEvent.Price }}/session
+        </div>
+        <div class="featured-therapy-price" v-else>
+          Free
+        </div>
         <router-link :to="`/events/${featuredEvent.documentId}`" class="featured-therapy-btn">Learn More</router-link>
       </div>
     </div>
@@ -363,7 +363,16 @@ onMounted(() => {
         :data-date="event.date || ''"
       >
         <div class="therapy-event-image">
-          <div class="therapy-event-status status-available">Open</div>
+          <div class="therapy-event-status" 
+               :class="{
+                 'status-available': event.availabilityStatus === 'available',
+                 'status-filling': event.availabilityStatus === 'filling',
+                 'status-waitlist': event.availabilityStatus === 'waitlist'
+               }">
+            {{ event.availabilityStatus === 'available' ? 'Open' : 
+               event.availabilityStatus === 'filling' ? 'Filling' : 
+               event.availabilityStatus === 'waitlist' ? 'Waitlist' : 'Open' }}
+          </div>
           <img v-if="event.Image && event.Image.formats && event.Image.formats.large"
                :src="'https://getting-there-cms.onrender.com' + event.Image.formats.large.url"
                :alt="event.Title"
@@ -393,7 +402,8 @@ onMounted(() => {
             </div>
           </div>
           <div class="therapy-event-footer">
-            <div class="therapy-event-price">${{ getPriceFromTitle(event.Title) }}/session</div>
+            <div class="therapy-event-price" v-if="event.Price !== null && event.Price > 0">${{ event.Price }}/session</div>
+            <div class="therapy-event-price" v-else>Free</div>
             <router-link :to="`/events/${event.documentId}`" class="therapy-event-btn">Learn More</router-link>
           </div>
         </div>
@@ -798,6 +808,25 @@ svg {
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
+}
+
+.featured-therapy-price {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+}
+
+.featured-event-status {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  z-index: 2;
+  padding: 0.5rem 1.5rem;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .featured-therapy-btn {
