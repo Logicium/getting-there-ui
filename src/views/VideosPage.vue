@@ -4,7 +4,7 @@ import { videoCategories } from '@/data/data';
 import VideoCard from '@/components/cards/VideoCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
-import { getVideoDuration } from '@/utils/videoUtils';
+import { getVideoDuration, generateVideoThumbnailWithRetry } from '@/utils/videoUtils';
 import type { CMSVideo, VideoData } from '@/types/video';
 
 // Video filtering state
@@ -22,7 +22,6 @@ const isLoading = ref(true);
 const error = ref<string | null>(null);
 
 // Videos from CMS
-
 const videos = ref<Record<string, VideoData>>({});
 const videosLoading = ref(true);
 const videosError = ref<string | null>(null);
@@ -118,7 +117,7 @@ const fetchVideos = async () => {
       throw new Error('Invalid video data received from CMS');
     }
 
-    // Process videos and get durations
+    // Process videos and get durations + thumbnails
     const processedVideos: Record<string, VideoData> = {};
 
     for (const cmsVideo of cmsVideos) {
@@ -129,30 +128,23 @@ const fetchVideos = async () => {
       const categories = cmsVideo.Categories.map(category => category.tag);
 
       // Create a unique ID from the title (slug-like)
-      const id = cmsVideo.documentId || 
-                 cmsVideo.title.toLowerCase()
-                   .replace(/[^\w\s-]/g, '')
-                   .replace(/\s+/g, '-');
+      const id = cmsVideo.documentId ||
+          cmsVideo.title.toLowerCase()
+              .replace(/[^\w\s-]/g, '')
+              .replace(/\s+/g, '-');
 
       // Get video duration - initially set to '00:00' and update when available
       let duration = '00:00';
       try {
-        // Use the callback approach to update duration when available
         getVideoDuration(videoUrl, (actualDuration) => {
-          // When the actual duration is available, update the video object
           if (videos.value[id]) {
-            // Create a new object to ensure reactivity
             const updatedVideo = { ...videos.value[id], duration: actualDuration };
-            // Use Vue's reactivity system to update the object
             videos.value[id] = updatedVideo;
           }
         }).then(initialDuration => {
-          // This might already have the actual duration if it loaded quickly
           if (initialDuration !== '00:00') {
             if (videos.value[id]) {
-              // Create a new object to ensure reactivity
               const updatedVideo = { ...videos.value[id], duration: initialDuration };
-              // Use Vue's reactivity system to update the object
               videos.value[id] = updatedVideo;
             }
           }
@@ -170,11 +162,22 @@ const fetchVideos = async () => {
         fullDescription: cmsVideo.Description,
         duration,
         category: categories,
-        views: Math.floor(Math.random() * 5000 + 1000).toString(), // Random view count for now
+        views: Math.floor(Math.random() * 5000 + 1000).toString(),
         isFree: true,
         tags,
-        videoUrl
+        videoUrl,
+        thumbnailUrl: undefined // Will be generated asynchronously
       };
+
+      // Generate thumbnail asynchronously (don't block rendering)
+      generateVideoThumbnailWithRetry(videoUrl).then(thumbnailUrl => {
+        if (thumbnailUrl && videos.value[id]) {
+          const updatedVideo = { ...videos.value[id], thumbnailUrl };
+          videos.value[id] = updatedVideo;
+        }
+      }).catch(err => {
+        console.error(`Failed to generate thumbnail for video ${cmsVideo.title}:`, err);
+      });
     }
 
     videos.value = processedVideos;
@@ -343,12 +346,12 @@ onMounted(async () => {
       @close="closeVideoModal"
   >
     <div class="therapy-modal-video">
-      <video 
-        v-if="currentVideo?.videoUrl" 
-        controls 
-        class="video-player"
-        :src="currentVideo.videoUrl"
-        preload="metadata"
+      <video
+          v-if="currentVideo?.videoUrl"
+          controls
+          class="video-player"
+          :src="currentVideo.videoUrl"
+          preload="metadata"
       >
         Your browser does not support the video tag.
       </video>
@@ -625,6 +628,56 @@ onMounted(async () => {
     color: var(--text-dark);
     font-size: 0.9rem;
   }
+}
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 2rem auto;
+  max-width: 500px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(74, 124, 89, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  margin: 0 auto 1.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  color: #d32f2f;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {

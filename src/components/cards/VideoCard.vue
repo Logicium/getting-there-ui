@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import type { VideoData } from '@/types/video';
 
 interface Props {
@@ -11,10 +11,21 @@ const props = defineProps<Props>();
 
 // Use a local ref for duration to ensure reactivity
 const duration = ref(props.video.duration);
+const thumbnailUrl = ref(props.video.thumbnailUrl || '');
+const thumbnailLoading = ref(true);
+const thumbnailError = ref(false);
 
 // Watch for changes to the video's duration and update the local ref
 watch(() => props.video.duration, (newDuration) => {
   duration.value = newDuration;
+}, { immediate: true });
+
+// Watch for changes to the video's thumbnail
+watch(() => props.video.thumbnailUrl, (newThumbnail) => {
+  if (newThumbnail) {
+    thumbnailUrl.value = newThumbnail;
+    thumbnailLoading.value = false;
+  }
 }, { immediate: true });
 
 const categoryDisplay = computed(() => {
@@ -44,6 +55,23 @@ const handleWatchClick = () => {
     props.playVideo(props.video.id);
   }
 };
+
+const handleThumbnailError = () => {
+  thumbnailError.value = true;
+  thumbnailLoading.value = false;
+};
+
+const handleThumbnailLoad = () => {
+  thumbnailLoading.value = false;
+  thumbnailError.value = false;
+};
+
+onMounted(() => {
+  // If there's already a thumbnail, mark as loaded
+  if (props.video.thumbnailUrl) {
+    thumbnailLoading.value = false;
+  }
+});
 </script>
 
 <template>
@@ -55,6 +83,31 @@ const handleWatchClick = () => {
     <div class="video-thumbnail" @click="handleClick">
       <div :class="['category-badge', categoryClass]">{{ categoryDisplay }}</div>
       <div class="video-duration">{{ duration }}</div>
+
+      <!-- Thumbnail loading state -->
+      <div v-if="thumbnailLoading" class="thumbnail-loading">
+        <div class="loading-pulse"></div>
+      </div>
+
+      <!-- Actual thumbnail -->
+      <img
+          v-else-if="thumbnailUrl && !thumbnailError"
+          :src="thumbnailUrl"
+          :alt="video.title"
+          class="thumbnail-image"
+          @error="handleThumbnailError"
+          @load="handleThumbnailLoad"
+      />
+
+      <!-- Fallback gradient with play button -->
+      <div v-else class="thumbnail-fallback">
+        <div class="play-icon">▶️</div>
+      </div>
+
+      <!-- Play button overlay (always visible on hover) -->
+      <div class="play-overlay">
+        <div class="play-button">▶</div>
+      </div>
     </div>
     <div class="video-content">
       <h3 class="video-title">{{ video.title }}</h3>
@@ -100,10 +153,114 @@ const handleWatchClick = () => {
   cursor: pointer;
 }
 
-.video-thumbnail::after {
-  content: '▶️';
+/* Thumbnail loading state */
+.thumbnail-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+      90deg,
+      rgba(74, 124, 89, 0.1) 0%,
+      rgba(127, 166, 80, 0.2) 50%,
+      rgba(74, 124, 89, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loading-pulse {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+/* Actual thumbnail image */
+.thumbnail-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Fallback when thumbnail fails or not available */
+.thumbnail-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-icon {
   font-size: 3rem;
   opacity: 0.9;
+}
+
+/* Play button overlay */
+.play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-thumbnail:hover .play-overlay {
+  opacity: 1;
+}
+
+.play-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  transition: transform 0.3s ease;
+}
+
+.video-thumbnail:hover .play-button {
+  transform: scale(1.1);
 }
 
 .video-duration {
@@ -116,6 +273,7 @@ const handleWatchClick = () => {
   border-radius: 5px;
   font-size: 0.8rem;
   font-weight: 600;
+  z-index: 2;
 }
 
 .category-badge {
@@ -129,6 +287,7 @@ const handleWatchClick = () => {
   font-weight: 700;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 2;
 }
 
 .category-wellness {

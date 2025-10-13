@@ -54,4 +54,5 @@ export interface VideoData {
   isFree: boolean;
   tags: string[];
   videoUrl: string;
+  thumbnailUrl?: string;
 }
