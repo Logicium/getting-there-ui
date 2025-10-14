@@ -397,8 +397,8 @@ onMounted(async () => {
             <a href="mailto:bulk@gthere.net?subject=Bulk Print Request&body=Hello,%0D%0A%0D%0APlease provide a quote for bulk printing.%0D%0A%0D%0AOrganization:%0D%0AContact Person:%0D%0APhone:%0D%0ABook Title(s):%0D%0AQuantity Needed:%0D%0ADelivery Address:%0D%0A%0D%0AThank you!" class="bulk-cta-primary">
               Request Quote
             </a>
-            <a href="tel:+1234567890" class="bulk-cta-secondary">
-              📞 (123) 456-7890
+            <a href="mailto:gettingthere@gthere.net" class="bulk-cta-secondary">
+              📧 Email: gettingthere@gthere.net
             </a>
           </div>
 

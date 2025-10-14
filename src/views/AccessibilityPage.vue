@@ -80,8 +80,6 @@ onMounted(() => {
 
       <h3>Multimedia Content</h3>
       <ul>
-        <li>Video content includes captions when possible</li>
-        <li>Transcripts available for audio and video content</li>
         <li>Media players have accessible controls</li>
         <li>Auto-playing content can be paused or stopped</li>
       </ul>
@@ -164,9 +162,8 @@ onMounted(() => {
       </p>
       <div class="contact-card">
         <p><strong>Accessibility Coordinator</strong></p>
-        <p>📧 Email: accessibility@gthere.net</p>
-        <p>📞 Phone: (123) 456-7890</p>
-        <p>📍 Address: Cañon City, Colorado, United States</p>
+        <p>📧 Email: gettingthere@gthere.net</p>
+        <p>📍 Address: Trinidad, Colorado, United States</p>
         <p class="response-time">We aim to respond to accessibility feedback within 2 business days.</p>
       </div>
     </section>

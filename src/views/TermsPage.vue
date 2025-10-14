@@ -178,9 +178,8 @@ onMounted(() => {
       <p>If you have questions about these Terms of Service, please contact us:</p>
       <div class="contact-card">
         <p><strong>Getting There</strong></p>
-        <p>📧 Email: legal@gthere.net</p>
-        <p>📞 Phone: (123) 456-7890</p>
-        <p>📍 Address: Cañon City, Colorado, United States</p>
+        <p>📧 Email: gettingthere@gthere.net</p>
+        <p>📍 Address: Trinidad, Colorado, United States</p>
       </div>
     </section>
   </main>

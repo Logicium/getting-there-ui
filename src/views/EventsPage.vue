@@ -461,8 +461,8 @@ onMounted(() => {
             <a href="mailto:workshops@gthere.net?subject=Private Workshop Inquiry" class="workshop-cta-primary">
               Request Information
             </a>
-            <a href="tel:+1234567890" class="workshop-cta-secondary">
-              📞 (123) 456-7890
+            <a href="mailto:gettingthere@gthere.net" class="workshop-cta-secondary">
+              📧 Email: gettingthere@gthere.net
             </a>
           </div>
 

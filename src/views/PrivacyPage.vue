@@ -152,9 +152,8 @@ onMounted(() => {
       <p>If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:</p>
       <div class="contact-card">
         <p><strong>Getting There</strong></p>
-        <p>📧 Email: privacy@gthere.net</p>
-        <p>📞 Phone: (123) 456-7890</p>
-        <p>📍 Address: Cañon City, Colorado, United States</p>
+        <p>📧 Email: gettingthere@gthere.net</p>
+        <p>📍 Address: Trinidad,Colorado, United States</p>
       </div>
     </section>
   </main>

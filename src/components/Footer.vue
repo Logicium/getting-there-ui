@@ -59,8 +59,8 @@ onMounted(async () => {
           <h3>Contact Us</h3>
           <p>We'd love to hear from you.</p>
           <div class="contact-info">
-            <a href="mailto:support@gthere.net" class="contact-link">
-              support@gthere.net
+            <a href="mailto:gettingthere@gthere.net" class="contact-link">
+              gettingthere@gthere.net
             </a>
           </div>
           <p class="contact-note">Mon-Fri, 9AM-5PM MT</p>
