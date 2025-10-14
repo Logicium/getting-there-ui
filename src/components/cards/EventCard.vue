@@ -1,89 +1,93 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { EventData } from '@/data/data';
-import { RouterLink } from 'vue-router';
+import type { Event } from '@/types/event';
+import { formatTime, formatDate, formatPrice } from '@/utils/formatUtils';
+import { getCategoryFromTitle, getEventIcon } from '@/utils/eventUtils';
 
 interface Props {
-  event: EventData;
+  event: Event;
+  linkCard?: boolean;
 }
 
 const props = defineProps<Props>();
-
-const statusClass = computed(() => {
-  switch (props.event.status) {
-    case 'available': return 'status-available';
-    case 'filling': return 'status-filling';
-    case 'waitlist': return 'status-waitlist';
-    default: return '';
-  }
-});
-
-const statusText = computed(() => {
-  switch (props.event.status) {
-    case 'available': return 'Open';
-    case 'filling': return 'Filling Fast';
-    case 'waitlist': return 'Waitlist';
-    default: return '';
-  }
-});
+const cmsUrl = 'https://getting-there-cms.onrender.com';
 </script>
 
 <template>
-  <div class="therapy-event-card fade-in" :data-category="event.category" :data-date="event.date">
+  <component 
+    :is="linkCard ? 'RouterLink' : 'div'" 
+    :to="linkCard ? `/events/${event.documentId}` : undefined" 
+    class="therapy-event-card"
+    :data-category="getCategoryFromTitle(event.Title)" 
+    :data-date="event.date || ''"
+  >
     <div class="therapy-event-image">
-      <div class="therapy-event-status" :class="statusClass">{{ statusText }}</div>
-      <div class="event-visual-icon">{{ event.icon }}</div>
+      <div class="therapy-event-status" 
+           :class="{
+             'status-available': event.availabilityStatus === 'available',
+             'status-filling': event.availabilityStatus === 'filling',
+             'status-waitlist': event.availabilityStatus === 'waitlist'
+           }">
+        {{ event.availabilityStatus === 'available' ? 'Open' : 
+           event.availabilityStatus === 'filling' ? 'Filling' : 
+           event.availabilityStatus === 'waitlist' ? 'Waitlist' : 'Open' }}
+      </div>
+      <img v-if="event.Image && event.Image.formats && event.Image.formats.large"
+           :src="cmsUrl + event.Image.formats.large.url"
+           :alt="event.Title"
+           class="event-img">
+      <div v-else class="event-visual-icon">{{ getEventIcon(event.Title) }}</div>
     </div>
     <div class="therapy-event-content">
-      <div class="therapy-event-date">📅 {{ event.date }}</div>
-      <h3 class="therapy-event-title">{{ event.title }}</h3>
+      <div class="therapy-event-date" v-if="event.date || event.Frequency">
+        📅 {{ event.date ? formatDate(event.date) : event.Frequency }}
+      </div>
+      <h3 class="therapy-event-title">{{ event.Title }}</h3>
       <p class="therapy-event-description">
-        {{ event.description }}
+        {{ event.Description }}
       </p>
       <div class="therapy-event-details">
-        <div class="therapy-event-detail">
-          <span class="therapy-event-detail-icon">📍</span>
-          <span>{{ event.location }}</span>
+        <div class="therapy-event-detail" v-if="event.Location">
+          <span class="therapy-event-detail-icon">{{ event.Location.includes('Online') || event.Location.includes('Virtual') ? '💻' : '📍' }}</span>
+          <span>{{ event.Location }}</span>
         </div>
-        <div class="therapy-event-detail">
+        <div class="therapy-event-detail" v-if="event.TimeStart && event.TimeEnd">
           <span class="therapy-event-detail-icon">⏰</span>
-          <span>{{ event.time }}</span>
+          <span>{{ formatTime(event.TimeStart) }} - {{ formatTime(event.TimeEnd) }}</span>
         </div>
-        <div class="therapy-event-detail">
+        <div class="therapy-event-detail" v-if="event.GroupSize">
           <span class="therapy-event-detail-icon">👥</span>
-          <span>{{ event.capacity }}</span>
+          <span>{{ event.GroupSize }}</span>
         </div>
       </div>
       <div class="therapy-event-footer">
-        <div class="therapy-event-price">{{ event.price }}</div>
-        <RouterLink 
-          v-if="event.status !== 'waitlist'" 
-          :to="`/events/${event.slug}`" 
-          class="therapy-event-btn"
-        >
-          Learn More
-        </RouterLink>
-        <button v-else class="therapy-event-btn waitlist-btn">Join Waitlist</button>
+        <div class="therapy-event-price" v-if="event.Price !== null && event.Price > 0">{{ formatPrice(event.Price) }}/session</div>
+        <div class="therapy-event-price" v-else>Free</div>
+        <router-link v-if="!linkCard" :to="`/events/${event.documentId}`" class="therapy-event-btn">Learn More</router-link>
+        <button v-else class="therapy-event-btn">Learn More</button>
       </div>
     </div>
-  </div>
+  </component>
 </template>
 
 <style scoped lang="scss">
+@import '@/assets/common.scss';
 
 .therapy-event-card {
   background: white;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 30px var(--shadow-light);
   transition: all 0.4s ease;
   position: relative;
   border: 1px solid var(--border-light);
-}
+  display: block;
+  text-decoration: none;
+  color: inherit;
 
-.therapy-event-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px var(--shadow-medium);
+  }
 }
 
 .therapy-event-image {
@@ -101,6 +105,13 @@ const statusText = computed(() => {
   opacity: 0.8;
 }
 
+.event-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
 .therapy-event-status {
   position: absolute;
   top: 1rem;
@@ -110,21 +121,21 @@ const statusText = computed(() => {
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-}
 
-.status-available {
-  background: var(--success-color);
-  color: white;
-}
+  &.status-available {
+    background: var(--success-color);
+    color: white;
+  }
 
-.status-filling {
-  background: var(--warning-color);
-  color: white;
-}
+  &.status-filling {
+    background: var(--warning-color);
+    color: white;
+  }
 
-.status-waitlist {
-  background: var(--text-light);
-  color: white;
+  &.status-waitlist {
+    background: var(--text-light);
+    color: white;
+  }
 }
 
 .therapy-event-content {
@@ -180,6 +191,11 @@ const statusText = computed(() => {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .therapy-event-price {
@@ -189,37 +205,18 @@ const statusText = computed(() => {
 }
 
 .therapy-event-btn {
-  background: var(--primary-color);
-  color: white;
+  @extend .cta-primary;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
 
-.therapy-event-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-}
+  &.waitlist-btn {
+    background: var(--text-light);
+    cursor: default;
 
-.waitlist-btn {
-  background: var(--text-light);
-  cursor: default;
-}
-
-.waitlist-btn:hover {
-  background: var(--text-light);
-  transform: none;
-}
-
-@media (max-width: 768px) {
-  .therapy-event-footer {
-    flex-direction: column;
-    align-items: stretch;
+    &:hover {
+      background: var(--text-light);
+      transform: none;
+    }
   }
 }
 </style>
