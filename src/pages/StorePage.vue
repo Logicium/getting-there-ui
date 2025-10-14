@@ -83,7 +83,7 @@ const fetchHeroData = async () => {
 const addToCart = (bookId: string, button: HTMLElement) => {
   const book = Object.values(books.value).find(book => book.id === bookId);
   if (!book) return;
-  
+
   const format = 'digital';
   const price = book.formats.digital.price;
 
@@ -321,173 +321,131 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @import '@/assets/common.scss';
+@import '@/assets/scss/mixins';
+@import '@/assets/scss/variables';
 
 .therapy-store-hero {
   @extend .hero-base;
   background: var(--gradient);
   color: white;
-  position: relative;
-  overflow: hidden;
 }
 
 .therapy-store-hero-content {
   @extend .hero-content-base;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 $spacing-xl;
 }
 
 /* Hero Loading/Error States */
 .loading-container,
 .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  min-height: 200px;
-}
-
-.loading-container p,
-.error-container p {
-  color: white;
-  font-size: 1.1rem;
-  margin-top: 1rem;
+  @include loading-container(transparent, white);
 }
 
 .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container {
-  color: white;
+  @include loading-spinner();
 }
 
 .retry-button {
-  background: white;
-  color: var(--primary-color);
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  margin-top: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+  @include button-base(white, var(--primary-color));
+  margin-top: $spacing-md;
 
-.retry-button:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-2px);
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+  }
 }
 
 .therapy-author-intro {
   background: rgba(255, 255, 255, 0.1);
-  padding: 2rem;
-  border-radius: 15px;
+  padding: $spacing-xl;
+  border-radius: $radius-lg;
   backdrop-filter: blur(10px);
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 1.5rem;
+  gap: $spacing-lg;
   align-items: center;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  margin-top: 2rem;
+  margin-top: $spacing-xl;
   max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     grid-template-columns: 1fr;
     text-align: center;
-    padding: 1.5rem;
-    gap: 1rem;
+    padding: $spacing-lg;
+    gap: $spacing-md;
   }
 }
 
 .author-visual {
-  display: flex;
-  flex-direction: column;
+  @include flex-column($spacing-sm);
   align-items: center;
 }
 
 .author-avatar-large {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
+  border-radius: $radius-full;
   background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
+  @include flex-center;
+  font-size: $font-size-2xl;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  margin-bottom: 0.5rem;
 }
 
 .author-details h3 {
-  font-size: 1.4rem;
-  margin-bottom: 0.75rem;
+  font-size: $font-size-xl;
+  margin-bottom: $spacing-sm;
   font-family: 'Playfair Display', serif;
 }
 
 .author-details p {
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
   opacity: 0.9;
-  margin-bottom: 1rem;
+  margin-bottom: $spacing-md;
   line-height: 1.5;
 }
 
 .author-credentials {
-  display: flex;
-  gap: 0.75rem;
+  @include flex-row($spacing-sm);
   flex-wrap: wrap;
 }
 
 .credential-badge {
   @extend .trust-badge;
-  font-size: 0.8rem;
-  padding: 0.35rem 0.75rem;
+  font-size: $font-size-xs;
+  padding: $spacing-xs $spacing-sm;
 }
 
 .therapy-store-content {
   @extend .container;
-  padding: 4rem 2rem;
+  padding: $spacing-3xl $spacing-xl;
 }
 
 .therapy-books-grid {
-  @extend .grid-auto-fit;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  margin-bottom: 4rem;
+  @include grid-auto(350px, $spacing-xl);
+  margin-bottom: $spacing-3xl;
 }
 
 .therapy-cart-button {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: $spacing-xl;
+  right: $spacing-xl;
   width: 65px;
   height: 65px;
-  border-radius: 50%;
+  border-radius: $radius-full;
   background: var(--primary-color);
   color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
+  @include flex-center;
+  font-size: $font-size-xl;
   border: none;
   cursor: pointer;
   box-shadow: 0 8px 25px var(--shadow-medium);
-  transition: all 0.3s ease;
-  z-index: 100;
+  transition: all $transition-normal;
+  z-index: $z-fixed;
 
   &:hover {
     transform: translateY(-5px);
@@ -503,64 +461,47 @@ onMounted(async () => {
   color: white;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  @include flex-center;
   font-weight: 700;
 }
 
 .therapy-reading-benefits {
-  background: var(--bg-sage);
-  padding: 3rem;
-  border-radius: 20px;
-  margin-top: 3rem;
-  border: 1px solid var(--border-light);
+  @include card-base(var(--bg-sage), $radius-xl, $spacing-2xl);
+  margin-top: $spacing-2xl;
 }
 
 .benefits-content h3 {
+  @include heading-medium;
   text-align: center;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--text-dark);
 }
 
 .benefits-grid {
-  @extend .grid-auto-fit;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  @include grid-auto(250px, $spacing-xl);
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     grid-template-columns: 1fr;
   }
 }
 
 .benefit-item {
-  @extend .card-base;
+  @include card-interactive;
   text-align: center;
   background: white;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px var(--shadow-medium);
-  }
 }
 
 .benefit-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  font-size: $font-size-4xl;
+  margin-bottom: $spacing-md;
 }
 
 .benefit-item h4 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  @include heading-small;
   color: var(--primary-color);
 }
 
 .benefit-item p {
-  color: var(--text-light);
-  line-height: 1.5;
+  @include text-muted;
 }
 </style>

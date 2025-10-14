@@ -1,0 +1,336 @@
+// SCSS Mixins for Getting There UI
+@import 'variables';
+
+// ============================================
+// Layout Mixins
+// ============================================
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column($gap: $spacing-md) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+}
+
+@mixin flex-row($gap: $spacing-md) {
+  display: flex;
+  flex-direction: row;
+  gap: $gap;
+}
+
+// ============================================
+// Loading & Error States
+// ============================================
+
+@mixin loading-container($bg-color: transparent, $text-color: white, $min-height: 200px) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-2xl;
+  text-align: center;
+  min-height: $min-height;
+  color: $text-color;
+  background-color: $bg-color;
+  
+  p {
+    color: $text-color;
+    font-size: $font-size-lg;
+    margin-top: $spacing-md;
+  }
+}
+
+@mixin loading-spinner($size: 50px, $border-color: rgba(255, 255, 255, 0.3), $spinner-color: white) {
+  width: $size;
+  height: $size;
+  border: 4px solid $border-color;
+  border-radius: $radius-full;
+  border-top-color: $spinner-color;
+  animation: spin 1s linear infinite;
+}
+
+// ============================================
+// Card Styles
+// ============================================
+
+@mixin card-base(
+  $bg-color: white,
+  $radius: $radius-xl,
+  $padding: $spacing-xl,
+  $shadow: 0 8px 30px var(--shadow-light)
+) {
+  background: $bg-color;
+  border-radius: $radius;
+  padding: $padding;
+  box-shadow: $shadow;
+  border: 1px solid var(--border-light);
+  transition: all $transition-slow ease;
+}
+
+@mixin card-hover(
+  $hover-shadow: 0 20px 50px var(--shadow-medium),
+  $hover-transform: translateY(-5px)
+) {
+  &:hover {
+    transform: $hover-transform;
+    box-shadow: $hover-shadow;
+  }
+}
+
+@mixin card-interactive {
+  @include card-base();
+  @include card-hover();
+  cursor: pointer;
+}
+
+// ============================================
+// Button Styles
+// ============================================
+
+@mixin button-base(
+  $bg-color: var(--primary-color),
+  $text-color: white,
+  $padding: 0.75rem 1.5rem,
+  $radius: $radius-2xl
+) {
+  background: $bg-color;
+  color: $text-color;
+  border: none;
+  padding: $padding;
+  border-radius: $radius;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition-normal;
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+  border: none;
+  outline: none;
+}
+
+@mixin button-hover(
+  $hover-bg: var(--secondary-color),
+  $hover-transform: translateY(-2px)
+) {
+  &:hover {
+    background: $hover-bg;
+    transform: $hover-transform;
+  }
+}
+
+@mixin button-primary {
+  @include button-base();
+  @include button-hover();
+}
+
+@mixin button-secondary {
+  @include button-base(var(--secondary-color), white);
+  &:hover {
+    background: var(--primary-color);
+    transform: translateY(-2px);
+  }
+}
+
+// ============================================
+// Typography
+// ============================================
+
+@mixin heading-large {
+  font-size: $font-size-3xl;
+  font-weight: 700;
+  margin-bottom: $spacing-lg;
+  color: var(--text-dark);
+  
+  @media (max-width: $breakpoint-tablet) {
+    font-size: $font-size-2xl;
+  }
+}
+
+@mixin heading-medium {
+  font-size: $font-size-2xl;
+  font-weight: 700;
+  margin-bottom: $spacing-md;
+  color: var(--text-dark);
+}
+
+@mixin heading-small {
+  font-size: $font-size-xl;
+  font-weight: 600;
+  margin-bottom: $spacing-md;
+  color: var(--text-dark);
+}
+
+@mixin text-muted {
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+// ============================================
+// Grid Layouts
+// ============================================
+
+@mixin grid-auto($min-width: 300px, $gap: $spacing-xl) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax($min-width, 1fr));
+  gap: $gap;
+}
+
+@mixin grid-two($gap: $spacing-xl) {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $gap;
+  
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ============================================
+// Modal & Overlay
+// ============================================
+
+@mixin modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: $z-modal-backdrop;
+  display: none;
+  
+  &.active {
+    display: block;
+  }
+}
+
+@mixin modal-container($width: 420px) {
+  position: fixed;
+  top: 0;
+  right: -$width;
+  width: $width;
+  height: 100vh;
+  background: white;
+  box-shadow: -10px 0 30px var(--shadow-medium);
+  z-index: $z-modal;
+  transition: right $transition-normal;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  
+  &.open {
+    right: 0;
+  }
+  
+  @media (max-width: $breakpoint-tablet) {
+    width: 100%;
+    right: -100%;
+  }
+}
+
+// ============================================
+// Image Containers
+// ============================================
+
+@mixin image-container($height: 200px, $bg: var(--bg-sage)) {
+  height: $height;
+  background: $bg;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+@mixin image-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+// ============================================
+// Status Badges
+// ============================================
+
+@mixin badge-base($padding: 0.5rem 1rem) {
+  padding: $padding;
+  border-radius: $radius-lg;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@mixin badge-success {
+  @include badge-base();
+  background: var(--success-color);
+  color: white;
+}
+
+@mixin badge-warning {
+  @include badge-base();
+  background: var(--warning-color);
+  color: white;
+}
+
+@mixin badge-info {
+  @include badge-base();
+  background: var(--text-light);
+  color: white;
+}
+
+// ============================================
+// Responsive Utilities
+// ============================================
+
+@mixin mobile-only {
+  @media (max-width: $breakpoint-tablet) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: $breakpoint-tablet) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: $breakpoint-desktop) {
+    @content;
+  }
+}
+
+// ============================================
+// Animations
+// ============================================
+
+@mixin fade-in-animation {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@mixin hover-lift {
+  transition: transform $transition-normal, box-shadow $transition-normal;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+}

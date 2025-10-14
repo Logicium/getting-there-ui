@@ -1,20 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../views/HomePage.vue'
-import BlogPage from '../views/BlogPage.vue'
-import EventsPage from '../views/EventsPage.vue'
-import EventDetailPage from '../views/EventDetailPage.vue'
-import AboutPage from "@/views/AboutPage.vue";
-import VideosPage from "@/views/VideosPage.vue";
-import StorePage from "@/views/StorePage.vue";
-import BlogPost from "@/views/BlogPost.vue";
-import TermsPage from "@/views/TermsPage.vue";
-import PrivacyPage from "@/views/PrivacyPage.vue";
-import AccessibilityPage from "@/views/AccessibilityPage.vue";
-import CheckoutPage from "@/views/CheckoutPage.vue";
-import SuccessPage from "@/views/SuccessPage.vue";
-import CancelPage from "@/views/CancelPage.vue";
-import CommentManagementPage from "@/views/CommentManagementPage.vue";
-import ReplyCommentPage from "@/views/ReplyCommentPage.vue";
+import HomePage from '@/pages/HomePage.vue'
+import BlogPage from '@/pages/BlogPage.vue'
+import EventsPage from '@/pages/EventsPage.vue'
+import EventDetailPage from '@/pages/EventDetailPage.vue'
+import AboutPage from "@/pages/AboutPage.vue";
+import VideosPage from "@/pages/VideosPage.vue";
+import StorePage from "@/pages/StorePage.vue";
+import BlogPost from "@/pages/BlogPost.vue";
+import TermsPage from "@/pages/TermsPage.vue";
+import PrivacyPage from "@/pages/PrivacyPage.vue";
+import AccessibilityPage from "@/pages/AccessibilityPage.vue";
+import CheckoutPage from "@/pages/CheckoutPage.vue";
+import SuccessPage from "@/pages/SuccessPage.vue";
+import CancelPage from "@/pages/CancelPage.vue";
+import CommentManagementPage from "@/pages/CommentManagementPage.vue";
+import ReplyCommentPage from "@/pages/ReplyCommentPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

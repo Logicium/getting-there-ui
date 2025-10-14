@@ -338,12 +338,13 @@ onMounted(() => {
 
 <style scoped lang="scss">
 @import '@/assets/common.scss';
+@import '@/assets/scss/mixins';
+@import '@/assets/scss/variables';
 
 /* Hero Section */
 .hero {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
+  @include flex-center;
   background: var(--gradient-neutral);
   position: relative;
   overflow: hidden;
@@ -369,17 +370,17 @@ onMounted(() => {
 .hero-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 $spacing-xl;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  gap: $spacing-3xl;
   align-items: center;
   position: relative;
   z-index: 2;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: $spacing-xl;
     text-align: center;
   }
 }
@@ -392,68 +393,65 @@ onMounted(() => {
   display: inline-block;
   background: var(--bg-sage);
   color: var(--primary-color);
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  font-size: 0.9rem;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-2xl;
+  font-size: $font-size-sm;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin-bottom: $spacing-lg;
   border: 1px solid var(--border-light);
 }
 
 .hero h1 {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: $spacing-lg;
   line-height: 1.2;
   color: var(--text-dark);
   font-family: 'Playfair Display', serif;
 }
 
 .hero p {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
+  font-size: $font-size-lg;
+  margin-bottom: $spacing-xl;
   line-height: 1.6;
   color: var(--text-light);
 }
 
 .hero-cta {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  @include flex-row($spacing-md);
+  margin-bottom: $spacing-xl;
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     justify-content: center;
   }
 }
 
 .trust-indicators {
-  display: flex;
-  gap: 2rem;
+  @include flex-row($spacing-xl);
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     justify-content: center;
   }
 }
 
 .trust-item {
-  display: flex;
+  @include flex-row($spacing-sm);
   align-items: center;
-  gap: 0.5rem;
   color: var(--text-light);
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
 }
 
 .trust-icon {
-  font-size: 1.1rem;
+  font-size: $font-size-lg;
 }
 
 .hero-visual {
   position: relative;
   height: 500px;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     order: -1;
     height: 300px;
   }
@@ -462,7 +460,7 @@ onMounted(() => {
 .hero-images {
   position: relative;
   height: 100%;
-  border-radius: 20px;
+  border-radius: $radius-xl;
   overflow: hidden;
   box-shadow: 0 20px 60px var(--shadow-medium);
 }
@@ -471,10 +469,8 @@ onMounted(() => {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 20px;
+  @include image-cover;
+  border-radius: $radius-xl;
   opacity: 0;
   transition: opacity 2s ease-in-out;
 
@@ -490,60 +486,49 @@ onMounted(() => {
 
 /* How It Works Section */
 .how-it-works {
-  padding: 6rem 0;
+  padding: $spacing-3xl 0;
   background: var(--bg-light);
 }
 
 .steps-grid {
-  @extend .grid-auto-fit;
-  margin-top: 3rem;
+  @include grid-auto(300px, $spacing-xl);
+  margin-top: $spacing-2xl;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     grid-template-columns: 1fr;
   }
 }
 
 /* Services Section */
 .services {
-  padding: 6rem 0;
+  padding: $spacing-3xl 0;
   background: white;
 }
 
 .services-grid {
-  @extend .grid-auto-fit;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  margin-top: 3rem;
+  @include grid-auto(280px, $spacing-xl);
+  margin-top: $spacing-2xl;
 }
 
 /* Resources Preview Section */
 .resources-preview {
-  padding: 6rem 0;
+  padding: $spacing-3xl 0;
   background: white;
 }
 
 .resources-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  @include grid-two($spacing-3xl);
   align-items: center;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
 }
 
 .resources-text h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--text-dark);
+  @include heading-large;
   font-family: 'Playfair Display', serif;
 }
 
 .resources-cta {
-  @extend .cta-primary;
-  margin-top: 1rem;
+  @include button-primary;
+  margin-top: $spacing-md;
   display: inline-block;
 }
 
@@ -551,18 +536,16 @@ onMounted(() => {
   position: relative;
   height: 400px;
   background: var(--gradient);
-  border-radius: 20px;
+  border-radius: $radius-xl;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
 }
 
 .visual-element {
   width: 150px;
   height: 150px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  border-radius: $radius-full;
   position: absolute;
   animation: gentlePulse 4s ease-in-out infinite;
 
@@ -591,9 +574,9 @@ onMounted(() => {
   position: relative;
 
   h3 {
-    font-size: 2rem;
+    font-size: $font-size-3xl;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: $spacing-sm;
   }
 
   p {
@@ -603,7 +586,7 @@ onMounted(() => {
 
 /* CTA Section */
 .cta-section {
-  padding: 6rem 0;
+  padding: $spacing-3xl 0;
   background: var(--text-dark);
   color: white;
 }
@@ -615,62 +598,61 @@ onMounted(() => {
 }
 
 .cta-section h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  @include heading-large;
+  color: white;
   font-family: 'Playfair Display', serif;
 }
 
 .cta-section p {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
+  font-size: $font-size-lg;
+  margin-bottom: $spacing-xl;
   opacity: 0.9;
   line-height: 1.6;
 }
 
 .cta-buttons {
-  display: flex;
-  gap: 1rem;
+  @include flex-row($spacing-md);
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: $spacing-xl;
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     flex-direction: column;
     align-items: center;
   }
 }
 
 .cta-section .cta-primary {
-  background: var(--accent-color);
+  @include button-base(var(--accent-color), white);
 
   &:hover {
     background: var(--warning-color);
+    transform: translateY(-2px);
   }
 }
 
 .cta-section .cta-secondary {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: rgba(255, 255, 255, 0.9);
+  @include button-base(transparent, rgba(255, 255, 255, 0.9));
+  border: 2px solid rgba(255, 255, 255, 0.5);
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: white;
     color: white;
+    transform: translateY(-2px);
   }
 }
 
 .cta-assurance {
-  display: flex;
-  gap: 2rem;
+  @include flex-row($spacing-xl);
   justify-content: center;
   flex-wrap: wrap;
   opacity: 0.8;
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     flex-direction: column;
-    gap: 1rem;
+    gap: $spacing-md;
   }
 }
 </style>

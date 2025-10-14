@@ -126,30 +126,23 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
-.video-card {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s ease;
-  position: relative;
-  border: 1px solid var(--border-light);
-}
+<style scoped lang="scss">
+@import '@/assets/scss/mixins';
+@import '@/assets/scss/variables';
 
-.video-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+.video-card {
+  @include card-base(white, $radius-xl);
+  overflow: hidden;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .video-thumbnail {
-  position: relative;
-  height: 200px;
-  background: var(--gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  @include image-container(200px, var(--gradient));
   cursor: pointer;
 }
 
@@ -182,7 +175,7 @@ onMounted(() => {
 .loading-pulse {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: $radius-full;
   background: rgba(255, 255, 255, 0.3);
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -200,13 +193,10 @@ onMounted(() => {
 
 /* Actual thumbnail image */
 .thumbnail-image {
+  @include image-cover;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
 }
 
 /* Fallback when thumbnail fails or not available */
@@ -217,13 +207,11 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background: var(--gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
 }
 
 .play-icon {
-  font-size: 3rem;
+  font-size: $font-size-4xl;
   opacity: 0.9;
 }
 
@@ -235,56 +223,49 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   opacity: 0;
-  transition: opacity 0.3s ease;
-}
+  transition: opacity $transition-normal;
 
-.video-thumbnail:hover .play-overlay {
-  opacity: 1;
+  .video-thumbnail:hover & {
+    opacity: 1;
+  }
 }
 
 .play-button {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: $radius-full;
   background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
+  @include flex-center;
+  font-size: $font-size-xl;
   color: var(--primary-color);
-  transition: transform 0.3s ease;
-}
+  transition: transform $transition-normal;
 
-.video-thumbnail:hover .play-button {
-  transform: scale(1.1);
+  .video-thumbnail:hover & {
+    transform: scale(1.1);
+  }
 }
 
 .video-duration {
   position: absolute;
-  bottom: 1rem;
-  right: 1rem;
+  bottom: $spacing-md;
+  right: $spacing-md;
   background: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 5px;
-  font-size: 0.8rem;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
   font-weight: 600;
   z-index: 2;
 }
 
 .category-badge {
+  @include badge-base;
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: $spacing-md;
+  left: $spacing-md;
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 700;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   z-index: 2;
@@ -307,57 +288,40 @@ onMounted(() => {
 }
 
 .video-content {
-  padding: 1.5rem;
+  padding: $spacing-lg;
 }
 
 .video-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
+  @include heading-small;
+  margin-bottom: $spacing-sm;
   line-height: 1.3;
 }
 
 .video-presenter {
   color: var(--primary-color);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  font-size: $font-size-sm;
+  margin-bottom: $spacing-md;
   font-weight: 600;
 }
 
 .video-description {
-  color: var(--text-light);
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+  @include text-muted;
+  margin-bottom: $spacing-lg;
+  font-size: $font-size-sm;
 }
 
 .video-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  @include flex-between;
 }
 
 .video-views {
   color: var(--text-light);
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
 }
 
 .watch-btn {
-  background: var(--primary-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
-}
-
-.watch-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
+  @include button-primary;
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-sm;
 }
 </style>

@@ -272,6 +272,8 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @import '../assets/common.scss';
+@import '@/assets/scss/mixins';
+@import '@/assets/scss/variables';
 
 .therapy-videos-hero {
   @extend .hero-base;
@@ -285,14 +287,13 @@ onMounted(async () => {
 }
 
 .hero-wellness-stats {
-  display: flex;
+  @include flex-row($spacing-2xl);
   justify-content: center;
-  gap: 3rem;
-  margin-top: 2rem;
+  margin-top: $spacing-xl;
 
-  @media (max-width: 768px) {
+  @include mobile-only {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: $spacing-lg;
   }
 }
 
@@ -301,87 +302,55 @@ onMounted(async () => {
 }
 
 .hero-stat-number {
-  font-size: 2.2rem;
+  font-size: $font-size-3xl;
   font-weight: 800;
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: $spacing-sm;
 }
 
 .hero-stat-label {
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
   opacity: 0.8;
 }
 
 .therapy-videos-content {
   @extend .container;
-  padding: 4rem 2rem;
+  padding: $spacing-3xl $spacing-xl;
 }
 
 .section-description {
-  color: var(--text-light);
-  font-size: 1.1rem;
+  @include text-muted;
+  font-size: $font-size-lg;
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: $spacing-2xl;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
-  line-height: 1.6;
 }
 
 .therapy-video-section {
-  margin-bottom: 4rem;
+  margin-bottom: $spacing-3xl;
 }
 
 .therapy-videos-grid {
-  @extend .grid-auto-fit;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  @include grid-auto(350px, $spacing-xl);
 }
 
 /* Content Loading/Error States (not in white boxes) */
 .content-loading-container,
 .content-error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-  min-height: 300px;
+  @include loading-container(transparent, var(--text-light), 300px);
+  padding: $spacing-3xl $spacing-xl;
 }
 
-.content-loading-container p,
-.content-error-container p {
-  color: var(--text-light);
-  font-size: 1.1rem;
-  margin-top: 1rem;
-}
-
-/* Hero Loading/Error States (keep existing styles) */
+/* Hero Loading/Error States */
 .loading-container,
 .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  min-height: 200px;
-}
-
-.loading-container p,
-.error-container p {
-  color: white;
-  font-size: 1.1rem;
-  margin-top: 1rem;
+  @include loading-container(transparent, white);
 }
 
 .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s linear infinite;
+  @include loading-spinner();
 }
 
 .content-loading-container .loading-spinner {
@@ -389,46 +358,21 @@ onMounted(async () => {
   border-top-color: var(--primary-color);
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container {
-  color: white;
-}
-
-.content-error-container {
-  color: var(--text-dark);
-}
-
 .retry-button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  margin-top: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-button:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
+  @include button-primary;
+  margin-top: $spacing-md;
 }
 
 .error-container .retry-button {
-  background: white;
-  color: var(--primary-color);
+  @include button-base(white, var(--primary-color));
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+  }
 }
 
-.error-container .retry-button:hover {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-@media (max-width: 768px) {
+@include mobile-only {
   .therapy-videos-grid {
     grid-template-columns: 1fr;
   }

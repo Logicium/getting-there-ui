@@ -296,6 +296,8 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @import '../assets/common';
+@import '@/assets/scss/mixins';
+@import '@/assets/scss/variables';
 
 * {
   margin: 0;
@@ -320,49 +322,59 @@ onMounted(async () => {
   50% { transform: translateY(-10px) rotate(180deg); }
 }
 
-.icon-image{
+.icon-image {
   width: 70px;
   height: 70px;
-  margin-right: 10px;
+  margin-right: $spacing-sm;
 }
 
 .about-hero-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 $spacing-xl;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  gap: $spacing-3xl;
   align-items: center;
   position: relative;
   z-index: 2;
+
+  @include mobile-only {
+    grid-template-columns: 1fr;
+    gap: $spacing-xl;
+    text-align: center;
+  }
 }
 
 .hero-badge {
   display: inline-block;
   background: var(--bg-sage);
   color: var(--primary-color);
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  font-size: 0.9rem;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-2xl;
+  font-size: $font-size-sm;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin-bottom: $spacing-lg;
   border: 1px solid var(--border-light);
 }
 
 .hero-text h1 {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: $spacing-lg;
   line-height: 1.2;
   color: var(--text-dark);
   font-family: 'Playfair Display', serif;
+
+  @include mobile-only {
+    font-size: $font-size-4xl;
+  }
 }
 
 .hero-text p {
-  font-size: 1.1rem;
+  font-size: $font-size-lg;
   opacity: 0.9;
-  margin-bottom: 2rem;
+  margin-bottom: $spacing-xl;
   line-height: 1.6;
   color: var(--text-light);
 }
@@ -370,28 +382,33 @@ onMounted(async () => {
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  gap: $spacing-xl;
+
+  @include mobile-only {
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+  }
 }
 
 .stat-item {
   text-align: center;
-  padding: 1.5rem;
+  padding: $spacing-lg;
   background: white;
-  border-radius: 15px;
+  border-radius: $radius-lg;
   box-shadow: 0 8px 25px var(--shadow-light);
   border: 1px solid var(--border-light);
 }
 
 .stat-number {
-  font-size: 2.5rem;
+  font-size: $font-size-4xl;
   font-weight: 800;
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: $spacing-sm;
   color: var(--primary-color);
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
   color: var(--text-light);
   font-weight: 500;
 }
@@ -399,49 +416,47 @@ onMounted(async () => {
 .hero-visual {
   position: relative;
   height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
 }
 
 .visual-circle {
   position: absolute;
   border: 2px solid var(--primary-color);
   opacity: 0.3;
-  border-radius: 50%;
+  border-radius: $radius-full;
   animation: gentlePulse 6s ease-in-out infinite;
-}
 
-.visual-circle:nth-child(1) {
-  width: 300px;
-  height: 300px;
-  animation-delay: 0s;
-}
+  &:nth-child(1) {
+    width: 300px;
+    height: 300px;
+    animation-delay: 0s;
+  }
 
-.visual-circle:nth-child(2) {
-  width: 200px;
-  height: 200px;
-  animation-delay: 2s;
-}
+  &:nth-child(2) {
+    width: 200px;
+    height: 200px;
+    animation-delay: 2s;
+  }
 
-.visual-circle:nth-child(3) {
-  width: 100px;
-  height: 100px;
-  animation-delay: 4s;
+  &:nth-child(3) {
+    width: 100px;
+    height: 100px;
+    animation-delay: 4s;
+  }
 }
 
 .visual-center {
-  font-size: 4rem;
+  font-size: $font-size-4xl;
   position: relative;
   z-index: 3;
-}
 
-.visual-center img {
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 10px 30px var(--shadow-medium);
+  img {
+    width: 180px;
+    height: 180px;
+    border-radius: $radius-full;
+    object-fit: cover;
+    box-shadow: 0 10px 30px var(--shadow-medium);
+  }
 }
 
 @keyframes gentlePulse {
@@ -453,90 +468,85 @@ onMounted(async () => {
 .about-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 2rem;
+  padding: $spacing-3xl $spacing-xl;
 }
 
 .section {
-  margin-bottom: 6rem;
+  margin-bottom: $spacing-3xl;
 }
 
 /* Our Story Section */
 .story-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  @include grid-two($spacing-3xl);
   align-items: center;
 }
 
 .story-text {
-  font-size: 1.1rem;
+  font-size: $font-size-lg;
   line-height: 1.8;
   color: var(--text-light);
   text-align: justify;
-}
 
-.story-text p {
-  margin-bottom: 1.5rem;
+  p {
+    margin-bottom: $spacing-lg;
+  }
 }
 
 .story-visual {
   background: var(--gradient);
   height: 400px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: $radius-xl;
+  @include flex-center;
   color: white;
-  font-size: 5rem;
+  font-size: $font-size-4xl;
   position: relative;
   overflow: hidden;
   box-shadow: 0 15px 40px var(--shadow-medium);
-}
 
-.story-visual::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(1px);
-}
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(1px);
+  }
 
-.story-visual img.story-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  img.story-image {
+    position: absolute;
+    inset: 0;
+    @include image-cover;
+  }
 }
 
 /* Mission Section */
 .mission-section {
-  @extend .card-base;
+  @include card-base(white, $radius-xl, $spacing-3xl);
   text-align: center;
-  padding: 4rem;
 }
 
 .mission-text {
-  font-size: 1.3rem;
+  font-size: $font-size-xl;
   line-height: 1.7;
   color: var(--text-light);
   max-width: 800px;
-  margin: 0 auto 2rem;
+  margin: 0 auto $spacing-xl;
 }
 
 .mission-values {
-  @extend .grid-three;
-  margin-top: 3rem;
+  @include grid-auto(300px, $spacing-xl);
+  margin-top: $spacing-2xl;
+
+  @include mobile-only {
+    grid-template-columns: 1fr;
+  }
 }
 
 .value-item {
-  @extend .card-base;
+  @include card-base(var(--bg-light), $radius-xl, $spacing-xl);
   text-align: center;
-  padding: 2rem;
-  background: var(--bg-light);
 
   &:hover {
     background: var(--bg-sage);
@@ -544,79 +554,69 @@ onMounted(async () => {
 }
 
 .value-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: $font-size-4xl;
+  margin-bottom: $spacing-md;
 }
 
 .value-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
+  @include heading-small;
 }
 
 .value-description {
-  color: var(--text-light);
-  line-height: 1.5;
+  @include text-muted;
 }
 
 /* Credentials Section */
 .credentials-section {
   background: var(--bg-light);
-  padding: 4rem;
-  border-radius: 30px;
+  padding: $spacing-3xl;
+  border-radius: $radius-2xl;
   border: 1px solid var(--border-light);
 }
 
 .credentials-grid {
-  @extend .grid-two;
-  margin-top: 2rem;
+  @include grid-two($spacing-xl);
+  margin-top: $spacing-xl;
 }
 
 .credential-item {
-  @extend .card-base;
-  padding: 2rem;
-  background: white;
+  @include card-base(white, $radius-xl, $spacing-xl);
 }
 
 .credential-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  font-size: $font-size-4xl;
+  margin-bottom: $spacing-md;
   display: block;
 }
 
 .credential-item h3 {
-  color: var(--text-dark);
-  font-weight: 700;
-  margin-bottom: 1rem;
+  @include heading-small;
 }
 
 .credential-item p {
-  color: var(--text-light);
-  line-height: 1.6;
+  @include text-muted;
 }
 
 /* CTA Section */
 .cta-section {
   background: var(--primary-color);
   color: white;
-  padding: 4rem;
-  border-radius: 30px;
+  padding: $spacing-3xl;
+  border-radius: $radius-2xl;
   text-align: center;
-  margin-top: 4rem;
+  margin-top: $spacing-3xl;
   box-shadow: 0 15px 40px var(--shadow-medium);
 
   h2 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
+    @include heading-large;
+    color: white;
     font-family: 'Playfair Display', serif;
   }
 
   p {
-    font-size: 1.1rem;
+    font-size: $font-size-lg;
     opacity: 0.9;
-    margin-bottom: 2rem;
+    margin-bottom: $spacing-xl;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
@@ -655,34 +655,6 @@ onMounted(async () => {
       background: white;
       color: var(--primary-color);
     }
-  }
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .about-hero-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    text-align: center;
-  }
-
-  .hero-stats {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .story-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .cta-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .hero-text h1 {
-    font-size: 2.5rem;
   }
 }
 </style>

@@ -151,11 +151,13 @@ onMounted(() => {
 
 <style scoped lang="scss">
 @import '@/assets/common.scss';
+@import '@/assets/scss/mixins';
+@import '@/assets/scss/variables';
 
 svg {
   height: 50px;
   width: 50px;
-  margin-right: 0.5rem;
+  margin-right: $spacing-sm;
 }
 
 /* Therapy Events Hero Section */
@@ -173,37 +175,34 @@ svg {
 /* Filter Section */
 .therapy-events-filter {
   background: var(--bg-light);
-  padding: 2rem 0;
+  padding: $spacing-xl 0;
   border-bottom: 1px solid var(--border-light);
 }
 
 .filter-wellness-content {
   @extend .container;
-  display: flex;
-  gap: 2rem;
+  @include flex-row($spacing-xl);
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .filter-wellness-buttons {
-  display: flex;
-  gap: 1rem;
+  @include flex-row($spacing-md);
   flex-wrap: wrap;
 }
 
 .wellness-filter-btn {
-  padding: 0.75rem 1.5rem;
+  padding: $spacing-sm $spacing-lg;
   background: white;
   border: 2px solid var(--border-light);
-  border-radius: 25px;
+  border-radius: $radius-2xl;
   color: var(--text-dark);
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: all $transition-normal;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  @include flex-center;
+  gap: $spacing-sm;
 
   &:hover, &.active {
     background: var(--primary-color);
@@ -217,14 +216,13 @@ svg {
 /* Main Content */
 .therapy-events-content {
   @extend .container;
-  padding: 4rem 2rem;
+  padding: $spacing-3xl $spacing-xl;
 }
 
 /* Events Grid */
 .therapy-events-grid {
-  @extend .grid-auto-fit;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  margin-bottom: 4rem;
+  @include grid-auto(380px, $spacing-xl);
+  margin-bottom: $spacing-3xl;
 }
 
 /* Styles for therapy-event-card have been moved to EventCard.vue component */

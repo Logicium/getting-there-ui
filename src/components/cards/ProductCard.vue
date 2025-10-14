@@ -58,30 +58,27 @@ const handlePreview = () => {
   </div>
 </template>
 
-<style scoped>
-.product-card {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s ease;
-  position: relative;
-  border: 1px solid var(--border-light);
-}
+<style scoped lang="scss">
+@import '@/assets/scss/mixins';
+@import '@/assets/scss/variables';
 
-.product-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+.product-card {
+  @include card-base(white, $radius-xl);
+  overflow: hidden;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .product-image {
   height: 180px;
   background: var(--gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   color: white;
-  font-size: 3rem;
+  font-size: $font-size-4xl;
   position: relative;
   overflow: hidden;
 }
@@ -105,84 +102,70 @@ const handlePreview = () => {
   max-height: 90%;
   object-fit: contain;
   z-index: 2;
-  transition: transform 0.3s ease;
+  transition: transform $transition-normal;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
 
-.product-card:hover .book-cover-image {
-  transform: scale(1.05);
+  .product-card:hover & {
+    transform: scale(1.05);
+  }
 }
 
 .fallback-image {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   width: 100%;
   height: 100%;
 }
 
 .bestseller-badge {
+  @include badge-base;
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: $spacing-md;
+  left: $spacing-md;
   background: var(--accent-color);
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 700;
   z-index: 3;
 }
 
 .new-badge {
+  @include badge-base;
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: $spacing-md;
+  left: $spacing-md;
   background: var(--success-color);
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 700;
   z-index: 3;
 }
 
 .digital-only-badge {
+  @include badge-base;
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: $spacing-md;
+  right: $spacing-md;
   background: var(--soft-blue);
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 700;
 }
 
 .product-content {
-  padding: 1.5rem;
+  padding: $spacing-lg;
 }
 
 .product-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
+  @include heading-small;
+  margin-bottom: $spacing-sm;
   line-height: 1.3;
 }
 
 .product-author {
   color: var(--primary-color);
   font-weight: 600;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-sm;
 }
 
 .product-description {
-  color: var(--text-light);
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
+  @include text-muted;
+  margin-bottom: $spacing-md;
+  font-size: $font-size-xs;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -190,89 +173,69 @@ const handlePreview = () => {
 }
 
 .product-pricing {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
+  @include flex-between;
+  margin-bottom: $spacing-md;
+  padding: $spacing-sm;
   background: var(--bg-sage);
-  border-radius: 10px;
+  border-radius: $radius-md;
   border: 1px solid var(--border-light);
 }
 
 .price-display {
-  display: flex;
-  flex-direction: column;
+  @include flex-column($spacing-xs);
 }
 
 .price {
-  font-size: 1.3rem;
+  font-size: $font-size-xl;
   font-weight: 800;
   color: var(--primary-color);
 }
 
 .format-type {
-  font-size: 0.75rem;
+  font-size: $font-size-xs;
   color: var(--text-light);
   font-weight: 500;
 }
 
 .instant-access {
-  font-size: 0.8rem;
+  font-size: $font-size-xs;
   color: var(--primary-color);
   font-weight: 600;
   background: rgba(74, 124, 89, 0.1);
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
 }
 
 .product-footer {
-  display: flex;
-  gap: 0.75rem;
+  @include flex-row($spacing-sm);
 }
 
 .add-to-cart-btn {
+  @include button-primary;
   flex: 2;
-  background: var(--primary-color);
-  color: white;
-  padding: 0.75rem;
-  border-radius: 20px;
-  border: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.add-to-cart-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
+  padding: $spacing-sm;
+  font-size: $font-size-sm;
 }
 
 .quick-view-btn {
   flex: 1;
-  background: transparent;
-  color: var(--primary-color);
+  @include button-base(transparent, var(--primary-color));
   border: 2px solid var(--primary-color);
-  padding: 0.75rem;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-}
+  padding: $spacing-sm;
+  font-size: $font-size-sm;
 
-.quick-view-btn:hover {
-  background: var(--primary-color);
-  color: white;
+  &:hover {
+    background: var(--primary-color);
+    color: white;
+  }
 }
 
 /* Mobile Responsiveness */
-@media (max-width: 768px) {
+@include mobile-only {
   .format-features {
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: $spacing-sm;
   }
 
   .product-footer {
