@@ -302,17 +302,20 @@ onMounted(async () => {
   <main class="therapy-blog-content">
     <section class="articles-section">
       <h2 class="wellness-section-title">Latest Wellness Articles</h2>
-      <!-- RENDER ALL ARTICLES - FILTER WITH DOM MANIPULATION -->
-      <div v-if="isLoading" class="loading-container">
+
+      <!-- Loading State -->
+      <div v-if="isLoading" class="content-loading-container">
         <div class="loading-spinner"></div>
         <p>Loading blog articles...</p>
       </div>
 
-      <div v-else-if="error" class="error-container">
+      <!-- Error State -->
+      <div v-else-if="error" class="content-error-container">
         <p>{{ error }}</p>
         <button @click="fetchBlogArticles" class="retry-button">Retry</button>
       </div>
 
+      <!-- Articles Grid -->
       <div v-else class="therapy-articles-grid" id="articlesGrid">
         <BlogCard
             v-for="article in blogArticles"
@@ -416,6 +419,97 @@ onMounted(async () => {
   @extend .hero-content-base;
 }
 
+/* Hero Loading/Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  min-height: 200px;
+}
+
+.loading-container p,
+.error-container p {
+  color: white;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  color: white;
+}
+
+.retry-button {
+  background: white;
+  color: var(--primary-color);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+/* Content Loading/Error States (not in white boxes) */
+.content-loading-container,
+.content-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 300px;
+}
+
+.content-loading-container p,
+.content-error-container p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+.content-loading-container .loading-spinner {
+  border: 4px solid rgba(74, 124, 89, 0.2);
+  border-top-color: var(--primary-color);
+}
+
+.content-error-container {
+  color: var(--text-dark);
+}
+
+.content-error-container .retry-button {
+  background: var(--primary-color);
+  color: white;
+}
+
+.content-error-container .retry-button:hover {
+  background: var(--secondary-color);
+}
+
 .search-filter-section {
   background: var(--bg-light);
   padding: 2rem 0;
@@ -504,51 +598,6 @@ onMounted(async () => {
 .therapy-articles-grid {
   display: grid;
   gap: 2rem;
-}
-
-.loading-container, .error-container, .no-articles-message {
-  padding: 3rem;
-  text-align: center;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin: 2rem 0;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(74, 124, 89, 0.1);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  margin: 0 auto 1rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container {
-  color: #d32f2f;
-}
-
-.retry-button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  margin-top: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-button:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
 }
 
 .no-articles-message {

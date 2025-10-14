@@ -217,9 +217,6 @@ function observeFadeElements() {
 }
 
 const fetchBooks = async () => {
-  isLoading.value = true;
-  error.value = null;
-
   try {
     const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/books?populate=all`);
 
@@ -270,8 +267,6 @@ const fetchBooks = async () => {
   } catch (err) {
     console.error('Error fetching books:', err);
     error.value = err instanceof Error ? err.message : 'Failed to load books';
-  } finally {
-    isLoading.value = false;
   }
 };
 
@@ -543,6 +538,60 @@ onMounted(async () => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
+}
+
+/* Hero Loading/Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  min-height: 200px;
+}
+
+.loading-container p,
+.error-container p {
+  color: white;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  color: white;
+}
+
+.retry-button {
+  background: white;
+  color: var(--primary-color);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
 }
 
 .therapy-author-intro {
@@ -1218,55 +1267,5 @@ onMounted(async () => {
     font-size: 0.9rem;
     line-height: 1.5;
   }
-}
-
-.loading-container, .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin: 2rem auto;
-  max-width: 500px;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(74, 124, 89, 0.1);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  margin: 0 auto 1.5rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container {
-  color: #d32f2f;
-}
-
-.retry-button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  margin-top: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-button:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
 }
 </style>

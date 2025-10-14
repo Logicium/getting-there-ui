@@ -267,17 +267,20 @@ onMounted(async () => {
         Complete Video Library
         <div class="section-divider"></div>
       </h2>
-      <!-- RENDER ALL VIDEOS - FILTER WITH DOM MANIPULATION -->
-      <div v-if="videosLoading" class="loading-container">
+
+      <!-- Loading State -->
+      <div v-if="videosLoading" class="content-loading-container">
         <div class="loading-spinner"></div>
         <p>Loading videos...</p>
       </div>
 
-      <div v-else-if="videosError" class="error-container">
+      <!-- Error State -->
+      <div v-else-if="videosError" class="content-error-container">
         <p>{{ videosError }}</p>
         <button @click="fetchVideos" class="retry-button">Retry</button>
       </div>
 
+      <!-- Videos Grid -->
       <div v-else class="therapy-videos-grid" id="allVideos">
         <VideoCard
             v-for="video in Object.values(videos)"
@@ -441,6 +444,97 @@ onMounted(async () => {
 .therapy-videos-grid {
   @extend .grid-auto-fit;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+/* Content Loading/Error States (not in white boxes) */
+.content-loading-container,
+.content-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 300px;
+}
+
+.content-loading-container p,
+.content-error-container p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+/* Hero Loading/Error States (keep existing styles) */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  min-height: 200px;
+}
+
+.loading-container p,
+.error-container p {
+  color: white;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+.content-loading-container .loading-spinner {
+  border: 4px solid rgba(74, 124, 89, 0.2);
+  border-top-color: var(--primary-color);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  color: white;
+}
+
+.content-error-container {
+  color: var(--text-dark);
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.error-container .retry-button {
+  background: white;
+  color: var(--primary-color);
+}
+
+.error-container .retry-button:hover {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .therapy-community-section {
@@ -628,56 +722,6 @@ onMounted(async () => {
     color: var(--text-dark);
     font-size: 0.9rem;
   }
-}
-
-.loading-container, .error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin: 2rem auto;
-  max-width: 500px;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(74, 124, 89, 0.1);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  margin: 0 auto 1.5rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container {
-  color: #d32f2f;
-}
-
-.retry-button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  margin-top: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-button:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
