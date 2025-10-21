@@ -88,6 +88,27 @@ interface HomePageData {
     resourcescomponent: ResourcesComponent;
     ctacomponent: CTAComponent;
     actionbutton: ActionButton;
+    Video: {
+      id: number;
+      documentId: string;
+      name: string;
+      alternativeText: string | null;
+      caption: string | null;
+      width: number | null;
+      height: number | null;
+      formats: any | null;
+      hash: string;
+      ext: string;
+      mime: string;
+      size: number;
+      url: string;
+      previewUrl: string | null;
+      provider: string;
+      provider_metadata: any | null;
+      createdAt: string;
+      updatedAt: string;
+      publishedAt: string;
+    } | null;
   };
   meta: Record<string, any>;
 }
@@ -99,8 +120,11 @@ const servicesData = ref<ServicesComponent | null>(null);
 const resourcesData = ref<ResourcesComponent | null>(null);
 const ctaData = ref<CTAComponent | null>(null);
 const actionButtonData = ref<ActionButton | null>(null);
+const videoData = ref<HomePageData['data']['Video']>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+const videoPlayer = ref<HTMLVideoElement | null>(null);
+const isVideoPlaying = ref(false);
 
 // Function to observe fade-in elements
 const observeFadeElements = () => {
@@ -143,6 +167,7 @@ const fetchPageData = async () => {
     resourcesData.value = data.data.resourcescomponent;
     ctaData.value = data.data.ctacomponent;
     actionButtonData.value = data.data.actionbutton;
+    videoData.value = data.data.Video;
 
     // Wait for the DOM to update with the new data
     setTimeout(() => {
@@ -177,6 +202,24 @@ const setupHeroImageRotation = () => {
   setTimeout(() => {
     setInterval(rotateHeroImages, 6000);
   }, 3000);
+};
+
+// Function to play the video
+const playVideo = () => {
+  if (videoPlayer.value) {
+    videoPlayer.value.play();
+    isVideoPlaying.value = true;
+  }
+};
+
+// Function to hide the play button when the video is playing
+const hidePlayButton = () => {
+  isVideoPlaying.value = true;
+};
+
+// Function to show the play button when the video is paused or ended
+const showPlayButton = () => {
+  isVideoPlaying.value = false;
 };
 
 onMounted(() => {
@@ -234,7 +277,43 @@ onMounted(() => {
           </div>
         </div>
         <div class="hero-visual">
-          <div class="hero-images">
+          <!-- Display video if available -->
+          <div v-if="videoData" class="hero-video-container">
+            <!-- Blurry background using the poster image -->
+            <div 
+              class="hero-video-background"
+              :style="{
+                backgroundImage: `url(${heroData.imagecarousel && heroData.imagecarousel.length > 0 ? 'https://getting-there-cms.onrender.com' + heroData.imagecarousel[0].url : '/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg'})`
+              }"
+            ></div>
+
+            <!-- Video element -->
+            <div class="hero-video-wrapper">
+              <video 
+                ref="videoPlayer"
+                class="hero-video" 
+                :controls="isVideoPlaying"
+                :src="`https://getting-there-cms.onrender.com${videoData.url}`"
+                :poster="heroData.imagecarousel && heroData.imagecarousel.length > 0 ? `https://getting-there-cms.onrender.com${heroData.imagecarousel[0].url}` : '/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg'"
+                @play="hidePlayButton"
+                @pause="showPlayButton"
+                @ended="showPlayButton"
+              ></video>
+
+              <!-- Play button overlay -->
+              <div 
+                class="hero-video-play-button" 
+                :class="{ 'hidden': isVideoPlaying }"
+                @click="playVideo"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Otherwise display image carousel -->
+          <div v-else class="hero-images">
             <!-- Use CMS imagecarousel data if available -->
             <template v-if="heroData.imagecarousel && heroData.imagecarousel.length > 0">
               <img
@@ -476,6 +555,76 @@ onMounted(() => {
 
   &.active {
     opacity: 1;
+  }
+}
+
+.hero-video-container {
+  height: 100%;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: 0 20px 60px var(--shadow-medium);
+  position: relative;
+}
+
+.hero-video-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(15px);
+  transform: scale(1.1); /* Prevent blur edges from showing */
+  opacity: 0.8;
+  z-index: 1;
+}
+
+.hero-video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.hero-video {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  border-radius: $radius-md;
+  position: relative;
+  z-index: 2;
+  background-color: transparent;
+}
+
+.hero-video-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 3;
+  color: white;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 

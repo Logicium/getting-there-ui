@@ -42,13 +42,6 @@ onMounted(async () => {
           </div>
         </div>
         <div class="footer-section">
-          <h3>Services</h3>
-          <p><RouterLink to="/about">Personal Growth</RouterLink></p>
-          <p><RouterLink to="/about">Coping With Loss</RouterLink></p>
-          <p><RouterLink to="/about">Setting and Reaching Goals</RouterLink></p>
-          <p><RouterLink to="/events">Just for Fun</RouterLink></p>
-        </div>
-        <div class="footer-section">
           <h3>Resources</h3>
           <p><RouterLink to="/blog">Blog</RouterLink></p>
           <p><RouterLink to="/store">Booklets</RouterLink></p>
@@ -63,7 +56,6 @@ onMounted(async () => {
               gettingthere@gthere.net
             </a>
           </div>
-          <p class="contact-note">Mon-Fri, 9AM-5PM MT</p>
         </div>
       </div>
       <div class="footer-bottom">
