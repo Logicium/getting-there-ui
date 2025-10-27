@@ -47,7 +47,7 @@ const handleClose = () => emit('close');
           </div>
           <div class="therapy-spec-item">
             <span class="therapy-spec-label">Format:</span>
-            <span class="therapy-spec-value">PDF, EPUB compatible</span>
+            <span class="therapy-spec-value">PDF compatible</span>
           </div>
           <div class="therapy-spec-item">
             <span class="therapy-spec-label">Access:</span>
@@ -55,10 +55,6 @@ const handleClose = () => emit('close');
           </div>
         </div>
 
-        <div class="therapy-content-warning">
-          <h4>⚠️ Content Notice</h4>
-          <p>This book addresses mental health topics and may include discussions of trauma, depression, or anxiety. Please read in a safe environment and consider having support available.</p>
-        </div>
       </div>
     </div>
   </ModalDialog>

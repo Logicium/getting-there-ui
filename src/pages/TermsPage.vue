@@ -63,16 +63,13 @@ onMounted(() => {
       <div class="warning-notice">
         <h4>⚠️ Important: Not Clinical Therapy</h4>
         <p>
-          Our services are <strong>educational and supportive in nature</strong> and do not constitute clinical therapy, medical treatment, or professional mental health services. While facilitated by licensed professionals, our programs are designed to complement—not replace—individual therapy or psychiatric care. If you are experiencing a mental health crisis or need clinical treatment, please contact a licensed mental health provider or emergency services.
+          Our services are <strong>educational and supportive in nature</strong> and do not constitute clinical therapy, medical treatment, or professional mental health services. Our programs are designed to complement—not replace—individual therapy or psychiatric care. If you are experiencing a mental health crisis or need clinical treatment, please contact a licensed mental health provider or emergency services.
         </p>
       </div>
     </section>
 
     <section class="content-section fade-in">
       <h2>3. User Eligibility and Account Responsibilities</h2>
-
-      <h3>Age Requirements</h3>
-      <p>You must be at least 18 years old to use our Services. By using our Services, you represent that you meet this age requirement.</p>
 
       <h3>Account Security</h3>
       <p>When you create an account, you agree to:</p>
