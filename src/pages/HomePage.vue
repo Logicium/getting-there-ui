@@ -395,7 +395,7 @@ onMounted(() => {
               :icon-index="index"
               :icon="card.icon"
             />
-            <router-link to="/videos" class="resources-cta">Explore Resources</router-link>
+            <router-link to="/videos" class="resources-cta">Explore Videos</router-link>
           </div>
           <div class="resources-visual fade-in">
             <div class="visual-element"></div>
