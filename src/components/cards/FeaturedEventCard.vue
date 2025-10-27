@@ -58,7 +58,7 @@ defineProps<Props>();
       <div class="featured-therapy-price" v-else>
         Free
       </div>
-      <router-link :to="`/events/${event.documentId}`" class="featured-therapy-btn">Learn More</router-link>
+<!--      <router-link :to="`/events/${event.documentId}`" class="featured-therapy-btn">Learn More</router-link>-->
     </div>
   </div>
 </template>
