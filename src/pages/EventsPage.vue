@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import GrowthIcon from "@/components/icons/GrowthIcon.vue";
 import PlantIcon from "@/components/icons/PlantIcon.vue";
 import Plant2Icon from "@/components/icons/Plant2Icon.vue";
@@ -22,12 +22,30 @@ const error = ref<string | null>(null);
 const events = ref<Event[]>([]);
 const featuredEvent = ref<Event | null>(null);
 
+// Derived categories from events (lowercased)
+const categories = computed(() => {
+  const set = new Set<string>();
+  for (const e of events.value) {
+    const cat = (e.Category?.trim().toLowerCase()) || getCategoryFromTitle(e.Title);
+    if (cat && cat !== 'all') set.add(cat);
+  }
+  return Array.from(set).sort();
+});
+
 // Filter functionality
 const currentFilter = ref('all');
 
 function setFilter(filter: string) {
   currentFilter.value = filter;
   filterElementsByCategory('.therapy-event-card', filter);
+}
+
+function formatCategoryLabel(cat: string): string {
+  return cat
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 // Function to fetch events page data from CMS
@@ -110,17 +128,14 @@ onMounted(() => {
         <button class="wellness-filter-btn" :class="{ active: currentFilter === 'all' }" @click="setFilter('all')">
           📅 All Programs
         </button>
-        <button class="wellness-filter-btn" :class="{ active: currentFilter === 'therapy' }" @click="setFilter('therapy')">
-          🧠 Therapy Groups
-        </button>
-        <button class="wellness-filter-btn" :class="{ active: currentFilter === 'mindfulness' }" @click="setFilter('mindfulness')">
-          🧘 Mindfulness
-        </button>
-        <button class="wellness-filter-btn" :class="{ active: currentFilter === 'support' }" @click="setFilter('support')">
-          🤝 Support Groups
-        </button>
-        <button class="wellness-filter-btn" :class="{ active: currentFilter === 'online' }" @click="setFilter('online')">
-          💻 Virtual Sessions
+        <button
+          v-for="cat in categories"
+          :key="cat"
+          class="wellness-filter-btn"
+          :class="{ active: currentFilter === cat }"
+          @click="setFilter(cat)"
+        >
+          {{ formatCategoryLabel(cat) }}
         </button>
       </div>
     </div>

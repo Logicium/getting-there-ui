@@ -17,7 +17,7 @@ const cmsUrl = 'https://getting-there-cms.onrender.com';
     :is="linkCard ? 'RouterLink' : 'div'" 
     :to="linkCard ? `/events/${event.documentId}` : undefined" 
     class="therapy-event-card"
-    :data-category="getCategoryFromTitle(event.Title)" 
+    :data-category="(event.Category && event.Category.trim().toLowerCase()) || getCategoryFromTitle(event.Title)" 
     :data-date="event.date || ''"
   >
     <div class="therapy-event-image">
