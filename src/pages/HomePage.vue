@@ -74,6 +74,13 @@ interface ActionButton {
   linkLocation: string;
 }
 
+// Interface for VisualText section
+interface VisualText {
+  id: number;
+  Title: string;
+  Subtitle: string;
+}
+
 // Interface for the home page data
 interface HomePageData {
   data: {
@@ -109,6 +116,7 @@ interface HomePageData {
       updatedAt: string;
       publishedAt: string;
     } | null;
+    VisualText: VisualText | null;
   };
   meta: Record<string, any>;
 }
@@ -121,6 +129,7 @@ const resourcesData = ref<ResourcesComponent | null>(null);
 const ctaData = ref<CTAComponent | null>(null);
 const actionButtonData = ref<ActionButton | null>(null);
 const videoData = ref<HomePageData['data']['Video']>(null);
+const visualTextData = ref<VisualText | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const videoPlayer = ref<HTMLVideoElement | null>(null);
@@ -168,6 +177,7 @@ const fetchPageData = async () => {
     ctaData.value = data.data.ctacomponent;
     actionButtonData.value = data.data.actionbutton;
     videoData.value = data.data.Video;
+    visualTextData.value = data.data.VisualText;
 
     // Wait for the DOM to update with the new data
     setTimeout(() => {
@@ -391,9 +401,9 @@ onMounted(() => {
             <div class="visual-element"></div>
             <div class="visual-element"></div>
             <div class="visual-element"></div>
-            <div class="visual-text">
-              <h3>Evidence-Based</h3>
-              <p>Research-backed approaches</p>
+            <div v-if="visualTextData" class="visual-text">
+              <h3>{{ visualTextData.Title }}</h3>
+              <p>{{ visualTextData.Subtitle }}</p>
             </div>
           </div>
         </div>
