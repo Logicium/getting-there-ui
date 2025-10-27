@@ -206,7 +206,7 @@ onMounted(async () => {
       <p>{{ heroDescription }}</p>
       <div class="hero-wellness-stats">
         <div class="hero-wellness-stat">
-          <span class="hero-stat-number">50+</span>
+          <span class="hero-stat-number">{{ Object.keys(videos).length }}+</span>
           <span class="hero-stat-label">Free Videos</span>
         </div>
         <div class="hero-wellness-stat">
