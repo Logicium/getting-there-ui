@@ -144,6 +144,12 @@ nav {
   width: 100%;
 }
 
+.nav-links a.router-link-active {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
 .contact-btn {
   background: var(--primary-color) !important;
   color: white !important;
