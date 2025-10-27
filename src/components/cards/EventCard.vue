@@ -61,6 +61,7 @@ const cmsUrl = 'https://getting-there-cms.onrender.com';
       </div>
       <div class="therapy-event-footer">
         <div class="therapy-event-price" v-if="event.Price !== null && event.Price > 0">{{ formatPrice(event.Price) }}/session</div>
+        <div class="therapy-event-price" v-else-if="event.Price === null">TBD</div>
         <div class="therapy-event-price" v-else>Free</div>
         <router-link v-if="!linkCard" :to="`/events/${event.documentId}`" class="therapy-event-btn">Learn More</router-link>
         <button v-else class="therapy-event-btn">Learn More</button>
