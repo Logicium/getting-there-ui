@@ -36,7 +36,6 @@ export interface Event {
   steps: EventStep[];
   Price: number | null;
   availabilityStatus: string | null;
-  Category?: string | null;
 }
 
 export interface EventsResponse {

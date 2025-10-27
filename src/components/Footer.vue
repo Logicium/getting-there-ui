@@ -36,10 +36,6 @@ onMounted(async () => {
         <div class="footer-section">
           <h3>Getting There</h3>
           <p>{{ footerContent }}</p>
-          <div class="credentials">
-            <span class="credential-badge"><Plant2Icon/> Wellness Focus</span>
-            <span class="credential-badge"><HeartIcon/> Compassionate Care</span>
-          </div>
         </div>
         <div class="footer-section">
           <h3>Resources</h3>
