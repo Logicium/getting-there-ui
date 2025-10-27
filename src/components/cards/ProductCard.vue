@@ -63,7 +63,11 @@ const handlePreview = () => {
 @import '@/assets/scss/variables';
 
 .product-card {
-  @include card-base(white, $radius-xl);
+  background: white;
+  border-radius: $radius-xl;
+  box-shadow: 0 8px 30px var(--shadow-light);
+  border: 1px solid var(--border-light);
+  transition: all $transition-slow ease;
   overflow: hidden;
   position: relative;
 
