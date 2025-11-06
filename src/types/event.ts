@@ -26,6 +26,7 @@ export interface Event {
   Address: string | null;
   Frequency: string | null;
   GroupSize: string | null;
+  Category: string | null;
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
