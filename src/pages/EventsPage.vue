@@ -114,11 +114,6 @@ onMounted(() => {
     <div v-else-if="heroData" class="therapy-events-hero-content">
       <h1>{{ heroData.title }}</h1>
       <p>{{ heroData.description }}</p>
-      <div class="hero-wellness-indicators">
-        <span class="trust-badge">🏆 PhD Educated Professionals</span>
-        <span class="trust-badge">🤝 Safe Spaces</span>
-        <span class="trust-badge">💚 Evidence-Based Approaches</span>
-      </div>
     </div>
   </section>
 

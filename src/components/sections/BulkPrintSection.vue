@@ -38,10 +38,6 @@
 
         <div class="bulk-features">
           <div class="feature-item">
-            <span class="feature-icon">📖</span>
-            <span>Professional-grade printing and binding</span>
-          </div>
-          <div class="feature-item">
             <span class="feature-icon">📦</span>
             <span>Minimum order: 25 copies</span>
           </div>
@@ -64,7 +60,6 @@
           </a>
         </div>
 
-        <p class="bulk-pricing-note">Pricing starts at $8/book • Volume discounts available</p>
       </div>
     </div>
   </section>

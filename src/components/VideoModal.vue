@@ -48,9 +48,6 @@ const handleClose = () => emit('close');
           <p>PhD Educated Sociologist</p>
         </div>
       </div>
-      <div class="therapy-modal-warning">
-        <p><strong>⚠️ Therapeutic Content Notice:</strong> This content addresses mental health topics. Please watch in a safe, private space and consider having support available.</p>
-      </div>
     </div>
   </ModalDialog>
 </template>

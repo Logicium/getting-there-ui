@@ -10,13 +10,6 @@
       </div>
       <h3 class="article-title">{{ title }}</h3>
       <p class="article-excerpt">{{ excerpt }}</p>
-      <div class="article-author-therapy">
-        <div class="author-avatar-therapy">{{ authorAvatar }}</div>
-        <div class="author-info-therapy">
-          <span class="author-name">{{ authorName }}</span>
-          <span class="author-credentials">{{ authorCredentials }}</span>
-        </div>
-      </div>
       <router-link v-if="slug" :to="`/blog/${slug}`" class="therapy-read-more">
         Continue Reading →
       </router-link>

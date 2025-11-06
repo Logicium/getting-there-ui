@@ -150,7 +150,7 @@ const fetchBlogArticles = async () => {
         date: formattedDate,
         readTime: readTime,
         authorName: article.Author,
-        authorCredentials: 'Licensed Professional',
+        authorCredentials: 'Ph.D. Educated',
         authorAvatar: '👩‍⚕️',
         slug: article.documentId,
         tags: tags
@@ -267,11 +267,6 @@ onMounted(async () => {
     <div v-else class="therapy-hero-content">
       <h1>{{ heroTitle }}</h1>
       <p>{{ heroDescription }}</p>
-      <div class="hero-trust-indicators">
-        <span class="trust-badge">🏆 Expert-Written</span>
-        <span class="trust-badge">🧠 Evidence-Based</span>
-        <span class="trust-badge">💚 Compassionate Care</span>
-      </div>
     </div>
   </section>
 
@@ -301,7 +296,7 @@ onMounted(async () => {
 
   <main class="therapy-blog-content">
     <section class="articles-section">
-      <h2 class="wellness-section-title">Latest Wellness Articles</h2>
+      <h2 class="wellness-section-title">Latest Insights and Musings</h2>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="content-loading-container">
@@ -341,16 +336,6 @@ onMounted(async () => {
     </section>
 
     <aside class="therapy-sidebar">
-      <div class="sidebar-wellness-section">
-        <h3>Quick Wellness Check</h3>
-        <p>Take a moment to assess how you're feeling today.</p>
-        <div class="wellness-check-buttons">
-          <button class="wellness-check-btn good">😊 Good</button>
-          <button class="wellness-check-btn okay">😐 Okay</button>
-          <button class="wellness-check-btn struggling">😔 Struggling</button>
-        </div>
-        <p class="wellness-note">Remember: It's okay to not be okay. Support is always available.</p>
-      </div>
 
       <div class="sidebar-wellness-section">
         <h3>Popular Wellness Topics</h3>
@@ -396,9 +381,9 @@ onMounted(async () => {
 
       <div class="sidebar-wellness-section">
         <h3>Stay Connected</h3>
-        <p>Get weekly wellness tips and gentle reminders delivered to your inbox.</p>
+        <p>Get weekly wellness tips, thoughts and notices delivered to your inbox.</p>
         <input type="email" placeholder="Your email address" class="wellness-email-input">
-        <button class="wellness-subscribe-btn">Get Wellness Tips</button>
+        <button class="wellness-subscribe-btn">Get Happiness Tips</button>
         <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
       </div>
     </aside>

@@ -114,7 +114,6 @@ onMounted(() => {
       <p class="video-presenter">{{ video.presenter }}</p>
       <p class="video-description">{{ video.description }}</p>
       <div class="video-footer">
-        <span class="video-views">{{ video.views }} views</span>
         <button
             class="watch-btn"
             @click="handleWatchClick"

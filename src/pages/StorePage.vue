@@ -235,9 +235,6 @@ onMounted(async () => {
         <div class="author-details">
           <h3>{{ bioTitle }}</h3>
           <p>{{ bioDescription }}</p>
-          <div class="author-credentials">
-            <span v-for="(badge, idx) in bioBadges" :key="idx" class="credential-badge">{{ badge }}</span>
-          </div>
         </div>
       </div>
     </div>
@@ -251,7 +248,7 @@ onMounted(async () => {
   <main class="therapy-store-content">
     <section class="therapy-books-section">
       <h2 class="wellness-section-title fade-in">
-        Therapeutic Literature & Self-Help Guides
+        Literature
         <div class="section-divider"></div>
       </h2>
 
@@ -269,33 +266,6 @@ onMounted(async () => {
 
     <BulkPrintSection />
 
-    <section class="therapy-reading-benefits fade-in">
-      <div class="benefits-content">
-        <h3>📚 The Healing Power of Therapeutic Reading</h3>
-        <div class="benefits-grid">
-          <div class="benefit-item">
-            <div class="benefit-icon">🧠</div>
-            <h4>Evidence-Based Approaches</h4>
-            <p>All our books incorporate the latest research in psychology and neuroscience, offering proven strategies for mental wellness.</p>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">💚</div>
-            <h4>Trauma-Informed Content</h4>
-            <p>Written with sensitivity and awareness of trauma's impact, ensuring safe and supportive reading experiences.</p>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">🌱</div>
-            <h4>Personal Growth Focus</h4>
-            <p>Designed to support your journey of self-discovery, healing, and positive life transformation.</p>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">🤝</div>
-            <h4>Professional Support</h4>
-            <p>Each book includes resources for finding professional help and crisis support when needed.</p>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <CartSidebar 

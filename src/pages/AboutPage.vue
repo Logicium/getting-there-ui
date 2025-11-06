@@ -246,7 +246,7 @@ onMounted(async () => {
     <!-- Credentials Section -->
     <section class="section">
       <div class="credentials-section fade-in">
-        <h2 class="section-title">Professional Standards & Ethics</h2>
+        <h2 class="section-title">Our Approach to Happiness</h2>
         <div class="credentials-grid">
           <div class="credential-item" v-for="card in cards" :key="card.id" v-if="cards && cards.length">
             <div class="credential-icon" v-if="card.icon && card.icon.url">
@@ -260,8 +260,8 @@ onMounted(async () => {
           <template v-if="!cards || !cards.length">
             <div class="credential-item">
               <div class="credential-icon">🛡️</div>
-              <h3>Licensed & Accredited</h3>
-              <p>All our clinical staff hold proper licenses and certifications. We maintain active memberships in professional associations and adhere to strict ethical guidelines.</p>
+              <h3>Accredited</h3>
+              <p>All our clinical staff hold accreditation and experience. We maintain active memberships in professional associations and adhere to strict ethical guidelines.</p>
             </div>
             <div class="credential-item">
               <div class="credential-icon">🔒</div>
