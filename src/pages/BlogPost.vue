@@ -434,13 +434,6 @@ onMounted(async () => {
         </div>
         <h1>{{ blogPost.title }}</h1>
         <div class="blog-meta">
-          <div class="blog-author-info">
-            <div class="author-avatar">👩‍⚕️</div>
-            <div class="author-details">
-              <span class="author-name">{{ blogPost.author }}</span>
-              <span class="author-credentials">{{ blogPost.authorCredentials }}</span>
-            </div>
-          </div>
           <div class="blog-post-meta">
             <span class="publish-date">📅 {{ blogPost.publishDate }}</span>
             <span class="read-time">⏱️ {{ blogPost.readTime }}</span>
@@ -522,42 +515,6 @@ onMounted(async () => {
 
         <!-- Sidebar -->
         <aside class="blog-sidebar">
-          <!-- Author Info -->
-          <div class="sidebar-section author-card fade-in">
-            <div class="author-card-header">
-              <div class="author-avatar-large">👩‍⚕️</div>
-              <div class="author-info">
-                <h3>{{ blogPost.author }}</h3>
-                <p class="author-title">{{ blogPost.authorCredentials }}</p>
-              </div>
-            </div>
-            <p class="author-bio">{{ blogPost.authorBio }}</p>
-            <div class="author-contact">
-              <a href="mailto:sarah@gthere.net" class="contact-btn">📧 Contact {{ blogPost.author }}</a>
-            </div>
-          </div>
-
-          <!-- Crisis Support -->
-          <div class="sidebar-section crisis-support fade-in">
-            <h3>🚨 Need Immediate Support?</h3>
-            <div class="crisis-contacts">
-              <a href="tel:988" class="crisis-contact">
-                <span class="crisis-icon">📞</span>
-                <div>
-                  <strong>988 - Crisis Lifeline</strong>
-                  <p>24/7 confidential support</p>
-                </div>
-              </a>
-              <a href="tel:741741" class="crisis-contact">
-                <span class="crisis-icon">💬</span>
-                <div>
-                  <strong>Text HOME to 741741</strong>
-                  <p>Crisis Text Line</p>
-                </div>
-              </a>
-            </div>
-            <p class="crisis-note">Remember: Seeking help is a sign of strength.</p>
-          </div>
 
           <!-- Related Articles -->
           <div class="sidebar-section related-articles fade-in">
@@ -584,10 +541,10 @@ onMounted(async () => {
 
           <!-- Newsletter Signup -->
           <div class="sidebar-section newsletter-signup fade-in">
-            <h3>💚 Weekly Wellness Tips</h3>
-            <p>Get gentle reminders and mental health insights delivered to your inbox.</p>
+            <h3>Stay Connected</h3>
+            <p>Get weekly wellness tips, thoughts, and notices delivered to your inbox.</p>
             <input type="email" placeholder="Your email address" class="newsletter-input">
-            <button class="newsletter-btn">Subscribe to Healing</button>
+            <button class="newsletter-btn">Get Happiness Tips</button>
             <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
           </div>
         </aside>
@@ -597,7 +554,7 @@ onMounted(async () => {
       <section class="comments-section fade-in">
         <div class="comments-container">
           <h2 class="comments-title">Community Reflections</h2>
-          <p class="comments-subtitle">Share your thoughts and experiences to support others on their healing journey.</p>
+          <p class="comments-subtitle">Share your thoughts and experiences to support others on their happiness journey.</p>
 
           <!-- Comment Form -->
           <div class="comment-form-container">
