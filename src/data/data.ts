@@ -347,11 +347,12 @@ export const videoCategories = [
 ];
 
 export const bookCategories = [
-  { id: 'all', label: 'All Books', icon: '📚' },
-  { id: 'Best Seller', label: 'Bestsellers', icon: '⭐' },
-  { id: 'New Releases', label: 'New Releases', icon: '🆕' },
-  { id: 'Psychology', label: 'Psychology', icon: '🧠' },
-  { id: 'Goal-Setting', label: 'Goal Setting', icon: '🎯' }
+  { id: 'all', label: 'All Books', icon: '' },
+  { id: 'goals', label: 'Goals', icon: '' },
+  { id: 'growth', label: 'Growth', icon: '' },
+  { id: 'loss', label: 'Loss & Grief', icon: '' },
+  { id: 'fun', label: 'Fun', icon: '' },
+  { id: 'happiness', label: 'Happiness', icon: '' }
 ];
 
 // Blog data

@@ -14,11 +14,18 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// Use the exact category values from the CMS
-const isBestseller = computed(() => props.book.category === 'Best Seller');
-const isNewRelease = computed(() => props.book.category === 'New Releases');
-const badgeClass = computed(() => isBestseller.value ? 'bestseller-badge' : isNewRelease.value ? 'new-badge' : '');
-const badgeText = computed(() => isBestseller.value ? 'Bestseller' : isNewRelease.value ? 'New Release' : '');
+// Category badge display logic
+const categoryBadge = computed(() => {
+  const category = props.book.category?.toLowerCase();
+  switch(category) {
+    case 'goals': return { text: 'Goals', class: 'category-goals' };
+    case 'growth': return { text: 'Growth', class: 'category-growth' };
+    case 'loss & grief': return { text: 'Loss & Grief', class: 'category-loss' };
+    case 'fun': return { text: 'Fun', class: 'category-fun' };
+    case 'happiness': return { text: 'Happiness', class: 'category-happiness' };
+    default: return null;
+  }
+});
 
 const handleAddToCart = (event: Event) => {
   props.addToCart(props.book.id, event.target as HTMLElement);
@@ -32,7 +39,7 @@ const handlePreview = () => {
 <template>
   <div class="product-card fade-in" :data-category="book.category">
     <div class="product-image">
-      <div v-if="badgeClass" :class="badgeClass">{{ badgeText }}</div>
+      <div v-if="categoryBadge" :class="categoryBadge.class">{{ categoryBadge.text }}</div>
       <div v-if="book.imageUrl" class="blurred-background" :style="{ backgroundImage: `url('https://getting-there-cms.onrender.com${book.imageUrl}')` }"></div>
       <img v-if="book.imageUrl" :src="'https://getting-there-cms.onrender.com' + book.imageUrl" alt="Book cover" class="book-cover-image" />
       <div v-else class="fallback-image">{{ book.id.charAt(0).toUpperCase() }}📱</div>
@@ -120,24 +127,40 @@ const handlePreview = () => {
   height: 100%;
 }
 
-.bestseller-badge {
+.bestseller-badge,
+.new-badge,
+.category-goals,
+.category-growth,
+.category-loss,
+.category-fun,
+.category-happiness {
   @include badge-base;
   position: absolute;
   top: $spacing-md;
   left: $spacing-md;
-  background: var(--accent-color);
   color: white;
   z-index: 3;
 }
 
-.new-badge {
-  @include badge-base;
-  position: absolute;
-  top: $spacing-md;
-  left: $spacing-md;
+.category-goals {
+  background: var(--soft-blue);
+}
+
+.category-growth {
   background: var(--success-color);
-  color: white;
-  z-index: 3;
+}
+
+.category-loss {
+  background: var(--accent-color);
+}
+
+.category-fun {
+  background: var(--lavender);
+  color: var(--text-dark);
+}
+
+.category-happiness {
+  background: var(--warning-color);
 }
 
 .digital-only-badge {
