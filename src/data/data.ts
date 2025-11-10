@@ -336,13 +336,14 @@ export const books: Record<string, BookData> = {
   }
 };
 
-// Filter categories - Updated to remove premium categories and add therapy
+// Filter categories - Updated to new category names
 export const videoCategories = [
   { id: 'all', label: 'All Videos', icon: '📺' },
-  { id: 'wellness', label: 'Mental Wellness', icon: '🧘' },
-  { id: 'therapy', label: 'Therapeutic Content', icon: '🩺' },
-  { id: 'motivation', label: 'Motivation & Growth', icon: '💪' },
-  { id: 'productivity', label: 'Productivity', icon: '🎯' }
+  { id: 'goals', label: 'Goals', icon: '' },
+  { id: 'growth', label: 'Growth', icon: '' },
+  { id: 'loss', label: 'Loss', icon: '' },
+  { id: 'fun', label: 'Fun', icon: '' },
+  { id: 'happiness', label: 'Happiness', icon: '' }
 ];
 
 export const bookCategories = [

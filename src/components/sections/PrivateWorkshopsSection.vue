@@ -37,10 +37,6 @@ import Plant2Icon from '@/components/icons/Plant2Icon.vue';
 
         <div class="workshop-features">
           <div class="feature-item">
-            <span class="feature-icon">🩺</span>
-            <span>PhD educated mental health professionals</span>
-          </div>
-          <div class="feature-item">
             <span class="feature-icon">🎯</span>
             <span>Customized content for your community</span>
           </div>
@@ -59,7 +55,6 @@ import Plant2Icon from '@/components/icons/Plant2Icon.vue';
           </a>
         </div>
 
-        <p class="pricing-note">Starting at $1,500 • Sliding scale available</p>
       </div>
     </div>
   </section>

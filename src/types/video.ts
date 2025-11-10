@@ -14,6 +14,7 @@ export interface CMSVideo {
   updatedAt: string;
   publishedAt: string;
   Author: string;
+  Category: string;
   video: {
     id: number;
     documentId: string;
@@ -36,7 +37,6 @@ export interface CMSVideo {
     publishedAt: string;
   };
   tags: Array<{ id: number; tag: string }>;
-  Categories: Array<{ id: number; tag: string }>;
 }
 
 /**
@@ -49,7 +49,7 @@ export interface VideoData {
   description: string;
   fullDescription: string;
   duration: string;
-  category: string[];
+  category: string;
   views: string;
   isFree: boolean;
   tags: string[];

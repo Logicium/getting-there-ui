@@ -110,9 +110,9 @@ const fetchVideos = async () => {
     for (const cmsVideo of cmsVideos) {
       const videoUrl = `https://getting-there-cms.onrender.com${cmsVideo.video.url}`;
 
-      // Extract tags and categories
+      // Extract tags and category
       const tags = cmsVideo.tags.map(tag => tag.tag);
-      const categories = cmsVideo.Categories.map(category => category.tag);
+      const category = cmsVideo.Category || 'general';
 
       // Create a unique ID from the title (slug-like)
       const id = cmsVideo.documentId ||
@@ -148,7 +148,7 @@ const fetchVideos = async () => {
         description: cmsVideo.Description,
         fullDescription: cmsVideo.Description,
         duration,
-        category: categories,
+        category: category,
         views: Math.floor(Math.random() * 5000 + 1000).toString(),
         isFree: true,
         tags,

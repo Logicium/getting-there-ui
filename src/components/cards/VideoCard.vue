@@ -29,19 +29,20 @@ watch(() => props.video.thumbnailUrl, (newThumbnail) => {
 }, { immediate: true });
 
 const categoryDisplay = computed(() => {
-  const category = props.video.category[1] || props.video.category[0];
-  switch(category) {
-    case 'motivation': return 'Mindset & Motivation';
-    case 'productivity': return 'Goal Setting';
-    case 'wellness': return 'Mental Wellness';
-    case 'therapy': return 'Therapeutic Content';
-    default: return category;
+  const category = props.video.category;
+  switch(category?.toLowerCase()) {
+    case 'goals': return 'Goals';
+    case 'growth': return 'Growth';
+    case 'loss': return 'Loss';
+    case 'fun': return 'Fun';
+    case 'happiness': return 'Happiness';
+    default: return category || 'Video';
   }
 });
 
 const categoryClass = computed(() => {
-  const category = props.video.category[1] || props.video.category[0];
-  return `category-${category}`;
+  const category = props.video.category;
+  return `category-${category?.toLowerCase() || 'default'}`;
 });
 
 const handleClick = () => {
@@ -77,7 +78,7 @@ onMounted(() => {
 <template>
   <div
       class="video-card fade-in"
-      :data-category="video.category.join(' ')"
+      :data-category="video.category"
       :data-title="video.title.toLowerCase() + ' ' + video.tags.join(' ')"
   >
     <div class="video-thumbnail" @click="handleClick">
@@ -274,20 +275,28 @@ onMounted(() => {
   z-index: 2;
 }
 
-.category-wellness {
+.category-goals {
   background: rgba(74, 124, 89, 0.9);
 }
 
-.category-therapy {
+.category-growth {
   background: rgba(52, 152, 219, 0.9);
 }
 
-.category-motivation {
+.category-loss {
   background: rgba(244, 162, 97, 0.9);
 }
 
-.category-productivity {
+.category-fun {
   background: rgba(155, 89, 182, 0.9);
+}
+
+.category-happiness {
+  background: rgba(241, 196, 15, 0.9);
+}
+
+.category-default {
+  background: rgba(100, 100, 100, 0.9);
 }
 
 .video-content {

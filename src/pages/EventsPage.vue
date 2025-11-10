@@ -141,8 +141,6 @@ onMounted(() => {
     <!-- Featured Event -->
     <FeaturedEventCard v-if="featuredEvent" :event="featuredEvent" />
 
-    <h2 class="wellness-section-title fade-in">All Programs & Support Groups</h2>
-
     <div class="therapy-events-grid" id="eventsGrid">
       <EventCard
         v-for="event in events.filter(e => !e.isFeatured)"
@@ -155,7 +153,6 @@ onMounted(() => {
 
     <PrivateWorkshopsSection />
 
-    <SupportInfoSection />
   </main>
 </template>
 
