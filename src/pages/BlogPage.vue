@@ -39,23 +39,21 @@ const currentFilter = ref('all');
 
 // Category mapping for consistent naming
 const categoryMap: Record<string, { display: string; filter: string }> = {
-  'Managing Anxiety': { display: 'Anxiety Support', filter: 'anxiety' },
-  'Depression Care': { display: 'Depression Care', filter: 'depression' },
-  'Relationship Health': { display: 'Relationships', filter: 'relationships' },
-  'Mindfulness': { display: 'Mindfulness', filter: 'mindfulness' },
-  'Stress & Burnout': { display: 'Stress Management', filter: 'stress' },
-  'Self Care Strategies': { display: 'Self-Care', filter: 'selfcare' }
+  'Goals': { display: 'Goals', filter: 'goals' },
+  'Growth': { display: 'Growth', filter: 'growth' },
+  'Loss': { display: 'Loss', filter: 'loss' },
+  'Fun': { display: 'Fun', filter: 'fun' },
+  'Happiness': { display: 'Happiness', filter: 'happiness' }
 };
 
 // Compute category counts
 const categoryCounts = computed(() => {
   const counts: Record<string, number> = {
-    anxiety: 0,
-    depression: 0,
-    relationships: 0,
-    stress: 0,
-    mindfulness: 0,
-    selfcare: 0
+    goals: 0,
+    growth: 0,
+    loss: 0,
+    fun: 0,
+    happiness: 0
   };
 
   blogArticles.value.forEach(article => {
@@ -164,22 +162,7 @@ const fetchBlogArticles = async () => {
 
 // Helper function to get category icon
 const getCategoryIcon = (category: string): string => {
-  switch (category.toLowerCase()) {
-    case 'managing anxiety':
-      return '🧘‍♀️';
-    case 'depression care':
-      return '🌱';
-    case 'relationship health':
-      return '💕';
-    case 'mindfulness':
-      return '🧘';
-    case 'stress & burnout':
-      return '🌸';
-    case 'self care strategies':
-      return '💆‍♀️';
-    default:
-      return '📝';
-  }
+  return '';
 };
 
 // DOM MANIPULATION APPROACH LIKE WORKSHOPS
@@ -284,12 +267,11 @@ onMounted(async () => {
       </div>
       <div class="filter-wellness-tags">
         <span class="wellness-tag" :class="{ active: currentFilter === 'all' }" @click="setFilter('all')">All Topics</span>
-        <span class="wellness-tag" :class="{ active: currentFilter === 'anxiety' }" @click="setFilter('anxiety')">Anxiety Support</span>
-        <span class="wellness-tag" :class="{ active: currentFilter === 'depression' }" @click="setFilter('depression')">Depression Care</span>
-        <span class="wellness-tag" :class="{ active: currentFilter === 'relationships' }" @click="setFilter('relationships')">Relationships</span>
-        <span class="wellness-tag" :class="{ active: currentFilter === 'mindfulness' }" @click="setFilter('mindfulness')">Mindfulness</span>
-        <span class="wellness-tag" :class="{ active: currentFilter === 'stress' }" @click="setFilter('stress')">Stress Management</span>
-        <span class="wellness-tag" :class="{ active: currentFilter === 'selfcare' }" @click="setFilter('selfcare')">Self-Care</span>
+        <span class="wellness-tag" :class="{ active: currentFilter === 'goals' }" @click="setFilter('goals')">🎯 Goals</span>
+        <span class="wellness-tag" :class="{ active: currentFilter === 'growth' }" @click="setFilter('growth')">🌱 Growth</span>
+        <span class="wellness-tag" :class="{ active: currentFilter === 'loss' }" @click="setFilter('loss')">💔 Loss</span>
+        <span class="wellness-tag" :class="{ active: currentFilter === 'fun' }" @click="setFilter('fun')">🎉 Fun</span>
+        <span class="wellness-tag" :class="{ active: currentFilter === 'happiness' }" @click="setFilter('happiness')">😊 Happiness</span>
       </div>
     </div>
   </section>
@@ -341,39 +323,33 @@ onMounted(async () => {
         <h3>Popular Wellness Topics</h3>
         <ul class="wellness-topics-list">
           <li>
-            <a href="#" @click.prevent="setFilter('anxiety')">
-              Managing Daily Anxiety
-              <span class="topic-count">{{ categoryCounts.anxiety }} articles</span>
+            <a href="#" @click.prevent="setFilter('goals')">
+              Goals
+              <span class="topic-count">{{ categoryCounts.goals }} articles</span>
             </a>
           </li>
           <li>
-            <a href="#" @click.prevent="setFilter('depression')">
-              Depression Support
-              <span class="topic-count">{{ categoryCounts.depression }} articles</span>
+            <a href="#" @click.prevent="setFilter('growth')">
+              Growth
+              <span class="topic-count">{{ categoryCounts.growth }} articles</span>
             </a>
           </li>
           <li>
-            <a href="#" @click.prevent="setFilter('relationships')">
-              Relationship Health
-              <span class="topic-count">{{ categoryCounts.relationships }} articles</span>
+            <a href="#" @click.prevent="setFilter('loss')">
+              Loss
+              <span class="topic-count">{{ categoryCounts.loss }} articles</span>
             </a>
           </li>
           <li>
-            <a href="#" @click.prevent="setFilter('stress')">
-              Stress & Burnout
-              <span class="topic-count">{{ categoryCounts.stress }} articles</span>
+            <a href="#" @click.prevent="setFilter('fun')">
+              Fun
+              <span class="topic-count">{{ categoryCounts.fun }} articles</span>
             </a>
           </li>
           <li>
-            <a href="#" @click.prevent="setFilter('mindfulness')">
-              Mindfulness Practice
-              <span class="topic-count">{{ categoryCounts.mindfulness }} articles</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" @click.prevent="setFilter('selfcare')">
-              Self-Care Strategies
-              <span class="topic-count">{{ categoryCounts.selfcare }} articles</span>
+            <a href="#" @click.prevent="setFilter('happiness')">
+              Happiness
+              <span class="topic-count">{{ categoryCounts.happiness }} articles</span>
             </a>
           </li>
         </ul>

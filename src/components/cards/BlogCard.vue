@@ -74,24 +74,24 @@ defineProps<{
   color: white;
 }
 
-.therapy-category-badge.anxiety {
+.therapy-category-badge.goals {
   background: var(--soft-blue);
 }
 
-.therapy-category-badge.depression {
+.therapy-category-badge.growth {
   background: var(--success-color);
 }
 
-.therapy-category-badge.relationships {
+.therapy-category-badge.loss {
   background: var(--accent-color);
 }
 
-.therapy-category-badge.mindfulness {
+.therapy-category-badge.fun {
   background: var(--lavender);
   color: var(--text-dark);
 }
 
-.therapy-category-badge.stress {
+.therapy-category-badge.happiness {
   background: var(--warning-color);
 }
 

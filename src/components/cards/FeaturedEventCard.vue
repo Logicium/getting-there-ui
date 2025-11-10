@@ -52,12 +52,9 @@ defineProps<Props>();
           <span>{{ event.GroupSize }}</span>
         </div>
       </div>
-      <div class="featured-therapy-price" v-if="event.Price !== null && event.Price > 0">
-        {{ formatPrice(event.Price) }}/session
-      </div>
-      <div class="featured-therapy-price" v-else>
-        Free
-      </div>
+      <div class="featured-therapy-price" v-if="event.Price !== null && event.Price > 0">{{ formatPrice(event.Price) }}/session</div>
+      <div class="featured-therapy-price" v-else-if="event.Price === null">TBD</div>
+      <div class="featured-therapy-price" v-else>Free</div>
 <!--      <router-link :to="`/events/${event.documentId}`" class="featured-therapy-btn">Learn More</router-link>-->
     </div>
   </div>
