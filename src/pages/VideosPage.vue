@@ -244,9 +244,9 @@ onMounted(async () => {
       </div>
     </section>
 
-    <CommunitySupportSection />
+<!--    <CommunitySupportSection />-->
 
-    <DisclaimerSection />
+<!--    <DisclaimerSection />-->
   </main>
 
   <VideoModal

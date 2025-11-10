@@ -41,13 +41,6 @@ const handleClose = () => emit('close');
     </div>
     <div class="therapy-modal-content">
       <p class="therapy-modal-description">{{ video?.fullDescription }}</p>
-      <div class="therapy-modal-presenter">
-        <div class="presenter-avatar">👩‍⚕️</div>
-        <div class="presenter-info">
-          <p><strong>{{ video?.presenter }}</strong></p>
-          <p>PhD Educated Sociologist</p>
-        </div>
-      </div>
     </div>
   </ModalDialog>
 </template>
