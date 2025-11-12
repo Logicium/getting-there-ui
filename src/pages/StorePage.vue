@@ -161,7 +161,11 @@ const fetchBooks = async () => {
 
     booksData.forEach((book: any) => {
       const bookId = `book-${book.id}`;
-      const category = book.Category || '';
+      // Normalize category to match filter IDs (e.g., "Loss & Grief" -> "loss")
+      let category = (book.Category || '').toLowerCase();
+      if (category.includes('loss') || category.includes('grief')) {
+        category = 'loss';
+      }
 
       transformedBooks[bookId] = {
         id: bookId,

@@ -2,18 +2,93 @@
  * Utility functions for working with videos
  */
 
+// Cache keys for localStorage
+const DURATION_CACHE_KEY = 'video_durations_cache';
+const THUMBNAIL_CACHE_KEY = 'video_thumbnails_cache';
+
+/**
+ * Get cached duration for a video
+ */
+function getCachedDuration(videoUrl: string): string | null {
+  try {
+    const cache = localStorage.getItem(DURATION_CACHE_KEY);
+    if (!cache) return null;
+    
+    const durations = JSON.parse(cache);
+    return durations[videoUrl] || null;
+  } catch (e) {
+    console.error('Error reading duration cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Cache a video duration
+ */
+function cacheDuration(videoUrl: string, duration: string): void {
+  try {
+    const cache = localStorage.getItem(DURATION_CACHE_KEY);
+    const durations = cache ? JSON.parse(cache) : {};
+    durations[videoUrl] = duration;
+    localStorage.setItem(DURATION_CACHE_KEY, JSON.stringify(durations));
+  } catch (e) {
+    console.error('Error caching duration:', e);
+  }
+}
+
+/**
+ * Get cached thumbnail for a video
+ */
+export function getCachedThumbnail(videoUrl: string): string | null {
+  try {
+    const cache = localStorage.getItem(THUMBNAIL_CACHE_KEY);
+    if (!cache) return null;
+    
+    const thumbnails = JSON.parse(cache);
+    return thumbnails[videoUrl] || null;
+  } catch (e) {
+    console.error('Error reading thumbnail cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Cache a video thumbnail
+ */
+function cacheThumbnail(videoUrl: string, thumbnail: string): void {
+  try {
+    const cache = localStorage.getItem(THUMBNAIL_CACHE_KEY);
+    const thumbnails = cache ? JSON.parse(cache) : {};
+    thumbnails[videoUrl] = thumbnail;
+    localStorage.setItem(THUMBNAIL_CACHE_KEY, JSON.stringify(thumbnails));
+  } catch (e) {
+    console.error('Error caching thumbnail:', e);
+  }
+}
+
 /**
  * Get the duration of a video file asynchronously
  * This function doesn't block the page rendering and updates the duration when available
+ * Now includes caching support
  * 
  * @param videoUrl - The URL of the video file
  * @param callback - Optional callback function that will be called with the duration when available
- * @returns Promise that resolves immediately with a default duration ('00:00')
+ * @returns Promise that resolves immediately with cached duration or default '00:00'
  */
 export const getVideoDuration = (
   videoUrl: string, 
   callback?: (duration: string) => void
 ): Promise<string> => {
+  // Check cache first
+  const cachedDuration = getCachedDuration(videoUrl);
+  if (cachedDuration) {
+    // If we have a cached duration, call callback immediately
+    if (callback) {
+      callback(cachedDuration);
+    }
+    return Promise.resolve(cachedDuration);
+  }
+
   return new Promise((resolve) => {
     // Create a video element to load the metadata
     const video = document.createElement('video');
@@ -31,6 +106,9 @@ export const getVideoDuration = (
       const remainingSeconds = seconds % 60;
 
       const formattedDuration = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+      // Cache the duration
+      cacheDuration(videoUrl, formattedDuration);
 
       // Call the callback with the actual duration if provided
       if (callback) {
@@ -145,6 +223,7 @@ export async function generateVideoThumbnail(
 
 /**
  * Generate a thumbnail with retry logic
+ * Now includes caching support
  * @param videoUrl - The URL of the video
  * @param maxRetries - Maximum number of retry attempts
  * @returns Promise<string | null> - Base64 data URL of the thumbnail or null if failed
@@ -153,6 +232,12 @@ export async function generateVideoThumbnailWithRetry(
     videoUrl: string,
     maxRetries: number = 2
 ): Promise<string | null> {
+  // Check cache first
+  const cachedThumbnail = getCachedThumbnail(videoUrl);
+  if (cachedThumbnail) {
+    return cachedThumbnail;
+  }
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       // Try different time points for each retry
@@ -160,6 +245,12 @@ export async function generateVideoThumbnailWithRetry(
       const timeInSeconds = timePoints[attempt] || 1;
 
       const thumbnail = await generateVideoThumbnail(videoUrl, timeInSeconds);
+      
+      // Cache the thumbnail
+      if (thumbnail) {
+        cacheThumbnail(videoUrl, thumbnail);
+      }
+      
       return thumbnail;
     } catch (error) {
       console.error(`Thumbnail generation attempt ${attempt + 1} failed:`, error);

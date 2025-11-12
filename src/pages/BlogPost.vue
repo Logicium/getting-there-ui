@@ -302,20 +302,20 @@ const mapArticleBodyToContent = (articleBody: any[]) => {
     if (item.type === 'paragraph') {
       return {
         type: 'paragraph',
-        content: item.children[0].text
+        content: item.children // Keep the full children array with formatting
       };
     } else if (item.type === 'heading') {
       return {
         type: 'heading',
         level: item.level,
-        content: item.children[0].text
+        content: item.children
       };
     } else if (item.type === 'list') {
       const items = item.children.map((listItem: any) => {
         if (listItem.children && listItem.children.length > 0) {
-          return listItem.children[0].text;
+          return listItem.children;
         }
-        return 'List item content not available';
+        return [{ text: 'List item content not available', type: 'text' }];
       });
 
       return {
@@ -327,7 +327,7 @@ const mapArticleBodyToContent = (articleBody: any[]) => {
       console.log('Unsupported content type:', item.type);
       return {
         type: 'paragraph',
-        content: 'Content type not supported'
+        content: [{ text: 'Content type not supported', type: 'text' }]
       };
     }
   });
@@ -454,7 +454,12 @@ onMounted(async () => {
             <template v-for="(section, index) in blogPost.content" :key="index">
               <!-- Paragraph -->
               <p v-if="section.type === 'paragraph'" class="content-paragraph">
-                {{ section.content }}
+                <template v-for="(child, childIndex) in section.content" :key="childIndex">
+                  <strong v-if="child.bold && child.italic"><em>{{ child.text }}</em></strong>
+                  <strong v-else-if="child.bold">{{ child.text }}</strong>
+                  <em v-else-if="child.italic">{{ child.text }}</em>
+                  <span v-else>{{ child.text }}</span>
+                </template>
               </p>
 
               <!-- Heading -->
@@ -464,13 +469,23 @@ onMounted(async () => {
                   class="content-heading"
                   :class="`level-${section.level}`"
               >
-                {{ section.content }}
+                <template v-for="(child, childIndex) in section.content" :key="childIndex">
+                  <strong v-if="child.bold && child.italic"><em>{{ child.text }}</em></strong>
+                  <strong v-else-if="child.bold">{{ child.text }}</strong>
+                  <em v-else-if="child.italic">{{ child.text }}</em>
+                  <span v-else>{{ child.text }}</span>
+                </template>
               </component>
 
               <!-- List -->
               <ul v-else-if="section.type === 'list' && section.style === 'unordered'" class="content-list">
                 <li v-for="(item, itemIndex) in section.items" :key="itemIndex">
-                  {{ item }}
+                  <template v-for="(child, childIndex) in item" :key="childIndex">
+                    <strong v-if="child.bold && child.italic"><em>{{ child.text }}</em></strong>
+                    <strong v-else-if="child.bold">{{ child.text }}</strong>
+                    <em v-else-if="child.italic">{{ child.text }}</em>
+                    <span v-else>{{ child.text }}</span>
+                  </template>
                 </li>
               </ul>
 

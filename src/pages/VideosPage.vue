@@ -6,7 +6,7 @@ import FilterSection from '@/components/FilterSection.vue';
 import VideoModal from '@/components/VideoModal.vue';
 import CommunitySupportSection from '@/components/sections/CommunitySupportSection.vue';
 import DisclaimerSection from '@/components/sections/DisclaimerSection.vue';
-import { getVideoDuration, generateVideoThumbnailWithRetry } from '@/utils/videoUtils';
+import { getVideoDuration, generateVideoThumbnailWithRetry, getCachedThumbnail } from '@/utils/videoUtils';
 import { observeFadeElements } from '@/utils/animationUtils';
 import { filterElementsByCategoryAndSearch } from '@/utils/filterUtils';
 import type { CMSVideo, VideoData } from '@/types/video';
@@ -120,7 +120,10 @@ const fetchVideos = async () => {
               .replace(/[^\w\s-]/g, '')
               .replace(/\s+/g, '-');
 
-      // Get video duration - initially set to '00:00' and update when available
+      // Check for cached thumbnail first
+      const cachedThumbnail = getCachedThumbnail(videoUrl);
+
+      // Get video duration - check cache first, then fetch if needed
       let duration = '00:00';
       try {
         getVideoDuration(videoUrl, (actualDuration) => {
@@ -153,10 +156,10 @@ const fetchVideos = async () => {
         isFree: true,
         tags,
         videoUrl,
-        thumbnailUrl: undefined // Will be generated asynchronously
+        thumbnailUrl: cachedThumbnail || undefined // Use cached thumbnail if available
       };
 
-      // Generate thumbnail asynchronously (don't block rendering)
+      // Generate thumbnail asynchronously (will use cache if available, or generate and cache)
       generateVideoThumbnailWithRetry(videoUrl).then(thumbnailUrl => {
         if (thumbnailUrl && videos.value[id]) {
           const updatedVideo = { ...videos.value[id], thumbnailUrl };

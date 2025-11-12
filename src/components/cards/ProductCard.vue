@@ -20,7 +20,7 @@ const categoryBadge = computed(() => {
   switch(category) {
     case 'goals': return { text: 'Goals', class: 'category-goals' };
     case 'growth': return { text: 'Growth', class: 'category-growth' };
-    case 'loss & grief': return { text: 'Loss & Grief', class: 'category-loss' };
+    case 'loss': return { text: 'Loss & Grief', class: 'category-loss' };
     case 'fun': return { text: 'Fun', class: 'category-fun' };
     case 'happiness': return { text: 'Happiness', class: 'category-happiness' };
     default: return null;
@@ -37,7 +37,7 @@ const handlePreview = () => {
 </script>
 
 <template>
-  <div class="product-card fade-in" :data-category="book.category">
+  <div class="product-card fade-in" :data-category="book.category?.toLowerCase()">
     <div class="product-image">
       <div v-if="categoryBadge" :class="categoryBadge.class">{{ categoryBadge.text }}</div>
       <div v-if="book.imageUrl" class="blurred-background" :style="{ backgroundImage: `url('https://getting-there-cms.onrender.com${book.imageUrl}')` }"></div>
