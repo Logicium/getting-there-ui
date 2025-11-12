@@ -557,7 +557,7 @@ onMounted(async () => {
           <!-- Newsletter Signup -->
           <div class="sidebar-section newsletter-signup fade-in">
             <h3>Stay Connected</h3>
-            <p>Get weekly wellness tips, thoughts, and notices delivered to your inbox.</p>
+            <p>Get weekly happiness tips, thoughts, and notices delivered to your inbox.</p>
             <input type="email" placeholder="Your email address" class="newsletter-input">
             <button class="newsletter-btn">Get Happiness Tips</button>
             <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
