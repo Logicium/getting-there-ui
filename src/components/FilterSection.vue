@@ -5,6 +5,7 @@ interface FilterCategory {
   id: string;
   label: string;
   icon: string;
+  count?: number;
 }
 
 interface Props {
@@ -40,7 +41,8 @@ const handleSearch = () => {
           :data-filter="category.id"
           @click="setFilter(category.id)"
         >
-          {{ category.icon }} {{ category.label }}
+          <span class="filter-label">{{ category.icon }} {{ category.label }}</span>
+          <span v-if="category.count !== undefined" class="filter-count">{{ category.count }}</span>
         </button>
       </div>
       <div v-if="withSearch" class="search-box">
@@ -96,11 +98,36 @@ const handleSearch = () => {
   gap: 0.5rem;
 }
 
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+
 .filter-btn:hover, .filter-btn.active {
   background: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
   transform: translateY(-2px);
+}
+
+.filter-btn:hover .filter-count,
+.filter-btn.active .filter-count {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .search-box {

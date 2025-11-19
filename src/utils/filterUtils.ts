@@ -31,11 +31,14 @@ export function filterElementsByCategoryAndSearch(
 
   elements.forEach(element => {
     const htmlElement = element as HTMLElement;
-    const category = htmlElement.dataset[categoryDataAttribute] || '';
-    const title = htmlElement.dataset[titleDataAttribute] || '';
+    const category = (htmlElement.dataset[categoryDataAttribute] || '').toLowerCase();
+    const title = (htmlElement.dataset[titleDataAttribute] || '').toLowerCase();
 
-    const matchesCategory = filter === 'all' || category.includes(filter);
-    const matchesSearch = search === '' || title.includes(search);
+    // Category filter: match if 'all' or if the category matches the filter
+    const matchesCategory = filter === 'all' || category === filter.toLowerCase();
+    
+    // Search filter: match if empty search, or if search term is found in title OR category
+    const matchesSearch = search === '' || title.includes(search) || category.includes(search);
 
     if (matchesCategory && matchesSearch) {
       htmlElement.style.display = 'block';

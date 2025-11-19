@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { videoCategories } from '@/data/data';
 import VideoCard from '@/components/cards/VideoCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
@@ -32,6 +32,29 @@ const videosError = ref<string | null>(null);
 
 // Computed properties
 const currentVideo = ref(null as VideoData | null);
+
+// Compute categories with counts
+const categoriesWithCounts = computed(() => {
+  const videosArray = Object.values(videos.value);
+  
+  return videoCategories.map(category => {
+    if (category.id === 'all') {
+      return {
+        ...category,
+        count: videosArray.length
+      };
+    }
+    
+    const count = videosArray.filter(video => 
+      video.category?.toLowerCase() === category.id.toLowerCase()
+    ).length;
+    
+    return {
+      ...category,
+      count
+    };
+  });
+});
 
 // Event handlers - USING DOM MANIPULATION LIKE WORKSHOPS
 const handleFilter = (filter: string) => {
@@ -211,7 +234,7 @@ onMounted(async () => {
   </section>
 
   <FilterSection
-      :categories="videoCategories"
+      :categories="categoriesWithCounts"
       :withSearch="true"
       @filter="handleFilter"
       @search="handleSearch"
