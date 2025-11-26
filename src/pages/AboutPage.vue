@@ -156,14 +156,17 @@ onMounted(async () => {
       </div>
 
       <div class="hero-visual">
-        <div class="visual-circle"></div>
-        <div class="visual-circle"></div>
-        <div class="visual-circle"></div>
-        <div class="visual-center">
+        <div class="hero-image-container">
           <template v-if="hero && hero.image">
-            <img :src="mediaUrl(hero.image) || ''" :alt="hero.image.alternativeText || hero.title || 'Hero image'" />
+            <img 
+              :src="mediaUrl(hero.image) || ''" 
+              :alt="hero.image.alternativeText || hero.title || 'Hero image'" 
+              class="hero-main-image"
+            />
           </template>
-          <template v-else>🌱</template>
+          <template v-else>
+            <div class="hero-placeholder">🌱</div>
+          </template>
         </div>
       </div>
     </div>
@@ -415,53 +418,47 @@ onMounted(async () => {
 
 .hero-visual {
   position: relative;
-  height: 400px;
+  height: 500px;
   @include flex-center;
-}
 
-.visual-circle {
-  position: absolute;
-  border: 2px solid var(--primary-color);
-  opacity: 0.3;
-  border-radius: $radius-full;
-  animation: gentlePulse 6s ease-in-out infinite;
-
-  &:nth-child(1) {
-    width: 300px;
+  @include mobile-only {
     height: 300px;
-    animation-delay: 0s;
-  }
-
-  &:nth-child(2) {
-    width: 200px;
-    height: 200px;
-    animation-delay: 2s;
-  }
-
-  &:nth-child(3) {
-    width: 100px;
-    height: 100px;
-    animation-delay: 4s;
   }
 }
 
-.visual-center {
-  font-size: $font-size-4xl;
+.hero-image-container {
   position: relative;
-  z-index: 3;
+  width: 100%;
+  height: 100%;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: 0 20px 60px var(--shadow-medium);
+}
 
-  img {
-    width: 180px;
-    height: 180px;
-    border-radius: $radius-full;
-    object-fit: cover;
-    box-shadow: 0 10px 30px var(--shadow-medium);
+.hero-main-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  @include image-cover;
+  border-radius: $radius-xl;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.02);
   }
 }
 
-@keyframes gentlePulse {
-  0%, 100% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.05); opacity: 0.1; }
+.hero-placeholder {
+  width: 100%;
+  height: 100%;
+  @include flex-center;
+  font-size: 8rem;
+  background: var(--gradient);
+  border-radius: $radius-xl;
+
+  @include mobile-only {
+    font-size: 4rem;
+  }
 }
 
 /* Main Content */
@@ -556,6 +553,51 @@ onMounted(async () => {
 .value-icon {
   font-size: $font-size-4xl;
   margin-bottom: $spacing-md;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.value-icon img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+/* Vibrant color filters for mission value icons */
+.value-item:nth-child(1) .value-icon img,
+.value-item:nth-child(1) .value-icon svg {
+  filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(240deg) brightness(102%) contrast(107%);
+  /* Electric Purple/Violet */
+}
+
+.value-item:nth-child(1):hover .value-icon img,
+.value-item:nth-child(1):hover .value-icon svg {
+  filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(240deg) brightness(102%) contrast(107%) drop-shadow(0 4px 8px rgba(103, 58, 183, 0.5));
+}
+
+.value-item:nth-child(2) .value-icon img,
+.value-item:nth-child(2) .value-icon svg {
+  filter: invert(42%) sepia(93%) saturate(1352%) hue-rotate(335deg) brightness(119%) contrast(119%);
+  /* Hot Pink/Fuchsia */
+}
+
+.value-item:nth-child(2):hover .value-icon img,
+.value-item:nth-child(2):hover .value-icon svg {
+  filter: invert(42%) sepia(93%) saturate(1352%) hue-rotate(335deg) brightness(119%) contrast(119%) drop-shadow(0 4px 8px rgba(233, 30, 99, 0.5));
+}
+
+.value-item:nth-child(3) .value-icon img,
+.value-item:nth-child(3) .value-icon svg {
+  filter: invert(55%) sepia(98%) saturate(1676%) hue-rotate(157deg) brightness(95%) contrast(101%);
+  /* Teal/Aqua */
+}
+
+.value-item:nth-child(3):hover .value-icon img,
+.value-item:nth-child(3):hover .value-icon svg {
+  filter: invert(55%) sepia(98%) saturate(1676%) hue-rotate(157deg) brightness(95%) contrast(101%) drop-shadow(0 4px 8px rgba(0, 150, 136, 0.5));
 }
 
 .value-title {
@@ -586,7 +628,62 @@ onMounted(async () => {
 .credential-icon {
   font-size: $font-size-4xl;
   margin-bottom: $spacing-md;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.credential-icon img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+/* Vibrant color filters for credential icons */
+.credential-item:nth-child(1) .credential-icon img,
+.credential-item:nth-child(1) .credential-icon svg {
+  filter: invert(63%) sepia(71%) saturate(4456%) hue-rotate(359deg) brightness(101%) contrast(101%);
+  /* Sunny Yellow */
+}
+
+.credential-item:nth-child(1):hover .credential-icon img,
+.credential-item:nth-child(1):hover .credential-icon svg {
+  filter: invert(63%) sepia(71%) saturate(4456%) hue-rotate(359deg) brightness(101%) contrast(101%) drop-shadow(0 4px 8px rgba(255, 193, 7, 0.5));
+}
+
+.credential-item:nth-child(2) .credential-icon img,
+.credential-item:nth-child(2) .credential-icon svg {
+  filter: invert(58%) sepia(96%) saturate(4498%) hue-rotate(128deg) brightness(100%) contrast(102%);
+  /* Vibrant Lime Green */
+}
+
+.credential-item:nth-child(2):hover .credential-icon img,
+.credential-item:nth-child(2):hover .credential-icon svg {
+  filter: invert(58%) sepia(96%) saturate(4498%) hue-rotate(128deg) brightness(100%) contrast(102%) drop-shadow(0 4px 8px rgba(139, 195, 74, 0.5));
+}
+
+.credential-item:nth-child(3) .credential-icon img,
+.credential-item:nth-child(3) .credential-icon svg {
+  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%);
+  /* Bright Cyan/Turquoise */
+}
+
+.credential-item:nth-child(3):hover .credential-icon img,
+.credential-item:nth-child(3):hover .credential-icon svg {
+  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%) drop-shadow(0 4px 8px rgba(0, 188, 212, 0.4));
+}
+
+.credential-item:nth-child(4) .credential-icon img,
+.credential-item:nth-child(4) .credential-icon svg {
+  filter: invert(62%) sepia(57%) saturate(3333%) hue-rotate(2deg) brightness(103%) contrast(102%);
+  /* Bright Red/Coral */
+}
+
+.credential-item:nth-child(4):hover .credential-icon img,
+.credential-item:nth-child(4):hover .credential-icon svg {
+  filter: invert(62%) sepia(57%) saturate(3333%) hue-rotate(2deg) brightness(103%) contrast(102%) drop-shadow(0 4px 8px rgba(244, 67, 54, 0.5));
 }
 
 .credential-item h3 {

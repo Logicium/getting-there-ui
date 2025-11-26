@@ -97,6 +97,35 @@ const fallbackIconComponent = computed(() => {
   width: 6rem;
   height: 6rem;
   object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+/* Colorful filters for each step icon */
+.step-card:nth-child(1) .step-icon img {
+  filter: invert(37%) sepia(93%) saturate(1990%) hue-rotate(316deg) brightness(102%) contrast(101%);
+  /* Vibrant Pink/Magenta */
+}
+
+.step-card:nth-child(1):hover .step-icon img {
+  filter: invert(37%) sepia(93%) saturate(1990%) hue-rotate(316deg) brightness(102%) contrast(101%) drop-shadow(0 4px 8px rgba(236, 64, 122, 0.4));
+}
+
+.step-card:nth-child(2) .step-icon img {
+  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%);
+  /* Bright Cyan/Turquoise */
+}
+
+.step-card:nth-child(2):hover .step-icon img {
+  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%) drop-shadow(0 4px 8px rgba(0, 188, 212, 0.4));
+}
+
+.step-card:nth-child(3) .step-icon img {
+  filter: invert(65%) sepia(97%) saturate(1186%) hue-rotate(358deg) brightness(102%) contrast(104%);
+  /* Bright Orange/Coral */
+}
+
+.step-card:nth-child(3):hover .step-icon img {
+  filter: invert(65%) sepia(97%) saturate(1186%) hue-rotate(358deg) brightness(102%) contrast(104%) drop-shadow(0 4px 8px rgba(255, 152, 0, 0.4));
 }
 
 .step-card h3 {
