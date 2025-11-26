@@ -143,8 +143,17 @@ const fetchVideos = async () => {
               .replace(/[^\w\s-]/g, '')
               .replace(/\s+/g, '-');
 
-      // Check for cached thumbnail first
-      const cachedThumbnail = getCachedThumbnail(videoUrl);
+      // Check for CMS thumbnail first, then cached thumbnail
+      let thumbnailUrl: string | undefined = undefined;
+      
+      if (cmsVideo.thumbnail && cmsVideo.thumbnail.url) {
+        // Use the CMS-provided thumbnail
+        thumbnailUrl = `https://getting-there-cms.onrender.com${cmsVideo.thumbnail.url}`;
+      } else {
+        // Fall back to cached thumbnail if no CMS thumbnail
+        const cachedThumbnail = getCachedThumbnail(videoUrl);
+        thumbnailUrl = cachedThumbnail || undefined;
+      }
 
       // Get video duration - check cache first, then fetch if needed
       let duration = '00:00';
@@ -179,18 +188,20 @@ const fetchVideos = async () => {
         isFree: true,
         tags,
         videoUrl,
-        thumbnailUrl: cachedThumbnail || undefined // Use cached thumbnail if available
+        thumbnailUrl // Use CMS thumbnail, cached thumbnail, or undefined
       };
 
-      // Generate thumbnail asynchronously (will use cache if available, or generate and cache)
-      generateVideoThumbnailWithRetry(videoUrl).then(thumbnailUrl => {
-        if (thumbnailUrl && videos.value[id]) {
-          const updatedVideo = { ...videos.value[id], thumbnailUrl };
-          videos.value[id] = updatedVideo;
-        }
-      }).catch(err => {
-        console.error(`Failed to generate thumbnail for video ${cmsVideo.title}:`, err);
-      });
+      // Only generate thumbnail if no CMS thumbnail is provided
+      if (!cmsVideo.thumbnail) {
+        generateVideoThumbnailWithRetry(videoUrl).then(generatedThumbnail => {
+          if (generatedThumbnail && videos.value[id]) {
+            const updatedVideo = { ...videos.value[id], thumbnailUrl: generatedThumbnail };
+            videos.value[id] = updatedVideo;
+          }
+        }).catch(err => {
+          console.error(`Failed to generate thumbnail for video ${cmsVideo.title}:`, err);
+        });
+      }
     }
 
     videos.value = processedVideos;
