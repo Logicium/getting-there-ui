@@ -16,7 +16,7 @@ const verifyOrder = async () => {
 
   try {
     // Get order ID from query params
-    const orderId = route.query.order_id || route.query.orderId;
+    const orderId = route.query.internal_order_id || route.query.internalOrderId;
     const apiUrl = import.meta.env.VITE_API_URL;
 
     if (!orderId) {
@@ -24,7 +24,7 @@ const verifyOrder = async () => {
     }
 
     // Verify order with backend
-    const response = await fetch(`${apiUrl}/checkout/verify-payment?orderId=${orderId}`);
+    const response = await fetch(`${apiUrl}/checkout/verify-payment?internalOrderId=${orderId}`);
 
     if (!response.ok) {
       throw new Error('Failed to verify order');
