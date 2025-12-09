@@ -17,13 +17,14 @@ const verifyOrder = async () => {
   try {
     // Get order ID from query params
     const orderId = route.query.order_id || route.query.orderId;
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     if (!orderId) {
       throw new Error('No order ID found');
     }
 
     // Verify order with backend
-    const response = await fetch(`http://localhost:3000/checkout/verify-payment?orderId=${orderId}`);
+    const response = await fetch(`${apiUrl}/checkout/verify-payment?orderId=${orderId}`);
 
     if (!response.ok) {
       throw new Error('Failed to verify order');
