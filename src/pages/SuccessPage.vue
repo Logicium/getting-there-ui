@@ -9,10 +9,12 @@ const isLoading = ref(true);
 const orderDetails = ref<any>(null);
 const customerInfo = ref<any>(null);
 const error = ref<string | null>(null);
+const isPending = ref(false);
 
 const verifyOrder = async () => {
   isLoading.value = true;
   error.value = null;
+  isPending.value = false;
 
   try {
     // Get order ID from query params
@@ -31,16 +33,36 @@ const verifyOrder = async () => {
     }
 
     const data = await response.json();
-    orderDetails.value = data;
-    // Load customer info from localStorage
-    const savedCustomer = localStorage.getItem('gettingThereCustomer');
-    if (savedCustomer) {
-      customerInfo.value = JSON.parse(savedCustomer);
-    }
+    
+    // Check if payment is still pending (webhook hasn't processed yet)
+    if (data.pending) {
+      isPending.value = true;
+      orderDetails.value = data;
+      // Use customer info from backend response (preferred) or fall back to localStorage
+      if (data.customer) {
+        customerInfo.value = data.customer;
+      } else {
+        const savedCustomer = localStorage.getItem('gettingThereCustomer');
+        if (savedCustomer) {
+          customerInfo.value = JSON.parse(savedCustomer);
+        }
+      }
+    } else {
+      orderDetails.value = data;
+      // Use customer info from backend response (preferred) or fall back to localStorage
+      if (data.customer) {
+        customerInfo.value = data.customer;
+      } else {
+        const savedCustomer = localStorage.getItem('gettingThereCustomer');
+        if (savedCustomer) {
+          customerInfo.value = JSON.parse(savedCustomer);
+        }
+      }
 
-    // Clear cart
-    localStorage.removeItem('gettingThereCart');
-    localStorage.removeItem('gettingThereCustomer');
+      // Clear cart only when payment is confirmed
+      localStorage.removeItem('gettingThereCart');
+      localStorage.removeItem('gettingThereCustomer');
+    }
 
   } catch (err) {
     console.error('Order verification error:', err);
@@ -79,6 +101,54 @@ onMounted(() => {
       <div class="error-actions">
         <button @click="goToStore" class="cta-btn primary">Return to Store</button>
         <a href="mailto:support@gthere.net" class="cta-btn secondary">Contact Support</a>
+      </div>
+    </div>
+
+    <!-- Pending State - Payment Processing -->
+    <div v-else-if="isPending" class="pending-container">
+      <div class="pending-icon-wrapper">
+        <div class="pending-icon">⏳</div>
+      </div>
+      <h1>Payment Processing</h1>
+      <p class="pending-subtitle">Your order is being verified</p>
+      
+      <div class="pending-details-card">
+        <div class="card-header">
+          <h2>📦 Order Information</h2>
+          <span class="order-number">Order ID: {{ orderDetails?.orderId || 'Processing' }}</span>
+        </div>
+
+        <div class="pending-message">
+          <div class="message-icon">🔄</div>
+          <div class="message-content">
+            <h3>Payment Verification in Progress</h3>
+            <p>We've received your payment and it's currently being processed by our payment processor.</p>
+            <p class="customer-email" v-if="customerInfo?.email">Order confirmation will be sent to: <strong>{{ customerInfo.email }}</strong></p>
+          </div>
+        </div>
+
+        <div class="pending-instructions">
+          <h3>What to do next:</h3>
+          <ul>
+            <li>⏱️ <strong>Wait a few minutes</strong> - Payment verification typically takes 1-3 minutes</li>
+            <li>🔄 <strong>Refresh this page</strong> to check if your payment has been verified</li>
+            <li>📧 <strong>Check your email</strong> - You'll receive confirmation once processing is complete</li>
+            <li>💬 <strong>Contact support</strong> if this status persists for more than 10 minutes</li>
+          </ul>
+        </div>
+
+        <div class="pending-actions">
+          <button @click="verifyOrder" class="cta-btn primary">
+            <span class="refresh-icon">🔄</span>
+            Refresh Status
+          </button>
+          <button @click="goToStore" class="cta-btn secondary">Continue Shopping</button>
+        </div>
+      </div>
+
+      <!-- Support Contact -->
+      <div class="pending-support">
+        <p>Having issues? Contact us at <a href="mailto:support@gthere.net">support@gthere.net</a></p>
       </div>
     </div>
 
@@ -262,6 +332,176 @@ onMounted(() => {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+/* Pending State */
+.pending-container {
+  max-width: 800px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+.pending-icon-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.pending-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+  color: white;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.pending-container h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+  font-family: 'Playfair Display', serif;
+}
+
+.pending-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  margin-bottom: 3rem;
+}
+
+.pending-details-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px var(--shadow-light);
+  border: 2px solid #fbbf24;
+  text-align: left;
+}
+
+.pending-message {
+  background: #fef3c7;
+  padding: 2rem;
+  border-radius: 15px;
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #fbbf24;
+}
+
+.pending-message .message-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pending-message .message-content {
+  flex: 1;
+}
+
+.pending-message h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+.pending-message p {
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.customer-email {
+  margin-top: 1rem !important;
+  padding-top: 1rem;
+  border-top: 1px solid #fbbf24;
+}
+
+.pending-instructions {
+  margin: 2rem 0;
+}
+
+.pending-instructions h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+}
+
+.pending-instructions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pending-instructions li {
+  padding: 0.75rem 0;
+  color: var(--text-light);
+  line-height: 1.6;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.pending-instructions li:last-child {
+  border-bottom: none;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.refresh-icon {
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.pending-support {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px var(--shadow-light);
+}
+
+.pending-support p {
+  margin: 0;
+  color: var(--text-light);
+}
+
+.pending-support a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.pending-support a:hover {
+  text-decoration: underline;
 }
 
 /* Success Content */
