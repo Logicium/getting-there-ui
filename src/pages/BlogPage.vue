@@ -355,13 +355,6 @@ onMounted(async () => {
         </ul>
       </div>
 
-      <div class="sidebar-wellness-section">
-        <h3>Stay Connected</h3>
-        <p>Get weekly happiness tips, thoughts and notices delivered to your inbox.</p>
-        <input type="email" placeholder="Your email address" class="wellness-email-input">
-        <button class="wellness-subscribe-btn">Get Happiness Tips</button>
-        <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
-      </div>
     </aside>
   </main>
 </template>

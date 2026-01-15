@@ -406,6 +406,8 @@ onMounted(() => {
   font-size: 2.5rem;
   flex-shrink: 0;
   animation: rotate 2s linear infinite;
+  transform-origin: center center;
+  display: inline-block;
 }
 
 @keyframes rotate {
