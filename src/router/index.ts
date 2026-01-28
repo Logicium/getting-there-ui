@@ -15,6 +15,15 @@ import SuccessPage from "@/pages/SuccessPage.vue";
 import CancelPage from "@/pages/CancelPage.vue";
 import CommentManagementPage from "@/pages/CommentManagementPage.vue";
 import ReplyCommentPage from "@/pages/ReplyCommentPage.vue";
+import ClassesPage from "@/pages/ClassesPage.vue";
+import ClassPreviewPage from "@/pages/ClassPreviewPage.vue";
+import ClassProgressPage from "@/pages/ClassProgressPage.vue";
+import VideoLessonPage from "@/pages/VideoLessonPage.vue";
+import QuizPage from "@/pages/QuizPage.vue";
+import FinalExamPage from "@/pages/FinalExamPage.vue";
+import CertificatePage from "@/pages/CertificatePage.vue";
+import LoginPage from "@/pages/LoginPage.vue";
+import AccountPage from "@/pages/AccountPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -115,6 +124,53 @@ const router = createRouter({
       meta: {
         title: 'Reply to Comment - Getting There'
       }
+    },
+    {
+      path: '/classes',
+      name: 'classes',
+      component: ClassesPage,
+    },
+    {
+      path: '/classes/:id',
+      name: 'class-preview',
+      component: ClassPreviewPage,
+    },
+    {
+      path: '/classes/:courseId/learn',
+      name: 'class-progress',
+      component: ClassProgressPage,
+      children: [
+        {
+          path: ':chapterId/:contentId/video',
+          name: 'video-lesson',
+          component: VideoLessonPage,
+        },
+        {
+          path: ':chapterId/:contentId/quiz',
+          name: 'quiz-lesson',
+          component: QuizPage,
+        }
+      ]
+    },
+    {
+      path: '/classes/:courseId/final-exam',
+      name: 'final-exam',
+      component: FinalExamPage,
+    },
+    {
+      path: '/classes/:courseId/certificate',
+      name: 'certificate',
+      component: CertificatePage,
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginPage,
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: AccountPage,
     }
   ],
 })

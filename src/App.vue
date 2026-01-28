@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
+import { computed } from 'vue'
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
+
+const route = useRoute()
+
+// Hide footer on course learning pages (video/quiz pages)
+const showFooter = computed(() => {
+  const path = route.path
+  // Hide footer if we're on a learning page (contains /learn/ in the path)
+  return !path.includes('/learn/')
+})
 </script>
 
 <template>
   <Navbar/>
   <RouterView :key="$route.fullPath" />
-  <Footer/>
+  <Footer v-if="showFooter"/>
 </template>
 
 <style lang="scss">
