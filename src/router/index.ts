@@ -24,6 +24,7 @@ import FinalExamPage from "@/pages/FinalExamPage.vue";
 import CertificatePage from "@/pages/CertificatePage.vue";
 import LoginPage from "@/pages/LoginPage.vue";
 import AccountPage from "@/pages/AccountPage.vue";
+import SubscriptionPage from "@/pages/SubscriptionPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -171,6 +172,11 @@ const router = createRouter({
       path: '/account',
       name: 'account',
       component: AccountPage,
+    },
+    {
+      path: '/subscribe',
+      name: 'subscribe',
+      component: SubscriptionPage,
     }
   ],
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -8,22 +8,58 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const isLoggingIn = ref(false)
+const error = ref('')
+
+onMounted(() => {
+  // Load Google Sign-In SDK
+  const script = document.createElement('script')
+  script.src = 'https://accounts.google.com/gsi/client'
+  script.async = true
+  script.defer = true
+  document.head.appendChild(script)
+})
 
 async function handleGoogleLogin() {
   isLoggingIn.value = true
+  error.value = ''
 
-  // Simulate Google OAuth login
-  await new Promise(resolve => setTimeout(resolve, 1000))
-
-  const result = await authStore.loginWithGoogle()
-
-  if (result.success) {
-    // Redirect to the page they were trying to access or home
-    const redirect = route.query.redirect as string || '/'
-    router.push(redirect)
+  // Initialize Google Sign-In
+  const google = (window as any).google
+  if (!google) {
+    error.value = 'Google Sign-In not loaded. Please refresh the page.'
+    isLoggingIn.value = false
+    return
   }
 
-  isLoggingIn.value = false
+  try {
+    // Use the credential flow to get an ID token
+    google.accounts.id.initialize({
+      client_id: '644476907638-dn549s61bk17abp32bdtbf8gh3094uqj.apps.googleusercontent.com',
+      callback: async (response: any) => {
+        if (response.credential) {
+          // response.credential is the ID token
+          const result = await authStore.loginWithGoogle(response.credential)
+          
+          if (result.success) {
+            // Redirect to the page they were trying to access or account page
+            const redirect = route.query.redirect as string || '/account'
+            router.push(redirect)
+          } else {
+            error.value = result.error || 'Google authentication failed'
+          }
+        } else {
+          error.value = 'Google authentication was cancelled or failed'
+        }
+        isLoggingIn.value = false
+      },
+    })
+
+    // Prompt the user to sign in
+    google.accounts.id.prompt()
+  } catch (e: any) {
+    error.value = 'Google Sign-In failed. Please try again.'
+    isLoggingIn.value = false
+  }
 }
 </script>
 
@@ -56,13 +92,22 @@ async function handleGoogleLogin() {
             <span>or</span>
           </div>
 
-          <div class="info-box">
+          <div class="info-box" v-if="error">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <p>{{ error }}</p>
+          </div>
+          
+          <div class="info-box" v-else>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="16" x2="12" y2="12"></line>
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
-            <p>In the demo version, clicking "Continue with Google" will create a mock account. In production, this would use real Google OAuth authentication.</p>
+            <p>Sign in with your Google account to access all courses and track your progress.</p>
           </div>
         </div>
 

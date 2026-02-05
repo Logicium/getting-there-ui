@@ -117,7 +117,7 @@ const completedCourses = computed(() => {
               </div>
               <div v-else class="subscription-info">
                 <p>Subscribe to get unlimited access to all courses.</p>
-                <button class="subscribe-button" @click="authStore.subscribe()">
+                <button class="subscribe-button" @click="router.push('/subscribe')">
                   Subscribe for $10/month
                 </button>
               </div>
