@@ -77,7 +77,7 @@ onMounted(() => {
 
 <template>
   <div
-      class="video-card fade-in"
+      class="video-card"
       :data-category="video.category"
       :data-title="video.title.toLowerCase() + ' ' + video.tags.join(' ')"
   >

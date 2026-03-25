@@ -4,16 +4,20 @@ import { videoCategories } from '@/data/data';
 import VideoCard from '@/components/cards/VideoCard.vue';
 import FilterSection from '@/components/FilterSection.vue';
 import VideoModal from '@/components/VideoModal.vue';
+import Pagination from '@/components/Pagination.vue';
 import CommunitySupportSection from '@/components/sections/CommunitySupportSection.vue';
 import DisclaimerSection from '@/components/sections/DisclaimerSection.vue';
 import { getVideoDuration, generateVideoThumbnailWithRetry, getCachedThumbnail } from '@/utils/videoUtils';
 import { observeFadeElements } from '@/utils/animationUtils';
-import { filterElementsByCategoryAndSearch } from '@/utils/filterUtils';
 import type { CMSVideo, VideoData } from '@/types/video';
 
 // Video filtering state
 const currentFilter = ref('all');
 const searchTerm = ref('');
+
+// Pagination state
+const currentPage = ref(1);
+const itemsPerPage = 12;
 
 // Modal state
 const videoModalOpen = ref(false);
@@ -32,6 +36,33 @@ const videosError = ref<string | null>(null);
 
 // Computed properties
 const currentVideo = ref(null as VideoData | null);
+
+// Compute filtered videos based on category and search
+const filteredVideos = computed(() => {
+  const videosArray = Object.values(videos.value);
+  
+  return videosArray.filter(video => {
+    // Category filter
+    const matchesCategory = currentFilter.value === 'all' || 
+      video.category?.toLowerCase() === currentFilter.value.toLowerCase();
+    
+    // Search filter
+    const search = searchTerm.value.toLowerCase();
+    const matchesSearch = search === '' || 
+      video.title.toLowerCase().includes(search) ||
+      video.description.toLowerCase().includes(search) ||
+      video.category?.toLowerCase().includes(search);
+    
+    return matchesCategory && matchesSearch;
+  });
+});
+
+// Compute paginated videos
+const paginatedVideos = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredVideos.value.slice(start, end);
+});
 
 // Compute categories with counts
 const categoriesWithCounts = computed(() => {
@@ -56,20 +87,28 @@ const categoriesWithCounts = computed(() => {
   });
 });
 
-// Event handlers - USING DOM MANIPULATION LIKE WORKSHOPS
+// Event handlers
 const handleFilter = (filter: string) => {
   currentFilter.value = filter;
-  filterVideos();
+  currentPage.value = 1; // Reset to first page when filtering
 };
 
 const handleSearch = (term: string) => {
   searchTerm.value = term;
-  filterVideos();
+  currentPage.value = 1; // Reset to first page when searching
 };
 
-// EXACT SAME APPROACH AS WORKSHOPS PAGE
-function filterVideos() {
-  filterElementsByCategoryAndSearch('.video-card', currentFilter.value, searchTerm.value);
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+  // Scroll to top of videos section
+  const videosSection = document.querySelector('.therapy-video-section');
+  if (videosSection) {
+    videosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  // Re-trigger fade animations for new page items
+  setTimeout(() => {
+    observeFadeElements();
+  }, 50);
 }
 
 const playVideo = (videoId: string) => {
@@ -220,6 +259,7 @@ onMounted(async () => {
     fetchVideos()
   ]);
 
+  // Initial fade animation
   setTimeout(() => {
     observeFadeElements();
   }, 100);
@@ -271,12 +311,26 @@ onMounted(async () => {
       </div>
 
       <!-- Videos Grid -->
-      <div v-else class="therapy-videos-grid" id="allVideos">
-        <VideoCard
-            v-for="video in Object.values(videos)"
-            :key="video.id"
-            :video="video"
-            :playVideo="playVideo"
+      <div v-else>
+        <div v-if="filteredVideos.length === 0" class="no-results-message">
+          <p>No videos found matching your search criteria.</p>
+        </div>
+        <div v-else class="therapy-videos-grid" id="allVideos">
+          <VideoCard
+              v-for="video in paginatedVideos"
+              :key="video.id"
+              :video="video"
+              :playVideo="playVideo"
+          />
+        </div>
+        
+        <!-- Pagination -->
+        <Pagination
+          v-if="filteredVideos.length > itemsPerPage"
+          :currentPage="currentPage"
+          :totalItems="filteredVideos.length"
+          :itemsPerPage="itemsPerPage"
+          @page-change="handlePageChange"
         />
       </div>
     </section>
@@ -357,6 +411,13 @@ onMounted(async () => {
 
 .therapy-videos-grid {
   @include grid-auto(350px, $spacing-xl);
+}
+
+.no-results-message {
+  text-align: center;
+  padding: $spacing-3xl;
+  color: var(--text-muted);
+  font-size: $font-size-lg;
 }
 
 /* Content Loading/Error States (not in white boxes) */

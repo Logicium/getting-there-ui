@@ -30,8 +30,8 @@ onMounted(async () => {
 async function initializeSquare() {
   try {
     const payments = (window as any).Square.payments(
-      'sandbox-sq0idb-OQkQ2bLLx7aTQV0v5yClFA', // Square Application ID (sandbox)
-      'L05JNNRMBJYH1' // Location ID
+      import.meta.env.VITE_SQUARE_APP_ID || 'sandbox-sq0idb-7vv4_H_fXk0GW_bhJkAhqA',
+      import.meta.env.VITE_SQUARE_LOCATION_ID || 'LED8ZB33BQQ7J'
     )
 
     card = await payments.card()
@@ -67,8 +67,16 @@ async function handleSubmit() {
         }),
       })
 
+      if (response.status === 401) {
+        error.value = 'Your session has expired. Please log in again.'
+        authStore.logout()
+        setTimeout(() => router.push('/login'), 1500)
+        return
+      }
+
       if (!response.ok) {
-        throw new Error('Payment processing failed')
+        const errData = await response.json().catch(() => null)
+        throw new Error(errData?.message || 'Payment processing failed')
       }
 
       const data = await response.json()

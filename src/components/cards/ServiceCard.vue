@@ -5,7 +5,7 @@
       <component v-else :is="fallbackIconComponent" />
     </div>
     <h3>{{ title }}</h3>
-    <p>{{ description }}</p>
+    <p>{{ description || '' }}</p>
     <router-link :to="linkLocation ? (linkLocation === 'home' ? '/' : '/' + linkLocation) : '/about'" class="service-link">Learn More →</router-link>
   </div>
 </template>
@@ -22,7 +22,7 @@ const baseUrl = import.meta.env.VITE_CMS_URL || '';
 
 const props = defineProps<{
   title: string;
-  description: string;
+  description: string | null;
   iconIndex: number;
   linkLocation?: string | null;
   icon?: {

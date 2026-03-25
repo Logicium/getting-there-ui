@@ -1,5 +1,5 @@
 <template>
-  <article class="therapy-article-card fade-in" :data-category="category">
+  <article class="therapy-article-card" :data-category="category">
     <div class="article-therapy-image" :style="{ backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }">
       <div class="therapy-category-badge" :class="category">{{ categoryLabel }}</div>
     </div>

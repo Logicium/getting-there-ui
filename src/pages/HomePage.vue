@@ -32,7 +32,7 @@ interface HowItWorks {
 interface ServiceCard {
   id: number;
   title: string;
-  description: string;
+  description: string | null;
   linkLocation: string | null;
   icon: null | any;
 }

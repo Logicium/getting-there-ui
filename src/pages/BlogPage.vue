@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import BlogCard from '@/components/cards/BlogCard.vue';
+import Pagination from '@/components/Pagination.vue';
 
 interface BlogArticle {
   id: number;
@@ -37,6 +38,10 @@ const error = ref<string | null>(null);
 const searchInput = ref('');
 const currentFilter = ref('all');
 
+// Pagination state
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
 // Category mapping for consistent naming
 const categoryMap: Record<string, { display: string; filter: string }> = {
   'Goals': { display: 'Goals', filter: 'goals' },
@@ -45,6 +50,30 @@ const categoryMap: Record<string, { display: string; filter: string }> = {
   'Fun': { display: 'Fun', filter: 'fun' },
   'Happiness': { display: 'Happiness', filter: 'happiness' }
 };
+
+// Compute filtered articles based on category and search
+const filteredArticles = computed(() => {
+  return blogArticles.value.filter(article => {
+    // Category filter
+    const matchesCategory = currentFilter.value === 'all' || article.category === currentFilter.value;
+    
+    // Search filter
+    const search = searchInput.value.toLowerCase();
+    const matchesSearch = search === '' ||
+      article.title.toLowerCase().includes(search) ||
+      article.excerpt.toLowerCase().includes(search) ||
+      article.categoryLabel.toLowerCase().includes(search);
+    
+    return matchesCategory && matchesSearch;
+  });
+});
+
+// Compute paginated articles
+const paginatedArticles = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredArticles.value.slice(start, end);
+});
 
 // Compute category counts
 const categoryCounts = computed(() => {
@@ -165,37 +194,27 @@ const getCategoryIcon = (category: string): string => {
   return '';
 };
 
-// DOM MANIPULATION APPROACH LIKE WORKSHOPS
+// Updated filter and search handlers
 function setFilter(category: string) {
   currentFilter.value = category;
-  filterArticles();
+  currentPage.value = 1; // Reset to first page when filtering
 }
 
-function filterArticles() {
-  const filter = currentFilter.value;
-  const search = searchInput.value.toLowerCase();
-  const articleCards = document.querySelectorAll('.therapy-article-card');
-
-  articleCards.forEach(card => {
-    const htmlCard = card as HTMLElement;
-    const category = htmlCard.dataset.category || '';
-    const title = (htmlCard.querySelector('.article-title')?.textContent || '').toLowerCase();
-    const excerpt = (htmlCard.querySelector('.article-excerpt')?.textContent || '').toLowerCase();
-
-    const matchesCategory = filter === 'all' || category === filter;
-    const matchesSearch = search === '' || title.includes(search) || excerpt.includes(search);
-
-    if (matchesCategory && matchesSearch) {
-      htmlCard.style.display = 'grid';
-    } else {
-      htmlCard.style.display = 'none';
-    }
-  });
-}
-
-// Watch search input
 function handleSearch() {
-  filterArticles();
+  currentPage.value = 1; // Reset to first page when searching
+}
+
+function handlePageChange(page: number) {
+  currentPage.value = page;
+  // Scroll to top of articles section
+  const articlesSection = document.querySelector('.articles-section');
+  if (articlesSection) {
+    articlesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  // Re-trigger fade animations for new page items
+  setTimeout(() => {
+    observeFadeElements();
+  }, 50);
 }
 
 function observeFadeElements() {
@@ -293,27 +312,38 @@ onMounted(async () => {
       </div>
 
       <!-- Articles Grid -->
-      <div v-else class="therapy-articles-grid" id="articlesGrid">
-        <BlogCard
-            v-for="article in blogArticles"
-            :key="article.id"
-            :category="article.category"
-            :category-label="article.categoryLabel"
-            :icon="article.icon"
-            :image-url="'https://getting-there-cms.onrender.com'+article.imageUrl"
-            :date="article.date"
-            :read-time="article.readTime"
-            :title="article.title"
-            :excerpt="article.excerpt"
-            :author-avatar="article.authorAvatar"
-            :author-name="article.authorName"
-            :author-credentials="article.authorCredentials"
-            :slug="article.slug"
-        />
-
-        <div v-if="blogArticles.length === 0" class="no-articles-message">
+      <div v-else>
+        <div v-if="filteredArticles.length === 0" class="no-articles-message">
           No articles found. Please try a different search or filter.
         </div>
+        
+        <div v-else class="therapy-articles-grid" id="articlesGrid">
+          <BlogCard
+              v-for="article in paginatedArticles"
+              :key="article.id"
+              :category="article.category"
+              :category-label="article.categoryLabel"
+              :icon="article.icon"
+              :image-url="'https://getting-there-cms.onrender.com'+article.imageUrl"
+              :date="article.date"
+              :read-time="article.readTime"
+              :title="article.title"
+              :excerpt="article.excerpt"
+              :author-avatar="article.authorAvatar"
+              :author-name="article.authorName"
+              :author-credentials="article.authorCredentials"
+              :slug="article.slug"
+          />
+        </div>
+        
+        <!-- Pagination -->
+        <Pagination
+          v-if="filteredArticles.length > itemsPerPage"
+          :currentPage="currentPage"
+          :totalItems="filteredArticles.length"
+          :itemsPerPage="itemsPerPage"
+          @page-change="handlePageChange"
+        />
       </div>
     </section>
 
@@ -556,9 +586,11 @@ onMounted(async () => {
 
 .no-articles-message {
   grid-column: 1 / -1;
-  padding: 2rem;
+  padding: 3rem 2rem;
+  text-align: center;
   color: var(--text-light);
   font-style: italic;
+  font-size: 1.1rem;
 }
 
 .therapy-sidebar {

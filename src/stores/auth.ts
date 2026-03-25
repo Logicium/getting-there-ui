@@ -141,6 +141,9 @@ export const useAuthStore = defineStore('auth', () => {
           user.value.subscribed = data.subscribed
           localStorage.setItem('user', JSON.stringify(user.value))
         }
+      } else if (response.status === 401) {
+        // Token is expired or invalid — clear the stale session
+        logout()
       }
     } catch (error) {
       console.error('Failed to check subscription status:', error)

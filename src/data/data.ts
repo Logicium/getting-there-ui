@@ -343,7 +343,8 @@ export const videoCategories = [
   { id: 'growth', label: 'Growth', icon: '' },
   { id: 'loss', label: 'Loss', icon: '' },
   { id: 'fun', label: 'Fun', icon: '' },
-  { id: 'happiness', label: 'Happiness', icon: '' }
+  { id: 'happiness', label: 'Happiness', icon: '' },
+  { id: 'misc', label: 'Misc', icon: '' }
 ];
 
 export const bookCategories = [
