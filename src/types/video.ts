@@ -58,6 +58,7 @@ export interface CMSVideo {
     publishedAt: string;
   } | null;
   tags: Array<{ id: number; tag: string }>;
+  isPremium?: boolean;
 }
 
 /**
@@ -73,6 +74,7 @@ export interface VideoData {
   category: string;
   views: string;
   isFree: boolean;
+  isPremium: boolean;
   tags: string[];
   videoUrl: string;
   thumbnailUrl?: string;

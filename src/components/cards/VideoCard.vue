@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue';
+import { RouterLink } from 'vue-router';
 import type { VideoData } from '@/types/video';
 
 interface Props {
   video: VideoData;
   playVideo?: (videoId: string) => void;
+  locked?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -46,12 +48,14 @@ const categoryClass = computed(() => {
 });
 
 const handleClick = () => {
+  if (props.locked) return;
   if (props.playVideo) {
     props.playVideo(props.video.id);
   }
 };
 
 const handleWatchClick = () => {
+  if (props.locked) return;
   if (props.playVideo) {
     props.playVideo(props.video.id);
   }
@@ -78,12 +82,22 @@ onMounted(() => {
 <template>
   <div
       class="video-card"
+      :class="{ 'video-card--locked': locked }"
       :data-category="video.category"
       :data-title="video.title.toLowerCase() + ' ' + video.tags.join(' ')"
   >
     <div class="video-thumbnail" @click="handleClick">
       <div :class="['category-badge', categoryClass]">{{ categoryDisplay }}</div>
       <div class="video-duration">{{ duration }}</div>
+
+      <!-- Premium badge -->
+      <div v-if="video.isPremium" class="premium-badge">⭐ Premium</div>
+
+      <!-- Lock overlay for non-subscribers -->
+      <div v-if="locked" class="lock-overlay">
+        <div class="lock-icon">🔒</div>
+        <span class="lock-text">Subscribers Only</span>
+      </div>
 
       <!-- Thumbnail loading state -->
       <div v-if="thumbnailLoading" class="thumbnail-loading">
@@ -115,12 +129,19 @@ onMounted(() => {
       <p class="video-presenter">{{ video.presenter }}</p>
       <p class="video-description">{{ video.description }}</p>
       <div class="video-footer">
-        <button
-            class="watch-btn"
-            @click="handleWatchClick"
-        >
-          Watch Now
-        </button>
+        <template v-if="locked">
+          <router-link to="/subscribe" class="watch-btn subscribe-btn">
+            Subscribe to Watch
+          </router-link>
+        </template>
+        <template v-else>
+          <button
+              class="watch-btn"
+              @click="handleWatchClick"
+          >
+            Watch Now
+          </button>
+        </template>
       </div>
     </div>
   </div>
@@ -335,5 +356,67 @@ onMounted(() => {
   @include button-primary;
   padding: $spacing-sm $spacing-md;
   font-size: $font-size-sm;
+}
+
+.subscribe-btn {
+  background: linear-gradient(135deg, #b8860b, #daa520);
+  text-decoration: none;
+  text-align: center;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(184, 134, 11, 0.3);
+  }
+}
+
+/* ---------- Premium / Locked styles ---------- */
+.video-card--locked {
+  .video-thumbnail {
+    cursor: default;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+}
+
+.premium-badge {
+  position: absolute;
+  top: $spacing-md;
+  right: $spacing-md;
+  background: linear-gradient(135deg, #b8860b, #daa520);
+  color: white;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  z-index: 2;
+  letter-spacing: 0.5px;
+}
+
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  gap: $spacing-xs;
+}
+
+.lock-icon {
+  font-size: 2.5rem;
+}
+
+.lock-text {
+  color: white;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 </style>
