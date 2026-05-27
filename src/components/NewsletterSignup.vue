@@ -37,19 +37,22 @@ async function submit() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.value, source: props.source }),
     })
-    if (!res.ok && res.status !== 409) {
-      throw new Error('subscribe failed')
+    if (res.status === 409) {
+      // Already subscribed — treat as success from the user's perspective.
+      success.value = true
+      email.value = ''
+      return
+    }
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      throw new Error(`Subscribe failed (${res.status}): ${body.slice(0, 200)}`)
     }
     success.value = true
     email.value = ''
-  } catch {
-    // Soft-fail: still record locally so the QR-code/landing flow works
-    // even if the backend endpoint is unavailable.
-    const list = JSON.parse(localStorage.getItem('newsletterSubscribers') || '[]')
-    if (!list.includes(email.value)) list.push(email.value)
-    localStorage.setItem('newsletterSubscribers', JSON.stringify(list))
-    success.value = true
-    email.value = ''
+  } catch (e: any) {
+    console.error('Newsletter subscribe failed:', e)
+    error.value =
+      "We couldn't sign you up right now. Please try again in a moment, or email us if it keeps happening."
   } finally {
     submitting.value = false
   }

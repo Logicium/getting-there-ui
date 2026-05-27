@@ -267,6 +267,24 @@ onMounted(() => {
   <main>
     <!-- Hero Section -->
     <section class="hero" id="home">
+      <!-- Full-bleed background carousel — always fills the hero box -->
+      <div class="hero-bg" aria-hidden="true">
+        <template v-if="heroData && heroData.imagecarousel && heroData.imagecarousel.length > 0">
+          <div
+            v-for="(image, index) in heroData.imagecarousel"
+            :key="image.id"
+            :class="['hero-image', index === 0 ? 'active' : '']"
+            :style="{ backgroundImage: `url('https://getting-there-cms.onrender.com${image.url}')` }"
+          ></div>
+        </template>
+        <template v-else>
+          <div class="hero-image active" style="background-image: url('/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg')"></div>
+          <div class="hero-image" style="background-image: url('/fortytwo-1xMG-yqR2GM-unsplash.jpg')"></div>
+          <div class="hero-image" style="background-image: url('/hrant-khachatryan-V9sHuZ11lmk-unsplash.jpg')"></div>
+        </template>
+        <div class="hero-scrim"></div>
+      </div>
+
       <div v-if="isLoading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Loading content...</p>
@@ -285,62 +303,6 @@ onMounted(() => {
           <div class="hero-cta">
             <router-link :to="actionButtonData ? (actionButtonData.linkLocation === 'home' ? '/' : '/' + actionButtonData.linkLocation) : '/events'" class="cta-primary">{{ actionButtonData ? actionButtonData.buttonText : 'Start Your Journey' }}</router-link>
             <router-link to="/about" class="cta-secondary">Learn How It Works</router-link>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <!-- Display video if available -->
-          <div v-if="videoData" class="hero-video-container">
-            <!-- Blurry background using the poster image -->
-            <div 
-              class="hero-video-background"
-              :style="{
-                backgroundImage: `url(${heroData.imagecarousel && heroData.imagecarousel.length > 0 ? 'https://getting-there-cms.onrender.com' + heroData.imagecarousel[0].url : '/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg'})`
-              }"
-            ></div>
-
-            <!-- Video element -->
-            <div class="hero-video-wrapper">
-              <video 
-                ref="videoPlayer"
-                class="hero-video" 
-                :controls="isVideoPlaying"
-                :src="`https://getting-there-cms.onrender.com${videoData.url}`"
-                :poster="heroData.imagecarousel && heroData.imagecarousel.length > 0 ? `https://getting-there-cms.onrender.com${heroData.imagecarousel[0].url}` : '/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg'"
-                @play="hidePlayButton"
-                @pause="showPlayButton"
-                @ended="showPlayButton"
-              ></video>
-
-              <!-- Play button overlay -->
-              <div 
-                class="hero-video-play-button" 
-                :class="{ 'hidden': isVideoPlaying }"
-                @click="playVideo"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-          <!-- Otherwise display image carousel -->
-          <div v-else class="hero-images">
-            <!-- Use CMS imagecarousel data if available -->
-            <template v-if="heroData.imagecarousel && heroData.imagecarousel.length > 0">
-              <img
-                v-for="(image, index) in heroData.imagecarousel"
-                :key="image.id"
-                :src="`https://getting-there-cms.onrender.com${image.url}`"
-                :alt="image.alternativeText || 'Hero image'"
-                :class="['hero-image', index === 0 ? 'active' : '']"
-              >
-            </template>
-            <!-- Fallback to static images if no CMS data -->
-            <template v-else>
-              <img src="/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg" alt="Happy client achieving goals" class="hero-image active">
-              <img src="/fortytwo-1xMG-yqR2GM-unsplash.jpg" alt="Success and motivation" class="hero-image">
-              <img src="/hrant-khachatryan-V9sHuZ11lmk-unsplash.jpg" alt="Goal achievement celebration" class="hero-image">
-            </template>
           </div>
         </div>
       </div>
@@ -441,217 +403,133 @@ onMounted(() => {
 @import '@/assets/scss/mixins';
 @import '@/assets/scss/variables';
 
-/* Hero Section */
+/* Hero Section — full-bleed image with overlaid text */
 .hero {
-  min-height: 100vh;
-  @include flex-center;
-  background: var(--gradient-neutral);
   position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
   overflow: hidden;
-  padding-top: 80px;
+  padding: 0;
+  color: #fff;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%234a7c59" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
-    animation: float 30s ease-in-out infinite;
+  @include mobile-only {
+    align-items: flex-end;
   }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(180deg); }
 }
 
 .hero-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 $spacing-xl;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: $spacing-3xl;
-  align-items: center;
   position: relative;
   z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8rem $spacing-xl $spacing-3xl;
+  display: block;
 
   @include mobile-only {
-    grid-template-columns: 1fr;
-    gap: $spacing-xl;
-    text-align: center;
+    padding: 6rem $spacing-lg $spacing-2xl;
+    text-align: left;
   }
 }
 
-.hero-text {
-  color: var(--text-dark);
-}
-
-.hero-badge {
-  display: inline-block;
-  background: var(--bg-sage);
-  color: var(--primary-color);
-  padding: $spacing-sm $spacing-md;
-  border-radius: $radius-2xl;
-  font-size: $font-size-sm;
-  font-weight: 600;
-  margin-bottom: $spacing-lg;
-  border: 1px solid var(--border-light);
-}
-
-.hero h1 {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
-  font-weight: 700;
-  margin-bottom: $spacing-lg;
-  line-height: 1.2;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-}
-
-.hero p {
-  font-size: $font-size-lg;
-  margin-bottom: $spacing-xl;
-  line-height: 1.6;
-  color: var(--text-light);
-}
-
-.hero-cta {
-  @include flex-row($spacing-md);
-  margin-bottom: $spacing-xl;
-  flex-wrap: wrap;
-
-  @include mobile-only {
-    justify-content: center;
-  }
-}
-
-.trust-indicators {
-  @include flex-row($spacing-xl);
-  flex-wrap: wrap;
-
-  @include mobile-only {
-    justify-content: center;
-  }
-}
-
-.trust-item {
-  @include flex-row($spacing-sm);
-  align-items: center;
-  color: var(--text-light);
-  font-size: $font-size-sm;
-}
-
-.trust-icon {
-  font-size: $font-size-lg;
-}
-
-.hero-visual {
-  position: relative;
-  height: 500px;
-
-  @include mobile-only {
-    order: -1;
-    height: 300px;
-  }
-}
-
-.hero-images {
-  position: relative;
-  height: 100%;
-  border-radius: $radius-xl;
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   overflow: hidden;
-  box-shadow: 0 20px 60px var(--shadow-medium);
 }
 
 .hero-image {
   position: absolute;
-  top: 0;
-  left: 0;
-  @include image-cover;
-  border-radius: $radius-xl;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 2s ease-in-out;
+  transform: scale(1.05);
+  animation: heroKenBurns 18s ease-in-out infinite alternate;
 
   &.active {
     opacity: 1;
   }
 }
 
-.hero-video-container {
-  height: 100%;
-  border-radius: $radius-xl;
-  overflow: hidden;
-  box-shadow: 0 20px 60px var(--shadow-medium);
-  position: relative;
+@keyframes heroKenBurns {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to   { transform: scale(1.12) translate3d(-1%, -1%, 0); }
 }
 
-.hero-video-background {
+.hero-scrim {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  filter: blur(15px);
-  transform: scale(1.1); /* Prevent blur edges from showing */
-  opacity: 0.8;
-  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(20, 30, 22, 0.15) 0%, rgba(20, 30, 22, 0.55) 55%, rgba(20, 30, 22, 0.85) 100%),
+    linear-gradient(90deg, rgba(20, 30, 22, 0.45) 0%, rgba(20, 30, 22, 0) 60%);
+  pointer-events: none;
 }
 
-.hero-video-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2;
+.hero-text {
+  max-width: 640px;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
-.hero-video {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
-  border-radius: $radius-md;
-  position: relative;
-  z-index: 2;
-  background-color: transparent;
+.hero-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-2xl;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  margin-bottom: $spacing-lg;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  text-shadow: none;
 }
 
-.hero-video-play-button {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80px;
-  height: 80px;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  z-index: 3;
-  color: white;
-  transition: all 0.3s ease;
+.hero h1 {
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  font-weight: 700;
+  margin-bottom: $spacing-lg;
+  line-height: 1.1;
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+}
+
+.hero p {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  margin-bottom: $spacing-xl;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 56ch;
+}
+
+.hero-cta {
+  @include flex-row($spacing-md);
+  flex-wrap: wrap;
+
+  @include mobile-only {
+    justify-content: flex-start;
+  }
+}
+
+.hero .cta-secondary {
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.5);
-    transform: translate(-50%, -50%) scale(1.1);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #fff;
+    color: #fff;
   }
-
-  &.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-}
-
-@keyframes gentleFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
 }
 
 /* How It Works Section */

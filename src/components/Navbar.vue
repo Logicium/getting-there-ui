@@ -173,7 +173,7 @@ nav {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.8rem;
+  font-size: clamp(1.1rem, 4.2vw, 1.8rem);
   font-weight: 700;
   background: var(--gradient);
   -webkit-background-clip: text;
@@ -183,6 +183,14 @@ nav {
   letter-spacing: -0.5px;
   text-decoration: none;
   cursor: pointer;
+  min-width: 0;
+}
+
+.logoWrap span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
 }
 
 .auth-button {
@@ -318,17 +326,9 @@ nav {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .logoWrap {
-    font-size: 1.4rem;
-  }
-
-  .logoWrap span {
-    display: none;
-  }
-
   .logo {
     height: 40px;
-    margin-right: 0;
+    margin-right: 8px;
   }
 
   .account-btn .btn-text {
