@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import NewsletterSignup from '@/components/NewsletterSignup.vue';
 
 const route = useRoute();
 const isLoading = ref(true);
@@ -530,6 +531,15 @@ onMounted(async () => {
 
         <!-- Sidebar -->
         <aside class="blog-sidebar">
+
+          <!-- Newsletter Signup -->
+          <div class="sidebar-section fade-in">
+            <NewsletterSignup
+              source="blog-sidebar"
+              title="Join Our Newsletter"
+              description="Get new posts and practices delivered to your inbox."
+            />
+          </div>
 
           <!-- Related Articles -->
           <div class="sidebar-section related-articles fade-in">

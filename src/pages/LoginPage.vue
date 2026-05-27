@@ -10,6 +10,40 @@ const authStore = useAuthStore()
 const isLoggingIn = ref(false)
 const error = ref('')
 
+const mode = ref<'login' | 'signup'>('login')
+const email = ref('')
+const password = ref('')
+const name = ref('')
+const isSubmitting = ref(false)
+
+async function handleEmailSubmit() {
+  error.value = ''
+  if (!email.value || !password.value || (mode.value === 'signup' && !name.value)) {
+    error.value = 'Please fill in all fields.'
+    return
+  }
+  if (password.value.length < 8) {
+    error.value = 'Password must be at least 8 characters.'
+    return
+  }
+  isSubmitting.value = true
+  const result = mode.value === 'login'
+    ? await authStore.login(email.value, password.value)
+    : await authStore.signup(email.value, password.value, name.value)
+  isSubmitting.value = false
+  if (result.success) {
+    const redirect = route.query.redirect as string || '/account'
+    router.push(redirect)
+  } else {
+    error.value = result.error || 'Authentication failed.'
+  }
+}
+
+function toggleMode() {
+  mode.value = mode.value === 'login' ? 'signup' : 'login'
+  error.value = ''
+}
+
 onMounted(() => {
   // Load Google Sign-In SDK
   const script = document.createElement('script')
@@ -68,8 +102,8 @@ async function handleGoogleLogin() {
     <div class="login-container">
       <div class="login-content">
         <div class="login-header">
-          <h1>Welcome Back</h1>
-          <p>Sign in to continue your learning journey</p>
+          <h1>{{ mode === 'login' ? 'Welcome Back' : 'Create Your Account' }}</h1>
+          <p>{{ mode === 'login' ? 'Sign in to continue your learning journey' : 'Sign up to start your learning journey' }}</p>
         </div>
 
         <div class="login-form">
@@ -89,8 +123,55 @@ async function handleGoogleLogin() {
           </button>
 
           <div class="divider">
-            <span>or</span>
+            <span>or {{ mode === 'login' ? 'sign in with email' : 'sign up with email' }}</span>
           </div>
+
+          <form class="email-form" @submit.prevent="handleEmailSubmit">
+            <div v-if="mode === 'signup'" class="form-field">
+              <label for="name">Name</label>
+              <input
+                id="name"
+                v-model="name"
+                type="text"
+                autocomplete="name"
+                placeholder="Your name"
+                :disabled="isSubmitting"
+              />
+            </div>
+            <div class="form-field">
+              <label for="email">Email</label>
+              <input
+                id="email"
+                v-model="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                :disabled="isSubmitting"
+              />
+            </div>
+            <div class="form-field">
+              <label for="password">Password</label>
+              <input
+                id="password"
+                v-model="password"
+                type="password"
+                :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
+                placeholder="At least 8 characters"
+                :disabled="isSubmitting"
+              />
+            </div>
+            <button type="submit" class="submit-button" :disabled="isSubmitting">
+              <div v-if="isSubmitting" class="spinner spinner-light"></div>
+              <span>{{ isSubmitting ? 'Please wait...' : (mode === 'login' ? 'Sign In' : 'Create Account') }}</span>
+            </button>
+          </form>
+
+          <p class="mode-toggle">
+            {{ mode === 'login' ? "Don't have an account?" : 'Already have an account?' }}
+            <button type="button" class="link-button" @click="toggleMode">
+              {{ mode === 'login' ? 'Sign up' : 'Sign in' }}
+            </button>
+          </p>
 
           <div class="info-box" v-if="error">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -107,7 +188,7 @@ async function handleGoogleLogin() {
               <line x1="12" y1="16" x2="12" y2="12"></line>
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
-            <p>Sign in with your Google account to access all courses and track your progress.</p>
+            <p>Sign in with Google or your email to access all courses and track your progress.</p>
           </div>
         </div>
 
@@ -144,23 +225,30 @@ async function handleGoogleLogin() {
 
       <div class="login-visual">
         <div class="visual-content">
-          <h2>Start Your Journey to Better Living</h2>
-          <p>Join thousands of learners who are transforming their lives through positive psychology and evidence-based practices.</p>
-          
-          <div class="stats">
-            <div class="stat">
-              <span class="stat-number">10,000+</span>
-              <span class="stat-label">Active Learners</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">50+</span>
-              <span class="stat-label">Expert Courses</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">95%</span>
-              <span class="stat-label">Satisfaction Rate</span>
-            </div>
-          </div>
+          <span class="visual-badge">Just getting started</span>
+          <h2>Be among our first learners</h2>
+          <p>Getting There is a brand-new platform built around positive psychology and evidence-based practices. Create an account today and help shape what we build next.</p>
+
+          <ul class="visual-points">
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Founder-led courses rooted in current research</span>
+            </li>
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>New lessons added as we grow &mdash; your feedback guides us</span>
+            </li>
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>A small, personal community &mdash; not a faceless platform</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -360,25 +448,135 @@ async function handleGoogleLogin() {
   }
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+.visual-badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
 
-  .stat {
+.visual-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  li {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 1.02rem;
+    line-height: 1.5;
+    opacity: 0.95;
 
-    .stat-number {
-      font-size: 2.5rem;
-      font-weight: 700;
+    svg {
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+  }
+}
+
+.email-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  input {
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-dark);
+    background: white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px var(--shadow-light);
     }
 
-    .stat-label {
-      font-size: 0.9rem;
-      opacity: 0.9;
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
+  }
+}
+
+.submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--secondary-color);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.spinner-light {
+  border-color: rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+.mode-toggle {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 0.25rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: inherit;
+
+  &:hover {
+    text-decoration: underline;
   }
 }
 
@@ -400,11 +598,6 @@ async function handleGoogleLogin() {
 @media (max-width: 640px) {
   .login-header h1 {
     font-size: 2rem;
-  }
-
-  .stats {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
   }
 }
 </style>

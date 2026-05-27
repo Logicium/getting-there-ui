@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import InfoCard from "@/components/cards/InfoCard.vue";
 import ServiceCard from "@/components/cards/ServiceCard.vue";
 import ResourceCard from "@/components/cards/ResourceCard.vue";
+import NewsletterSignup from "@/components/NewsletterSignup.vue";
 
 // Interface for the hero section data
 interface HeroSection {
@@ -419,6 +420,16 @@ onMounted(() => {
             <router-link to="/events" class="cta-primary">{{ ctaData.buttontext }}</router-link>
 <!--            <a href="mailto:support@gthere.net" class="cta-secondary">Get Started Today</a>-->
           </div>
+
+          <div class="cta-newsletter">
+            <NewsletterSignup
+              variant="cta"
+              source="home-cta"
+              title="Stay in the loop"
+              description="Subscribe to our newsletter for weekly practices, new courses, and event invitations."
+              button-text="Subscribe"
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -779,6 +790,14 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
   }
+}
+
+.cta-newsletter {
+  margin-top: $spacing-lg;
+  padding-top: $spacing-lg;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: center;
 }
 
 .cta-section .cta-primary {

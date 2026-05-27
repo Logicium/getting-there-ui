@@ -16,6 +16,7 @@ import CancelPage from "@/pages/CancelPage.vue";
 import CommentManagementPage from "@/pages/CommentManagementPage.vue";
 import ReplyCommentPage from "@/pages/ReplyCommentPage.vue";
 import ClassesPage from "@/pages/ClassesPage.vue";
+import ClassesComingSoonPage from "@/pages/ClassesComingSoonPage.vue";
 import ClassPreviewPage from "@/pages/ClassPreviewPage.vue";
 import ClassProgressPage from "@/pages/ClassProgressPage.vue";
 import VideoLessonPage from "@/pages/VideoLessonPage.vue";
@@ -25,6 +26,7 @@ import CertificatePage from "@/pages/CertificatePage.vue";
 import LoginPage from "@/pages/LoginPage.vue";
 import AccountPage from "@/pages/AccountPage.vue";
 import SubscriptionPage from "@/pages/SubscriptionPage.vue";
+import NewsletterPage from "@/pages/NewsletterPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -129,6 +131,11 @@ const router = createRouter({
     {
       path: '/classes',
       name: 'classes',
+      component: ClassesComingSoonPage,
+    },
+    {
+      path: '/classes/catalog-preview',
+      name: 'classes-catalog-preview',
       component: ClassesPage,
     },
     {
@@ -177,6 +184,11 @@ const router = createRouter({
       path: '/subscribe',
       name: 'subscribe',
       component: SubscriptionPage,
+    },
+    {
+      path: '/newsletter',
+      name: 'newsletter',
+      component: NewsletterPage,
     }
   ],
 })

@@ -63,6 +63,7 @@ function closeMenu() {
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
+        <span class="menu-toggle-label">Menu</span>
       </button>
 
       <RouterLink to="/" class="logoWrap" @click="closeMenu">
@@ -105,6 +106,7 @@ function closeMenu() {
         <li><RouterLink to="/events" @click="closeMenu">Workshops</RouterLink></li>
         <li><RouterLink to="/blog" @click="closeMenu">Blog</RouterLink></li>
         <li><RouterLink to="/store" @click="closeMenu">Store</RouterLink></li>
+        <li><RouterLink to="/newsletter" @click="closeMenu">Newsletter</RouterLink></li>
       </ul>
     </aside>
   </header>
@@ -137,6 +139,7 @@ nav {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -144,6 +147,13 @@ nav {
   color: var(--text-dark);
   transition: color 0.3s ease;
   margin-right: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.menu-toggle-label {
+  line-height: 1;
 }
 
 .menu-toggle:hover {
@@ -343,6 +353,10 @@ nav {
 
   .menu-toggle {
     margin-right: 0.5rem;
+  }
+
+  .menu-toggle-label {
+    display: none;
   }
 }
 </style>
