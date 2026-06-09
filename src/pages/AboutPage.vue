@@ -145,7 +145,7 @@ onMounted(async () => {
       <div class="hero-text">
         <div class="hero-badge">{{ (hero && hero.tag) || 'Trusted Mental Wellness Support' }}</div>
         <h1>{{ (hero && hero.title) || 'Compassionate guidance for lasting change' }}</h1>
-        <p>{{ (hero && hero.description) || 'For over a decade, Getting There has been a beacon of hope for individuals seeking emotional wellness and personal growth. Our evidence-based approach, combined with genuine care, has helped thousands find their path to healing and happiness.' }}</p>
+        <p>{{ (hero && hero.description) || 'For over a decade, Getting There has been a beacon of hope for individuals seeking emotional wellness and personal growth. Our practical approach, combined with genuine care, has helped thousands find their path to healing and happiness.' }}</p>
 
         <div class="hero-stats">
           <div class="stat-item" v-for="s in (hero && hero.stats ? hero.stats : defaultStats)" :key="s.id">
@@ -185,13 +185,13 @@ onMounted(async () => {
             </p>
           </template>
           <template v-else>
-            <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective mental health support. We began as a small practice in Colorado, born from Dr. Sue Nesbitt's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
+            <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective emotional wellness support. We began as a small practice in Colorado, born from Dr. Sue Nesbitt's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
 
-            <p>Our founder, Dr. Nesbitt, recognized that many people were struggling not with clinical mental illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
+            <p>Our founder, Dr. Nesbitt, recognized that many people were struggling not with clinical illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
 
             <p>What started as weekend workshops in community centers has grown into a comprehensive wellness platform. Today, we serve thousands through our digital resources, in-person workshops, and personalized coaching programs. Our approach combines the rigor of clinical psychology with the accessibility of modern wellness practices.</p>
 
-            <p>We remain committed to our founding principles: evidence-based methods, genuine compassion, and the belief that everyone has the capacity for positive change when given the right support and tools.</p>
+            <p>We remain committed to our founding principles: practical methods, genuine compassion, and the belief that everyone has the capacity for positive change when given the right support and tools.</p>
           </template>
         </div>
         <div class="story-visual slide-in-right">
@@ -232,13 +232,13 @@ onMounted(async () => {
             </div>
             <div class="value-item">
               <div class="value-icon">🔬</div>
-              <h3 class="value-title">Evidence-Based Methods</h3>
-              <p class="value-description">Our approaches are grounded in scientific research from psychology, neuroscience, and positive psychology to ensure effectiveness.</p>
+              <h3 class="value-title">Practical Methods</h3>
+              <p class="value-description">Our approaches are grounded in research from psychology, neuroscience, and positive psychology to ensure they're useful in everyday life.</p>
             </div>
             <div class="value-item">
               <div class="value-icon">🌍</div>
               <h3 class="value-title">Accessible Support</h3>
-              <p class="value-description">We believe mental wellness support should be available to everyone, regardless of background, location, or circumstances.</p>
+              <p class="value-description">We believe wellness support should be available to everyone, regardless of background, location, or circumstances.</p>
             </div>
           </template>
         </div>
@@ -274,7 +274,7 @@ onMounted(async () => {
             <div class="credential-item">
               <div class="credential-icon">📚</div>
               <h3>Continuing Education</h3>
-              <p>Our team regularly participates in ongoing training and education to stay current with the latest research and best practices in mental health and wellness.</p>
+              <p>Our team regularly participates in ongoing training and education to stay current with the latest research and best practices in emotional wellness.</p>
             </div>
             <div class="credential-item">
               <div class="credential-icon">🤝</div>

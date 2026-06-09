@@ -9,7 +9,7 @@
       <div class="disclaimer-grid">
         <div class="disclaimer-item">
           <h4>Professional Support</h4>
-          <p>These resources complement but do not replace professional therapy. Please consult with a PhD educated mental health professional for personalized care.</p>
+          <p>These resources complement but do not replace professional therapy. Please consult with a licensed healthcare provider for personalized care.</p>
         </div>
         <div class="disclaimer-item">
           <h4>Crisis Support</h4>

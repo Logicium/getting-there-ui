@@ -28,7 +28,7 @@ const currentVideoId = ref('');
 
 // Hero content from CMS
 const heroTitle = ref('Free Healing Resources & Educational Content');
-const heroDescription = ref('Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your mental health journey');
+const heroDescription = ref('Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your wellbeing journey');
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
@@ -361,6 +361,9 @@ onMounted(async () => {
               <div class="premium-cta-content">
                 <h4>Unlock Premium Content</h4>
                 <p>Subscribe to access exclusive therapeutic presentations, guided sessions, and in-depth educational content.</p>
+                <p class="premium-cta-pricing">
+                  Starting at <strong>$8/month</strong> &mdash; or save with $80/year.
+                </p>
               </div>
               <router-link to="/subscribe" class="premium-cta-button">Subscribe Now</router-link>
             </div>
@@ -538,6 +541,16 @@ onMounted(async () => {
     font-size: $font-size-sm;
     margin: 0;
     max-width: 500px;
+  }
+
+  .premium-cta-pricing {
+    margin-top: $spacing-xs;
+    color: var(--text-dark);
+    font-size: $font-size-sm;
+
+    strong {
+      color: var(--premium-color, #b8860b);
+    }
   }
 }
 

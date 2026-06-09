@@ -22,7 +22,7 @@
         <div class="community-item">
           <div class="community-icon">✍️</div>
           <h4>Wellness Blog</h4>
-          <p>Read insights, tips, and stories from mental health professionals and community members.</p>
+          <p>Read insights, tips, and stories from our community.</p>
           <router-link to="/blog" class="community-link">Read Blog</router-link>
         </div>
       </div>

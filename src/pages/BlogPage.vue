@@ -31,7 +31,7 @@ interface BlogArticle {
 const blogArticles = ref<any[]>([]);
 
 const heroTitle = ref<string>('Wellness Insights & Resources');
-const heroDescription = ref<string>('Expert guidance on mental health, emotional wellness, and personal growth from our licensed professionals');
+const heroDescription = ref<string>('Practical guidance on emotional wellness and personal growth from our team');
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 

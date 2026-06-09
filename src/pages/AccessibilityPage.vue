@@ -41,7 +41,7 @@ onMounted(() => {
     <section class="content-section fade-in">
       <h2>Our Commitment to Accessibility</h2>
       <p>
-        Getting There believes that mental health and wellness resources should be accessible to everyone, regardless of ability. We are committed to providing a website and digital services that are accessible to the widest possible audience, in accordance with the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA standards.
+        Getting There believes that emotional wellness resources should be accessible to everyone, regardless of ability. We are committed to providing a website and digital services that are accessible to the widest possible audience, in accordance with the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA standards.
       </p>
       <p>
         Accessibility is an ongoing effort, and we continuously strive to improve the accessibility of our platform as technology evolves and standards develop.

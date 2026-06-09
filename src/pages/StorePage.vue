@@ -17,9 +17,9 @@ const router = useRouter();
 const currentFilter = ref('all');
 
 const heroTitle = ref('Healing Through Knowledge');
-const heroDescription = ref('Discover evidence-based books on mental health, personal growth, and emotional wellness written by our PhD educated professionals');
+const heroDescription = ref('Discover thoughtful books on emotional wellness and personal growth written by our experienced team');
 const bioTitle = ref('About Dr. Sarah Mitchell');
-const bioDescription = ref('Dr. Sarah Mitchell holds a PhD in Clinical Psychology and has over 20 years of experience in trauma-informed therapy and emotional wellness. Her compassionate, evidence-based approach has helped thousands of individuals on their healing journeys. She specializes in anxiety disorders, depression treatment, and post-traumatic growth.');
+const bioDescription = ref('Dr. Sarah Mitchell holds a PhD in Clinical Psychology and has over 20 years of experience in trauma-informed therapy and emotional wellness. Her compassionate, practical approach has helped thousands of individuals on their healing journeys. She specializes in anxiety, depression, and post-traumatic growth.');
 const bioBadges = ref<string[]>([
   'PhD Clinical Psychology',
   'Professional Therapist',

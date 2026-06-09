@@ -75,13 +75,6 @@ interface ActionButton {
   linkLocation: string;
 }
 
-// Interface for VisualText section
-interface VisualText {
-  id: number;
-  Title: string;
-  Subtitle: string;
-}
-
 // Interface for the home page data
 interface HomePageData {
   data: {
@@ -117,7 +110,6 @@ interface HomePageData {
       updatedAt: string;
       publishedAt: string;
     } | null;
-    VisualText: VisualText | null;
   };
   meta: Record<string, any>;
 }
@@ -130,7 +122,6 @@ const resourcesData = ref<ResourcesComponent | null>(null);
 const ctaData = ref<CTAComponent | null>(null);
 const actionButtonData = ref<ActionButton | null>(null);
 const videoData = ref<HomePageData['data']['Video']>(null);
-const visualTextData = ref<VisualText | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const videoPlayer = ref<HTMLVideoElement | null>(null);
@@ -178,7 +169,6 @@ const fetchPageData = async () => {
     ctaData.value = data.data.ctacomponent;
     actionButtonData.value = data.data.actionbutton;
     videoData.value = data.data.Video;
-    visualTextData.value = data.data.VisualText;
 
     // Wait for the DOM to update with the new data
     setTimeout(() => {
@@ -300,10 +290,6 @@ onMounted(() => {
           <div class="hero-badge">{{ heroData.tag }}</div>
           <h1>{{ heroData.title }}</h1>
           <p>{{ heroData.description }}</p>
-          <div class="hero-cta">
-            <router-link :to="actionButtonData ? (actionButtonData.linkLocation === 'home' ? '/' : '/' + actionButtonData.linkLocation) : '/events'" class="cta-primary">{{ actionButtonData ? actionButtonData.buttonText : 'Start Your Journey' }}</router-link>
-            <router-link to="/about" class="cta-secondary">Learn How It Works</router-link>
-          </div>
         </div>
       </div>
     </section>
@@ -358,16 +344,13 @@ onMounted(() => {
               :icon-index="index"
               :icon="card.icon"
             />
-            <router-link to="/videos" class="resources-cta">Explore Videos</router-link>
           </div>
           <div class="resources-visual fade-in">
-            <div class="visual-element"></div>
-            <div class="visual-element"></div>
-            <div class="visual-element"></div>
-            <div v-if="visualTextData" class="visual-text">
-              <h3>{{ visualTextData.Title }}</h3>
-              <p>{{ visualTextData.Subtitle }}</p>
-            </div>
+            <img
+              src="/picture-1.jpg"
+              alt="Getting There community"
+              class="resources-visual-image"
+            />
           </div>
         </div>
       </div>
@@ -388,7 +371,7 @@ onMounted(() => {
               variant="cta"
               source="home-cta"
               title="Stay in the loop"
-              description="Subscribe to our newsletter for weekly practices, new courses, and event invitations."
+              description="Subscribe to our weekly newsletter to keep up to date on changes, additions, and special events or offers"
               button-text="Subscribe"
             />
           </div>
@@ -574,12 +557,6 @@ onMounted(() => {
   font-family: 'Playfair Display', serif;
 }
 
-.resources-cta {
-  @include button-primary;
-  margin-top: $spacing-md;
-  display: inline-block;
-}
-
 .resources-visual {
   position: relative;
   height: 400px;
@@ -589,47 +566,11 @@ onMounted(() => {
   @include flex-center;
 }
 
-.visual-element {
-  width: 150px;
-  height: 150px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: $radius-full;
-  position: absolute;
-  animation: gentlePulse 4s ease-in-out infinite;
-
-  &:nth-child(2) {
-    width: 100px;
-    height: 100px;
-    animation-delay: 1s;
-  }
-
-  &:nth-child(3) {
-    width: 50px;
-    height: 50px;
-    animation-delay: 2s;
-  }
-}
-
-@keyframes gentlePulse {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.1); opacity: 0.3; }
-}
-
-.visual-text {
-  color: white;
-  text-align: center;
-  z-index: 2;
-  position: relative;
-
-  h3 {
-    font-size: $font-size-3xl;
-    font-weight: 700;
-    margin-bottom: $spacing-sm;
-  }
-
-  p {
-    opacity: 0.9;
-  }
+.resources-visual-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* CTA Section */

@@ -12,9 +12,21 @@ export interface User {
   profilePicture?: string
 }
 
+export interface SubscriptionDetails {
+  id: string
+  status: 'active' | 'cancelled' | 'expired' | 'past_due'
+  amount: number
+  currency: string
+  billingCycle: 'monthly' | 'yearly' | string
+  startDate?: string
+  nextBillingDate?: string | null
+  endDate?: string | null
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('authToken'))
   const user = ref<User | null>(null)
+  const subscription = ref<SubscriptionDetails | null>(null)
 
   // Load user from localStorage if token exists
   if (token.value) {
@@ -137,6 +149,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (response.ok) {
         const data = await response.json()
+        subscription.value = data.subscription || null
         if (user.value) {
           user.value.subscribed = data.subscribed
           localStorage.setItem('user', JSON.stringify(user.value))
@@ -153,6 +166,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     token.value = null
     user.value = null
+    subscription.value = null
     localStorage.removeItem('authToken')
     localStorage.removeItem('user')
   }
@@ -176,9 +190,10 @@ export const useAuthStore = defineStore('auth', () => {
         }
       })
 
-      if (response.ok && user.value) {
-        user.value.subscribed = false
-        localStorage.setItem('user', JSON.stringify(user.value))
+      if (response.ok) {
+        // Refresh details — backend keeps access until period end, so the
+        // user may still be `subscribed` after cancelling.
+        await checkSubscriptionStatus()
       }
     } catch (error) {
       console.error('Unsubscribe error:', error)
@@ -221,6 +236,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     token,
     user,
+    subscription,
     isAuthenticated,
     isSubscribed,
     loginWithGoogle,

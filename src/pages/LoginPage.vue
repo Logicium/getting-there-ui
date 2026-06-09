@@ -227,7 +227,7 @@ async function handleGoogleLogin() {
         <div class="visual-content">
           <span class="visual-badge">Just getting started</span>
           <h2>Be among our first learners</h2>
-          <p>Getting There is a brand-new platform built around positive psychology and evidence-based practices. Create an account today and help shape what we build next.</p>
+          <p>Getting There is a brand-new platform built around positive psychology and practical wellness practices. Create an account today and help shape what we build next.</p>
 
           <ul class="visual-points">
             <li>

@@ -52,7 +52,7 @@ onMounted(() => {
       </ul>
 
       <h3>Health and Wellness Information</h3>
-      <p>As a mental health and wellness platform, we may collect:</p>
+      <p>As an emotional wellness platform, we may collect:</p>
       <ul>
         <li>Self-reported wellness check-ins and assessments</li>
         <li>Program participation records and progress notes</li>

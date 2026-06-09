@@ -12,8 +12,8 @@
           <p>All our groups maintain strict confidentiality. What's shared in group stays in group.</p>
         </div>
         <div class="support-info-item">
-          <h4>PhD Educated Professionals</h4>
-          <p>Every group is led by PhD educated mental health professionals with specialized training.</p>
+          <h4>Experienced Facilitators</h4>
+          <p>Every group is led by experienced facilitators with specialized training.</p>
         </div>
         <div class="support-info-item">
           <h4>Trauma-Informed Care</h4>

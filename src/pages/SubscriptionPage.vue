@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -9,6 +9,24 @@ const router = useRouter()
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
+const selectedPlan = ref<'monthly' | 'yearly'>('monthly')
+
+const planDetails = computed(() => {
+  if (selectedPlan.value === 'yearly') {
+    return {
+      amount: 80,
+      period: '/year',
+      label: 'Yearly',
+      savings: 'Save $16 compared to monthly',
+    }
+  }
+  return {
+    amount: 8,
+    period: '/month',
+    label: 'Monthly',
+    savings: 'Cancel anytime',
+  }
+})
 
 // Square Payment Form
 let card: any = null
@@ -64,6 +82,7 @@ async function handleSubmit() {
         },
         body: JSON.stringify({
           sourceId: result.token,
+          plan: selectedPlan.value,
         }),
       })
 
@@ -121,11 +140,33 @@ async function handleSubmit() {
 
       <div v-if="!success" class="payment-card">
         <div class="subscription-details">
+          <div class="plan-toggle" role="tablist" aria-label="Billing cycle">
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="selectedPlan === 'monthly'"
+              :class="['plan-toggle-button', { active: selectedPlan === 'monthly' }]"
+              @click="selectedPlan = 'monthly'"
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="selectedPlan === 'yearly'"
+              :class="['plan-toggle-button', { active: selectedPlan === 'yearly' }]"
+              @click="selectedPlan = 'yearly'"
+            >
+              Yearly
+            </button>
+          </div>
+
           <div class="price-display">
             <span class="currency">$</span>
-            <span class="amount">10</span>
-            <span class="period">/month</span>
+            <span class="amount">{{ planDetails.amount }}</span>
+            <span class="period">{{ planDetails.period }}</span>
           </div>
+          <p class="plan-savings">{{ planDetails.savings }}</p>
           
           <ul class="benefits">
             <li>
@@ -257,10 +298,36 @@ async function handleSubmit() {
   flex-direction: column;
   justify-content: center;
 
+  .plan-toggle {
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    padding: 0.25rem;
+    margin-bottom: 1.5rem;
+    align-self: flex-start;
+  }
+
+  .plan-toggle-button {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.55rem 1.25rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+
+    &.active {
+      background: white;
+      color: var(--primary-color);
+    }
+  }
+
   .price-display {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
     font-weight: 700;
 
     .currency {
@@ -279,6 +346,12 @@ async function handleSubmit() {
       margin-bottom: 0.5rem;
       opacity: 0.9;
     }
+  }
+
+  .plan-savings {
+    margin: 0 0 1.5rem;
+    opacity: 0.9;
+    font-size: 0.95rem;
   }
 
   .benefits {

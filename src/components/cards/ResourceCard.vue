@@ -1,15 +1,16 @@
 <template>
-  <div class="resource-item fade-in">
+  <router-link :to="resourceLink" class="resource-item fade-in">
     <div class="resource-icon">
       <img v-if="icon && icon.url" :src="`https://getting-there-cms.onrender.com${icon.url}`" :alt="title" />
       <component v-else :is="fallbackIconComponent" />
     </div>
     <span><strong>{{ title }}</strong> - {{ description }}</span>
-  </div>
+  </router-link>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
 import VideoIcon from '@/components/icons/VideoIcon.vue';
 import BookIcon from '@/components/icons/BookIcon.vue';
 import ChalkboardIcon from '@/components/icons/ChalkboardIcon.vue';
@@ -49,6 +50,21 @@ const fallbackIconComponent = computed(() => {
       return PenIcon;
   }
 });
+
+// Map each resource card index to a route. Order matches the CMS layout:
+// Videos, Booklets, Classes, Blog.
+const resourceLink = computed(() => {
+  switch (props.iconIndex) {
+    case 0:
+      return '/videos';
+    case 1:
+      return '/store';
+    case 2:
+      return '/classes';
+    default:
+      return '/blog';
+  }
+});
 </script>
 
 <style scoped>
@@ -61,11 +77,19 @@ const fallbackIconComponent = computed(() => {
   border-radius: 15px;
   transition: all 0.3s ease;
   border: 1px solid var(--border-light);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .resource-item:hover {
   background: var(--bg-sage);
   transform: translateX(10px);
+}
+
+.resource-item:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .resource-icon {

@@ -27,6 +27,7 @@ import LoginPage from "@/pages/LoginPage.vue";
 import AccountPage from "@/pages/AccountPage.vue";
 import SubscriptionPage from "@/pages/SubscriptionPage.vue";
 import NewsletterPage from "@/pages/NewsletterPage.vue";
+import ContactPage from "@/pages/ContactPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -189,6 +190,11 @@ const router = createRouter({
       path: '/newsletter',
       name: 'newsletter',
       component: NewsletterPage,
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: ContactPage,
     }
   ],
 })

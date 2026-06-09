@@ -327,9 +327,9 @@ onMounted(async () => {
 
         <ul class="therapy-registration-features">
           <li>Weekly therapeutic support sessions</li>
-          <li>Evidence-based techniques</li>
+          <li>Practical techniques</li>
           <li>Safe, confidential group environment</li>
-          <li>PhD educated mental health professionals</li>
+          <li>Experienced facilitators</li>
           <li>Take-home resources and workbooks</li>
           <li>Crisis support access</li>
           <li>Sliding scale fee assistance</li>
@@ -371,7 +371,7 @@ onMounted(async () => {
 
       <div class="therapy-content-section fade-in">
         <h2>Therapeutic Approach & Benefits</h2>
-        <p><strong>Evidence-Based Methods:</strong> Our programs integrate proven therapeutic approaches including cognitive-behavioral therapy (CBT), mindfulness-based stress reduction (MBSR), and acceptance and commitment therapy (ACT) principles adapted for group settings.</p>
+        <p><strong>Practical Methods:</strong> Our programs draw on widely used therapeutic approaches including cognitive-behavioral techniques (CBT), mindfulness-based stress reduction (MBSR), and acceptance and commitment therapy (ACT) principles adapted for group settings.</p>
 
         <p><strong>Trauma-Informed Care:</strong> All facilitators are trained in trauma-informed approaches, ensuring that the environment feels safe and supportive for all participants, including those with trauma histories or sensitive experiences.</p>
 
@@ -380,7 +380,7 @@ onMounted(async () => {
         <p>Key benefits participants often experience:</p>
         <ul style="margin: 1rem 0; padding-left: 2rem; color: var(--text-light);">
           <li>Reduced feelings of isolation through shared experiences</li>
-          <li>Practical, evidence-based tools and coping strategies</li>
+          <li>Practical tools and coping strategies</li>
           <li>Increased self-awareness and emotional regulation skills</li>
           <li>A supportive community of peers on similar journeys</li>
           <li>Improved confidence and interpersonal skills</li>
@@ -397,7 +397,7 @@ onMounted(async () => {
             <span class="therapy-faq-toggle">▼</span>
           </div>
           <div class="therapy-faq-answer">
-            Our programs are designed to support individuals at various stages of their mental health journey. Whether you're dealing with specific challenges, seeking personal growth, or looking for supportive community, our evidence-based approaches can be beneficial. If you're currently in crisis or experiencing severe symptoms, we recommend combining group participation with individual therapy support.
+            Our programs are designed to support individuals at various stages of their wellbeing journey. Whether you're dealing with specific challenges, seeking personal growth, or looking for supportive community, our practical approaches can be beneficial. If you're currently in crisis or experiencing severe symptoms, we recommend combining group participation with individual therapy support.
           </div>
         </div>
 
@@ -427,7 +427,7 @@ onMounted(async () => {
             <span class="therapy-faq-toggle">▼</span>
           </div>
           <div class="therapy-faq-answer">
-            Yes! We offer sliding scale fees based on income because we believe financial barriers shouldn't prevent access to mental health support. During registration, you can discuss fee adjustment options with our intake coordinator. Some insurance plans may also provide coverage - please check with your provider.
+            Yes! We offer sliding scale fees based on income because we believe financial barriers shouldn't prevent access to emotional wellness support. During registration, you can discuss fee adjustment options with our intake coordinator. Some insurance plans may also provide coverage - please check with your provider.
           </div>
         </div>
 
@@ -507,7 +507,7 @@ onMounted(async () => {
 
       <div class="therapy-crisis-support fade-in">
         <h3>🚨 Crisis Support</h3>
-        <p>If you're experiencing a mental health emergency:</p>
+        <p>If you're experiencing an emergency:</p>
         <div class="crisis-contacts">
           <a href="tel:988" class="crisis-contact">
             <span class="crisis-icon">📞</span>
@@ -529,7 +529,7 @@ onMounted(async () => {
 
       <div class="therapy-support-info fade-in">
         <h3>💚 Need Additional Support?</h3>
-        <p>Our team is here to help with any questions about joining the group or mental health resources.</p>
+        <p>Our team is here to help with any questions about joining the group or wellness resources.</p>
         <div class="support-contacts">
           <p><strong>Email:</strong> <a href="mailto:groups@gthere.net">groups@gthere.net</a></p>
           <p><strong>Phone:</strong> <a href="tel:+1234567890">(123) 456-7890</a></p>

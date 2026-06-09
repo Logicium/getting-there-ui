@@ -52,18 +52,18 @@ onMounted(() => {
       <h2>2. Description of Services</h2>
 
       <h3>Educational and Supportive Services</h3>
-      <p>Getting There provides educational resources, support groups, workshops, and wellness programs designed to promote mental health and personal growth. Our services include:</p>
+      <p>Getting There provides educational resources, support groups, workshops, and wellness programs designed to promote emotional wellness and personal growth. Our services include:</p>
       <ul>
         <li>Group support programs and workshops</li>
         <li>Digital resources including books, videos, and articles</li>
-        <li>Educational content on mental health and wellness topics</li>
+        <li>Educational content on emotional wellness topics</li>
         <li>Community forums and peer support opportunities</li>
       </ul>
 
       <div class="warning-notice">
         <h4>⚠️ Important: Not Clinical Therapy</h4>
         <p>
-          Our services are <strong>educational and supportive in nature</strong> and do not constitute clinical therapy, medical treatment, or professional mental health services. Our programs are designed to complement—not replace—individual therapy or psychiatric care. If you are experiencing a mental health crisis or need clinical treatment, please contact a licensed mental health provider or emergency services.
+          Our services are <strong>educational and supportive in nature</strong> and do not constitute clinical therapy, medical treatment, or professional therapeutic services. Our programs are designed to complement&mdash;not replace&mdash;individual therapy or psychiatric care. If you are experiencing a crisis or need clinical treatment, please contact a licensed healthcare provider or emergency services.
         </p>
       </div>
     </section>
@@ -146,7 +146,7 @@ onMounted(() => {
       <h2>8. Disclaimers and Limitations of Liability</h2>
 
       <h3>No Medical Advice</h3>
-      <p>The information and resources provided through our Services are for educational and informational purposes only. They do not constitute medical, psychiatric, or therapeutic advice. Always seek the advice of qualified health providers with questions regarding medical or mental health conditions.</p>
+      <p>The information and resources provided through our Services are for educational and informational purposes only. They do not constitute medical, psychiatric, or therapeutic advice. Always seek the advice of qualified health providers with questions regarding medical or emotional wellbeing concerns.</p>
 
       <h3>Services "As Is"</h3>
       <p>Our Services are provided "as is" and "as available" without warranties of any kind, either express or implied. We do not guarantee that our Services will be uninterrupted, error-free, or free from viruses or other harmful components.</p>

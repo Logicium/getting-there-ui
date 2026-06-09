@@ -1,59 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { RouterLink } from 'vue-router'
 import NewsletterSignup from '@/components/NewsletterSignup.vue'
-
-const authStore = useAuthStore()
-const router = useRouter()
-
-const mode = ref<'signup' | 'login'>('signup')
-const name = ref('')
-const email = ref('')
-const password = ref('')
-const submitting = ref(false)
-const error = ref('')
-const claimed = ref(false)
-
-const PROMO_CODE = 'LAUNCH-FREE-MONTH'
-
-async function claimFreeMonth() {
-  error.value = ''
-  if (!email.value || !password.value || (mode.value === 'signup' && !name.value)) {
-    error.value = 'Please fill in all fields.'
-    return
-  }
-  if (password.value.length < 8) {
-    error.value = 'Password must be at least 8 characters.'
-    return
-  }
-  submitting.value = true
-  const result = mode.value === 'signup'
-    ? await authStore.signup(email.value, password.value, name.value)
-    : await authStore.login(email.value, password.value)
-  submitting.value = false
-
-  if (!result.success) {
-    error.value = result.error || 'Something went wrong. Please try again.'
-    return
-  }
-
-  // Record the promo locally so the account page can surface it; the actual
-  // entitlement will be granted server-side once the courses launch.
-  localStorage.setItem('pendingPromo', PROMO_CODE)
-  claimed.value = true
-}
-
-function toggleMode() {
-  mode.value = mode.value === 'signup' ? 'login' : 'signup'
-  error.value = ''
-}
-
-const goToAccount = () => router.push('/account')
-
-const heading = computed(() =>
-  mode.value === 'signup' ? 'Claim your free month' : 'Sign in to claim'
-)
 </script>
 
 <template>
@@ -62,197 +9,65 @@ const heading = computed(() =>
     <section class="hero">
       <div class="container">
         <span class="badge">Coming soon</span>
-        <h1>Online Classes Are Almost Here</h1>
+        <h1>Online Courses Are Being Developed</h1>
         <p class="lede">
-          We're putting the finishing touches on our first round of expert-led
-          courses in positive psychology and evidence-based practices. Sign up
-          now and your first month of premium access is on us.
+          We're putting the finishing touches on our first round of
+          courses so stay tuned.
+          You may find the courses meet Continuing Education
+          requirements based on your profession.
         </p>
-
-        <div class="offer-banner">
-          <div class="offer-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 15 8.5 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 9 8.5 12 2"/>
-            </svg>
-          </div>
-          <div class="offer-copy">
-            <strong>One free month of Premium</strong>
-            <span>for everyone who signs up before launch.</span>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- Claim / Signup -->
-    <section class="claim-section">
-      <div class="container claim-container">
-        <div class="claim-card">
-          <div v-if="!claimed">
-            <h2>{{ heading }}</h2>
-            <p class="claim-sub">
-              Create your free account today and we'll automatically apply your
-              free month of Premium access the moment courses go live.
-            </p>
-
-            <form class="claim-form" @submit.prevent="claimFreeMonth">
-              <div v-if="mode === 'signup'" class="field">
-                <label for="claim-name">Name</label>
-                <input
-                  id="claim-name"
-                  v-model="name"
-                  type="text"
-                  autocomplete="name"
-                  placeholder="Your name"
-                  :disabled="submitting"
-                />
-              </div>
-
-              <div class="field">
-                <label for="claim-email">Email</label>
-                <input
-                  id="claim-email"
-                  v-model="email"
-                  type="email"
-                  autocomplete="email"
-                  placeholder="you@example.com"
-                  :disabled="submitting"
-                />
-              </div>
-
-              <div class="field">
-                <label for="claim-password">Password</label>
-                <input
-                  id="claim-password"
-                  v-model="password"
-                  type="password"
-                  :autocomplete="mode === 'signup' ? 'new-password' : 'current-password'"
-                  placeholder="At least 8 characters"
-                  :disabled="submitting"
-                />
-              </div>
-
-              <p v-if="error" class="form-error">{{ error }}</p>
-
-              <button type="submit" class="claim-button" :disabled="submitting">
-                {{ submitting ? 'Working on it...' : (mode === 'signup' ? 'Claim my free month' : 'Sign in & claim') }}
-              </button>
-            </form>
-
-            <p class="mode-toggle">
-              {{ mode === 'signup' ? 'Already have an account?' : "Don't have an account?" }}
-              <button type="button" class="link-button" @click="toggleMode">
-                {{ mode === 'signup' ? 'Sign in' : 'Sign up' }}
-              </button>
-            </p>
-          </div>
-
-          <div v-else class="claim-success">
-            <div class="success-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-            <h2>You're in!</h2>
-            <p>
-              Your free month of Premium is reserved. We'll email you as soon
-              as classes are ready &mdash; your benefit will be waiting in your
-              account.
-            </p>
-            <button class="claim-button" @click="goToAccount">Go to my account</button>
-          </div>
-        </div>
-
-        <aside class="benefits">
-          <h2>What Premium includes</h2>
-          <ul class="benefit-list">
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Full access to every course as we release them</span>
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Progress tracking across courses, devices, and sessions</span>
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Certificates of completion for finished courses</span>
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Premium-only videos and downloadable worksheets</span>
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Cancel any time &mdash; no card required to claim your free month</span>
-            </li>
-          </ul>
-        </aside>
-      </div>
-    </section>
-
-    <!-- Roadmap -->
-    <section class="roadmap-section">
+    <!-- What's included -->
+    <section class="includes-section">
       <div class="container">
-        <h2 class="section-title">What's coming</h2>
-        <div class="roadmap-grid">
-          <div class="roadmap-card">
-            <span class="roadmap-tag">Course 01</span>
-            <h3>Foundations of Positive Psychology</h3>
-            <p>An accessible introduction to the science of wellbeing and the habits that move the needle.</p>
-          </div>
-          <div class="roadmap-card">
-            <span class="roadmap-tag">Course 02</span>
-            <h3>Mindfulness in Daily Life</h3>
-            <p>Short, practical exercises to bring more presence and steadiness into the everyday.</p>
-          </div>
-          <div class="roadmap-card">
-            <span class="roadmap-tag">Course 03</span>
-            <h3>Designing Meaningful Routines</h3>
-            <p>Build a personal rhythm that supports your energy, relationships, and goals.</p>
-          </div>
-        </div>
+        <h2 class="section-title">What Online Courses Include</h2>
+        <ul class="includes-list">
+          <li>3 hours of video time for each course</li>
+          <li>Ability to pace your learning</li>
+          <li>20 multiple choice questions at the end</li>
+          <li>Certificate of completion for those achieving 70% or higher score on the exam</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Course lineup -->
+    <section class="lineup-section">
+      <div class="container">
+        <h2 class="section-title">Course lineup</h2>
+        <p class="lineup-intro">
+          Each course is being designed as a self-paced experience you can fit
+          around the rest of your life. Here's what's on the way:
+        </p>
+        <ul class="course-list">
+          <li>
+            <strong>About Happiness</strong> &mdash; A grounded look at what
+            happiness actually is, the different forms it can take, and small
+            shifts that help more of it show up in everyday life.
+          </li>
+          <li>
+            <strong>Setting and Reaching Goals</strong> &mdash; A practical
+            walk-through for choosing goals that matter to you, breaking them
+            into doable steps, and building the momentum to follow through.
+          </li>
+          <li>
+            <strong>Communication: Connecting with Others</strong> &mdash;
+            Tools for being heard, listening well, and navigating the everyday
+            conversations that shape your closest relationships.
+          </li>
+          <li>
+            <strong>Coping with Loss</strong> &mdash; A gentle, paced
+            exploration of grief and the many forms loss can take, with ideas
+            for caring for yourself as you move through it.
+          </li>
+        </ul>
       </div>
     </section>
 
     <!-- Newsletter / meantime -->
     <section class="meantime-section">
       <div class="container meantime-container">
-        <div class="meantime-copy">
-          <h2>While you wait</h2>
-          <p>
-            Get a weekly note from us with a small practice, a short read, and
-            a glimpse of what's coming next. It's the easiest way to stay close.
-          </p>
-          <div class="meantime-links">
-            <RouterLink to="/videos" class="meantime-link">Watch our videos</RouterLink>
-            <RouterLink to="/blog" class="meantime-link">Read the blog</RouterLink>
-            <RouterLink to="/events" class="meantime-link">Browse workshops</RouterLink>
-          </div>
-        </div>
         <div class="meantime-newsletter">
           <NewsletterSignup
             variant="card"
@@ -312,276 +127,77 @@ h1 {
   font-size: 1.15rem;
   line-height: 1.6;
   opacity: 0.95;
-  margin: 0 auto 2rem;
+  margin: 0 auto;
   max-width: 640px;
 }
 
-.offer-banner {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1.25rem;
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
-  text-align: left;
-}
-
-.offer-icon {
-  width: 44px;
-  height: 44px;
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.offer-copy {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.3;
-
-  strong {
-    font-size: 1.05rem;
-  }
-
-  span {
-    font-size: 0.95rem;
-    opacity: 0.9;
-  }
-}
-
-/* Claim */
-.claim-section {
-  padding: 4rem 0;
-}
-
-.claim-container {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 2.5rem;
-  align-items: start;
-}
-
-.claim-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-
-  h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.85rem;
-    margin: 0 0 0.5rem;
-    color: var(--text-dark);
-  }
-}
-
-.claim-sub {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin: 0 0 1.5rem;
-}
-
-.claim-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-
-  label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-dark);
-  }
-
-  input {
-    padding: 0.85rem 1rem;
-    border: 2px solid var(--border-light);
-    border-radius: 10px;
-    font-size: 1rem;
-    color: var(--text-dark);
-    background: white;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.15);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-}
-
-.claim-button {
-  padding: 1rem;
-  border: none;
-  border-radius: 10px;
-  background: var(--primary-color);
-  color: white;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: var(--secondary-color);
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-}
-
-.form-error {
-  margin: 0;
-  color: #b3261e;
-  font-size: 0.95rem;
-}
-
-.mode-toggle {
-  margin: 1.25rem 0 0;
-  color: var(--text-light);
-  font-size: 0.95rem;
-  text-align: center;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-left: 0.25rem;
-  color: var(--primary-color);
-  font-weight: 600;
-  cursor: pointer;
-  font-size: inherit;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.claim-success {
-  text-align: center;
-
-  .success-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(74, 124, 89, 0.15);
-    color: var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.25rem;
-  }
-
-  p {
-    color: var(--text-light);
-    line-height: 1.6;
-    margin: 0 0 1.5rem;
-  }
-}
-
-/* Benefits */
-.benefits {
-  background: white;
-  border-radius: 20px;
-  padding: 2.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-
-  h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    margin: 0 0 1.5rem;
-    color: var(--text-dark);
-  }
-}
-
-.benefit-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  li {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-    color: var(--text-light);
-    line-height: 1.5;
-
-    svg {
-      flex-shrink: 0;
-      margin-top: 0.2rem;
-      color: var(--primary-color);
-    }
-  }
-}
-
-/* Roadmap */
-.roadmap-section {
-  padding: 4rem 0;
-  background: white;
+/* What's included */
+.includes-section {
+  padding: 4rem 0 2rem;
 }
 
 .section-title {
   font-family: 'Playfair Display', serif;
   font-size: 2rem;
   text-align: center;
-  margin: 0 0 2.5rem;
+  margin: 0 0 2rem;
   color: var(--text-dark);
 }
 
-.roadmap-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 2rem;
+.includes-list {
+  max-width: 720px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  list-style: disc;
+  color: var(--text-dark);
+  font-size: 1.05rem;
+  line-height: 1.75;
+
+  li {
+    margin-left: 0.25rem;
+  }
+
+  li + li {
+    margin-top: 0.5rem;
+  }
 }
 
-.roadmap-card {
-  background: var(--bg-light);
-  border-radius: 16px;
-  padding: 2rem;
+/* Lineup */
+.lineup-section {
+  padding: 3rem 0 4rem;
+}
 
-  h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.3rem;
-    margin: 0.75rem 0 0.75rem;
+.lineup-intro {
+  max-width: 720px;
+  margin: 0 auto 2rem;
+  text-align: center;
+  color: var(--text-light);
+  line-height: 1.6;
+  font-size: 1.05rem;
+}
+
+.course-list {
+  max-width: 760px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  list-style: disc;
+  color: var(--text-dark);
+  font-size: 1.05rem;
+  line-height: 1.7;
+
+  li + li {
+    margin-top: 1rem;
+  }
+
+  strong {
     color: var(--text-dark);
   }
-
-  p {
-    color: var(--text-light);
-    line-height: 1.6;
-    margin: 0;
-  }
-}
-
-.roadmap-tag {
-  display: inline-block;
-  padding: 0.3rem 0.8rem;
-  background: rgba(74, 124, 89, 0.12);
-  color: var(--primary-color);
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
 /* Meantime */
@@ -591,7 +207,7 @@ h1 {
 
 .meantime-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 2.5rem;
   align-items: center;
 }
@@ -634,7 +250,6 @@ h1 {
 }
 
 @media (max-width: 880px) {
-  .claim-container,
   .meantime-container {
     grid-template-columns: 1fr;
   }
@@ -643,9 +258,9 @@ h1 {
     font-size: 2.1rem;
   }
 
-  .claim-card,
-  .benefits {
-    padding: 2rem;
+  .includes-list,
+  .course-list {
+    padding: 1.5rem 1.75rem;
   }
 }
 </style>

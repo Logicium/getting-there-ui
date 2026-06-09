@@ -41,8 +41,8 @@ export const videos: Record<string, VideoData> = {
     id: 'overcoming-procrastination',
     title: 'Overcoming Procrastination',
     presenter: 'Lisa Rodriguez',
-    description: 'Break free from the procrastination cycle with evidence-based strategies. Understand the psychology behind procrastination and learn practical techniques to take action.',
-    fullDescription: 'Break free from the procrastination cycle with evidence-based strategies. Understand the psychology behind procrastination and learn practical techniques to take action, maintain momentum, and build productive habits that stick.',
+    description: 'Break free from the procrastination cycle with practical strategies. Understand the psychology behind procrastination and learn techniques to take action.',
+    fullDescription: 'Break free from the procrastination cycle with practical strategies. Understand the psychology behind procrastination and learn techniques to take action, maintain momentum, and build productive habits that stick.',
     duration: '22:45',
     category: ['productivity', 'motivation'],
     views: '4.7K',
@@ -77,13 +77,13 @@ export const videos: Record<string, VideoData> = {
     id: 'building-resilience',
     title: 'Building Unshakeable Resilience',
     presenter: 'Dr. Sarah Mitchell',
-    description: 'Develop mental toughness and emotional resilience to thrive through any challenge. Learn evidence-based techniques for stress management and emotional regulation.',
-    fullDescription: 'Develop mental toughness and emotional resilience to thrive through any challenge. Learn evidence-based techniques for stress management, emotional regulation, and post-traumatic growth. This session includes practical exercises for building psychological flexibility and coping skills.',
+    description: 'Develop emotional resilience to thrive through any challenge. Learn practical techniques for stress management and emotional regulation.',
+    fullDescription: 'Develop emotional resilience to thrive through any challenge. Learn practical techniques for stress management, emotional regulation, and post-traumatic growth. This session includes practical exercises for building psychological flexibility and coping skills.',
     duration: '42:08',
     category: ['wellness', 'therapy'],
     views: '1.9K',
     isFree: true,
-    tags: ['stress management', 'emotional intelligence', 'resilience', 'coping skills', 'mental health']
+    tags: ['stress management', 'emotional intelligence', 'resilience', 'coping skills', 'wellbeing']
   },
   'meaningful-relationships': {
     id: 'meaningful-relationships',
@@ -125,13 +125,13 @@ export const videos: Record<string, VideoData> = {
     id: 'anxiety-management',
     title: 'Managing Anxiety: Practical Techniques for Daily Life',
     presenter: 'Dr. Sarah Mitchell',
-    description: 'Learn evidence-based techniques for managing anxiety and stress in daily life. Includes breathing exercises, cognitive strategies, and grounding techniques.',
-    fullDescription: 'Learn evidence-based techniques for managing anxiety and stress in daily life. This therapeutic presentation covers breathing exercises, cognitive restructuring, grounding techniques, and practical tools for anxiety management. Includes crisis resources and safety planning.',
+    description: 'Learn practical techniques for managing anxiety and stress in daily life. Includes breathing exercises, cognitive strategies, and grounding techniques.',
+    fullDescription: 'Learn practical techniques for managing anxiety and stress in daily life. This therapeutic presentation covers breathing exercises, cognitive restructuring, grounding techniques, and practical tools for anxiety management. Includes crisis resources and safety planning.',
     duration: '41:25',
     category: ['wellness', 'therapy'],
     views: '2.8K',
     isFree: true,
-    tags: ['anxiety', 'stress management', 'breathing techniques', 'cognitive behavioral therapy', 'mental health']
+    tags: ['anxiety', 'stress management', 'breathing techniques', 'cognitive behavioral therapy', 'wellbeing']
   },
   'depression-support': {
     id: 'depression-support',
@@ -143,7 +143,7 @@ export const videos: Record<string, VideoData> = {
     category: ['wellness', 'therapy'],
     views: '1.9K',
     isFree: true,
-    tags: ['depression', 'mental health', 'recovery', 'self-care', 'support systems']
+    tags: ['depression', 'wellbeing', 'recovery', 'self-care', 'support systems']
   },
   'trauma-informed-healing': {
     id: 'trauma-informed-healing',
@@ -213,14 +213,14 @@ export const books: Record<string, BookData> = {
     id: 'emotional-resilience',
     title: 'Emotional Resilience: Thriving Through Life\'s Challenges',
     author: 'Dr. Sarah Mitchell',
-    description: 'Learn to build unshakeable emotional resilience with evidence-based techniques from psychology and neuroscience. Navigate setbacks with grace and emerge stronger from every challenge.',
+    description: 'Learn to build unshakeable emotional resilience with practical techniques from psychology and neuroscience. Navigate setbacks with grace and emerge stronger from every challenge.',
     fullDescription: 'In this powerful new release, Dr. Mitchell provides readers with a comprehensive toolkit for developing emotional resilience. Based on the latest research in trauma psychology and post-traumatic growth, this book offers practical strategies for not just surviving difficulties, but using them as catalysts for personal growth.',
     specs: {
       'Pages': '298',
       'Published': '2024',
       'ISBN': '978-1-234567-90-6',
       'Language': 'English',
-      'Category': 'Psychology, Mental Health'
+      'Category': 'Psychology, Wellbeing'
     },
     category: 'new',
     formats: {
@@ -378,7 +378,7 @@ export const blogArticles: BlogData[] = [
   {
     id: 'anxiety-daily-life',
     title: 'Understanding and Managing Anxiety in Daily Life',
-    excerpt: 'Learn practical, evidence-based techniques to recognize anxiety triggers and develop healthy coping strategies that fit into your everyday routine.',
+    excerpt: 'Learn practical techniques to recognize anxiety triggers and develop healthy coping strategies that fit into your everyday routine.',
     category: 'anxiety',
     categoryLabel: 'Anxiety Support',
     icon: '🧘‍♀️',
@@ -493,7 +493,7 @@ export const events: EventData[] = [
   {
     id: 'anxiety-support',
     title: 'Anxiety Support Circle',
-    description: 'A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by PhD educated professionals in a judgment-free space.',
+    description: 'A gentle, supportive group environment where you can learn practical anxiety management techniques while connecting with others who understand your journey. Led by experienced facilitators in a judgment-free space.',
     category: 'therapy',
     date: 'Every Tuesday, Starting April 15',
     location: 'Denver Wellness Center',
@@ -549,7 +549,7 @@ export const events: EventData[] = [
   {
     id: 'couples-communication',
     title: 'Couples Communication Workshop',
-    description: 'Strengthen your relationship with evidence-based communication techniques. Learn to express needs, resolve conflicts, and deepen intimacy.',
+    description: 'Strengthen your relationship with practical communication techniques. Learn to express needs, resolve conflicts, and deepen intimacy.',
     category: 'therapy',
     date: 'May 10, 2024',
     location: 'Fort Collins Therapy Center',
@@ -594,7 +594,7 @@ export const events: EventData[] = [
 export const heroSections = {
   videos: {
     title: 'Free Healing Resources & Educational Content',
-    description: 'Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your mental health journey.',
+    description: 'Access our complete library of therapeutic presentations, guided sessions, and educational content - all available at no cost to support your wellbeing journey.',
     stats: [
       { number: '12+', label: 'Therapeutic Videos' },
       { number: '100%', label: 'Free Access' },

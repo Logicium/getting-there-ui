@@ -8,7 +8,7 @@ import Plant2Icon from '@/components/icons/Plant2Icon.vue';
       <div class="workshops-text">
         <h2><Plant2Icon/>Private Workshops for Your Organization</h2>
         <p class="workshops-subtitle">
-          Bring mental health education and support directly to your team with customized workshops designed for your community's unique needs.
+          Bring wellness education and support directly to your team with customized workshops designed for your community's unique needs.
         </p>
 
         <div class="workshop-types">
@@ -33,7 +33,7 @@ import Plant2Icon from '@/components/icons/Plant2Icon.vue';
 
       <div class="workshops-cta-card">
         <h3>Ready to Support Your Community?</h3>
-        <p>Get a customized quote for mental health workshops tailored to your organization.</p>
+        <p>Get a customized quote for wellness workshops tailored to your organization.</p>
 
         <div class="workshop-features">
           <div class="feature-item">

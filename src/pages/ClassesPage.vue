@@ -14,7 +14,7 @@ function viewCourse(courseId: string) {
     <section class="hero">
       <div class="container">
         <h1>Online Classes</h1>
-        <p class="subtitle">Transform your life with expert-led courses in positive psychology</p>
+        <p class="subtitle">Transform your life with courses in positive psychology</p>
       </div>
     </section>
 

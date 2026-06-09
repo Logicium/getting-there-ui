@@ -6,7 +6,11 @@
     </div>
     <h3>{{ title }}</h3>
     <p>{{ description || '' }}</p>
-    <router-link :to="linkLocation ? (linkLocation === 'home' ? '/' : '/' + linkLocation) : '/about'" class="service-link">Learn More →</router-link>
+    <router-link
+      v-if="linkLocation"
+      :to="linkLocation === 'home' ? '/' : '/' + linkLocation"
+      class="service-link"
+    >Learn More →</router-link>
   </div>
 </template>
 

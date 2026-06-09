@@ -55,7 +55,7 @@ export const mockCourses: Course[] = [
     id: 'resilience-mastery',
     title: 'Building Resilience',
     subtitle: 'Master the Art of Bouncing Back',
-    description: 'Learn evidence-based techniques to build mental resilience and thrive in challenging times.',
+    description: 'Learn practical techniques to build resilience and thrive in challenging times.',
     longDescription: 'This comprehensive course draws from positive psychology research to help you develop unshakeable resilience. You\'ll learn practical strategies to manage stress, overcome setbacks, and build a mindset that turns challenges into opportunities for growth. Through engaging video lessons and reflective exercises, you\'ll discover how to cultivate inner strength and emotional flexibility.',
     duration: '4 weeks',
     totalLessons: 12,
@@ -153,7 +153,7 @@ export const mockCourses: Course[] = [
           {
             id: 'video-2-1',
             title: 'Stress Management Techniques',
-            description: 'Evidence-based methods to manage and reduce stress',
+            description: 'Practical methods to manage and reduce stress',
             duration: '12:20',
             videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
             thumbnailUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=250&fit=crop'
@@ -387,7 +387,7 @@ export const mockCourses: Course[] = [
                 id: 'q1-2',
                 question: 'Research shows mindfulness can help with:',
                 options: [
-                  'Only mental health issues',
+                  'Only emotional concerns',
                   'Stress, anxiety, focus, and overall well-being',
                   'Nothing measurable',
                   'Only physical health'

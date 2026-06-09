@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { mockCourses } from '@/data/courses'
@@ -10,6 +10,11 @@ const authStore = useAuthStore()
 const editingName = ref(false)
 const newName = ref(authStore.user?.name || '')
 const showUnsubscribeConfirm = ref(false)
+
+onMounted(() => {
+  // Make sure the latest subscription details (status, dates) are loaded.
+  authStore.checkSubscriptionStatus()
+})
 
 function startEditName() {
   newName.value = authStore.user?.name || ''
@@ -28,8 +33,8 @@ function cancelEditName() {
   editingName.value = false
 }
 
-function handleUnsubscribe() {
-  authStore.unsubscribe()
+async function handleUnsubscribe() {
+  await authStore.unsubscribe()
   showUnsubscribeConfirm.value = false
 }
 
@@ -42,6 +47,47 @@ const completedCourses = computed(() => {
   return mockCourses.filter(course => 
     authStore.user?.completedCourses.includes(course.id)
   )
+})
+
+// "Days left" reflects either the next billing date (active plan) or the
+// end of the paid period (cancelled but not yet expired).
+const daysRemaining = computed(() => {
+  const sub = authStore.subscription
+  if (!sub) return null
+  const target = sub.status === 'cancelled'
+    ? sub.endDate
+    : sub.nextBillingDate
+  if (!target) return null
+  const diffMs = new Date(target).getTime() - Date.now()
+  if (Number.isNaN(diffMs)) return null
+  const days = Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)))
+  return days
+})
+
+function formatDate(value?: string | null) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+const periodEndDate = computed(() => {
+  const sub = authStore.subscription
+  if (!sub) return ''
+  return formatDate(sub.status === 'cancelled' ? sub.endDate : sub.nextBillingDate)
+})
+
+const isCancelled = computed(() => authStore.subscription?.status === 'cancelled')
+
+const subscriptionPriceLabel = computed(() => {
+  const sub = authStore.subscription
+  if (!sub) return '$8/month'
+  const cycle = sub.billingCycle === 'yearly' ? 'year' : 'month'
+  return `$${Number(sub.amount).toFixed(0)}/${cycle}`
 })
 </script>
 
@@ -97,7 +143,7 @@ const completedCourses = computed(() => {
             <h2>Subscription</h2>
             
             <div class="subscription-status">
-              <div class="status-badge" :class="{ active: authStore.isSubscribed }">
+              <div class="status-badge" :class="{ active: authStore.isSubscribed, cancelled: isCancelled && authStore.isSubscribed }">
                 <svg v-if="authStore.isSubscribed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
@@ -106,19 +152,33 @@ const completedCourses = computed(() => {
                   <line x1="15" y1="9" x2="9" y2="15"></line>
                   <line x1="9" y1="9" x2="15" y2="15"></line>
                 </svg>
-                <span>{{ authStore.isSubscribed ? 'Active' : 'Inactive' }}</span>
+                <span v-if="!authStore.isSubscribed">Inactive</span>
+                <span v-else-if="isCancelled">Cancelled</span>
+                <span v-else>Active</span>
               </div>
 
-              <div v-if="authStore.isSubscribed" class="subscription-info">
-                <p>You have unlimited access to all courses for $10/month.</p>
+              <div v-if="authStore.isSubscribed && !isCancelled" class="subscription-info">
+                <p>You have unlimited access to all courses for {{ subscriptionPriceLabel }}.</p>
+                <p v-if="daysRemaining !== null" class="subscription-meta">
+                  Next billing in <strong>{{ daysRemaining }}</strong> day<span v-if="daysRemaining !== 1">s</span><span v-if="periodEndDate"> ({{ periodEndDate }})</span>.
+                </p>
                 <button class="unsubscribe-button" @click="showUnsubscribeConfirm = true">
                   Unsubscribe
+                </button>
+              </div>
+              <div v-else-if="authStore.isSubscribed && isCancelled" class="subscription-info">
+                <p>Your subscription is cancelled, but you still have access until the end of the paid period.</p>
+                <p v-if="daysRemaining !== null" class="subscription-meta">
+                  <strong>{{ daysRemaining }}</strong> day<span v-if="daysRemaining !== 1">s</span> remaining<span v-if="periodEndDate"> (until {{ periodEndDate }})</span>.
+                </p>
+                <button class="subscribe-button" @click="router.push('/subscribe')">
+                  Reactivate subscription
                 </button>
               </div>
               <div v-else class="subscription-info">
                 <p>Subscribe to get unlimited access to all courses.</p>
                 <button class="subscribe-button" @click="router.push('/subscribe')">
-                  Subscribe for $10/month
+                  Subscribe from $8/month
                 </button>
               </div>
             </div>
@@ -184,7 +244,7 @@ const completedCourses = computed(() => {
     <div v-if="showUnsubscribeConfirm" class="modal-overlay" @click="showUnsubscribeConfirm = false">
       <div class="modal" @click.stop>
         <h3>Confirm Unsubscribe</h3>
-        <p>Are you sure you want to unsubscribe? You'll lose access to all courses immediately.</p>
+        <p>Are you sure you want to unsubscribe? You'll keep access until the end of your paid period<span v-if="periodEndDate"> ({{ periodEndDate }})</span>.</p>
         <div class="modal-actions">
           <button class="cancel-modal-button" @click="showUnsubscribeConfirm = false">
             Cancel
@@ -364,7 +424,12 @@ const completedCourses = computed(() => {
       color: white;
     }
 
-    &:not(.active) {
+    &.cancelled {
+      background: var(--warning-color);
+      color: white;
+    }
+
+    &:not(.active):not(.cancelled) {
       background: var(--warning-color);
       color: white;
     }
@@ -375,6 +440,15 @@ const completedCourses = computed(() => {
       color: var(--text-light);
       line-height: 1.6;
       margin-bottom: 1rem;
+    }
+
+    .subscription-meta {
+      color: var(--text-dark);
+      font-size: 0.95rem;
+
+      strong {
+        color: var(--primary-color);
+      }
     }
   }
 }

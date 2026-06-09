@@ -6,10 +6,10 @@ import Plant2Icon from "@/components/icons/Plant2Icon.vue";
 
 // Default values shown until CMS data loads (or if it fails)
 const footerContent = ref(
-    "Compassionate guidance for your emotional wellness journey. Licensed professionals dedicated to helping you achieve lasting positive change."
+    "Compassionate guidance for your emotional wellness journey. Dedicated to helping you achieve lasting positive change."
 );
 const footerDisclaimer = ref(
-    "Getting There provides educational resources and support. We are not a substitute for professional medical or mental health treatment. Please consult with qualified healthcare providers for clinical concerns."
+    "Getting There provides educational resources and support. We are not a substitute for professional medical or therapeutic treatment. Please consult with qualified healthcare providers for clinical concerns."
 );
 
 onMounted(async () => {
@@ -48,9 +48,9 @@ onMounted(async () => {
           <h3>Contact Us</h3>
           <p>We'd love to hear from you.</p>
           <div class="contact-info">
-            <a href="mailto:gettingthere@gthere.net" class="contact-link">
-              gettingthere@gthere.net
-            </a>
+            <RouterLink to="/contact" class="contact-link">
+              Get in touch
+            </RouterLink>
           </div>
         </div>
       </div>
