@@ -101,7 +101,7 @@ function closeMenu() {
       <ul class="menu-links">
         <li><RouterLink to="/" @click="closeMenu">Home</RouterLink></li>
         <li><RouterLink to="/about" @click="closeMenu">About</RouterLink></li>
-        <li><RouterLink to="/classes" @click="closeMenu">Classes</RouterLink></li>
+        <li><RouterLink to="/classes" @click="closeMenu">Courses</RouterLink></li>
         <li><RouterLink to="/videos" @click="closeMenu">Videos</RouterLink></li>
         <li><RouterLink to="/events" @click="closeMenu">Workshops</RouterLink></li>
         <li><RouterLink to="/blog" @click="closeMenu">Blog</RouterLink></li>
