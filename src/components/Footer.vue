@@ -1,239 +1,237 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { RouterLink } from "vue-router";
-import HeartIcon from "@/components/icons/HeartIcon.vue";
-import Plant2Icon from "@/components/icons/Plant2Icon.vue";
+import { ref, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import { AppContainer, AppEyebrow, AppMarquee, AppButton } from '@/components/ui'
 
-// Default values shown until CMS data loads (or if it fails)
 const footerContent = ref(
-    "Compassionate guidance for your emotional wellness journey. Dedicated to helping you achieve lasting positive change."
-);
+  'Compassionate guidance for your emotional wellness journey. Dedicated to helping you achieve lasting positive change.'
+)
 const footerDisclaimer = ref(
-    "Getting There provides educational resources and support. We are not a substitute for professional medical or therapeutic treatment. Please consult with qualified healthcare providers for clinical concerns."
-);
+  'Getting There provides educational resources and support. We are not a substitute for professional medical or therapeutic treatment. Please consult with qualified healthcare providers for clinical concerns.'
+)
 
 onMounted(async () => {
   try {
-    const res = await fetch(
-        "https://getting-there-cms.onrender.com/api/footer?populate=all",
-        { headers: { "Accept": "application/json" } }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    // Safely assign values from the CMS response
-    footerContent.value = json?.data?.content ?? footerContent.value;
-    footerDisclaimer.value = json?.data?.disclaimer ?? footerDisclaimer.value;
+    const cmsBase = (import.meta.env.VITE_CMS_URL as string) || 'https://getting-there-cms.onrender.com'
+    const res = await fetch(`${cmsBase}/api/footer?populate=all`, { headers: { Accept: 'application/json' } })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const json = await res.json()
+    footerContent.value    = json?.data?.content    ?? footerContent.value
+    footerDisclaimer.value = json?.data?.disclaimer ?? footerDisclaimer.value
   } catch (err) {
-    console.error("Failed to fetch footer content:", err);
+    console.error('Failed to fetch footer content:', err)
   }
-});
+})
+
+const marqueeItems = ['happiness', 'tiny wins', 'gentle practice', 'every day', 'getting there']
+
+const exploreLinks = [
+  { to: '/blog',       label: 'Field notes' },
+  { to: '/store',      label: 'Booklets' },
+  { to: '/videos',     label: 'Videos' },
+  { to: '/events',     label: 'Workshops' },
+  { to: '/classes',    label: 'Courses' },
+]
+const aboutLinks = [
+  { to: '/about',      label: 'Our story' },
+  { to: '/contact',    label: 'Say hello' },
+  { to: '/newsletter', label: 'Newsletter' },
+]
+const legalLinks = [
+  { to: '/privacy',       label: 'Privacy' },
+  { to: '/terms',         label: 'Terms' },
+  { to: '/accessibility', label: 'Accessibility' },
+]
 </script>
 
 <template>
-  <footer>
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>Getting There</h3>
-          <p>{{ footerContent }}</p>
+  <footer class="site-foot">
+    <AppMarquee tone="marigold" :items="marqueeItems" :speed="34" />
+
+    <div class="site-foot__body">
+      <AppContainer>
+        <div class="site-foot__grid">
+          <section class="site-foot__pitch">
+            <AppEyebrow tone="fuchsia">From the studio</AppEyebrow>
+            <h2 class="site-foot__headline">A little kinder, every day.</h2>
+            <p class="site-foot__copy">{{ footerContent }}</p>
+            <AppButton :to="'/newsletter'" variant="playful" size="md">Get the newsletter</AppButton>
+          </section>
+
+          <nav class="site-foot__col" aria-label="Explore">
+            <h3>Explore</h3>
+            <ul>
+              <li v-for="l in exploreLinks" :key="l.to">
+                <RouterLink :to="l.to">{{ l.label }}</RouterLink>
+              </li>
+            </ul>
+          </nav>
+
+          <nav class="site-foot__col" aria-label="About">
+            <h3>Studio</h3>
+            <ul>
+              <li v-for="l in aboutLinks" :key="l.to">
+                <RouterLink :to="l.to">{{ l.label }}</RouterLink>
+              </li>
+            </ul>
+          </nav>
+
+          <nav class="site-foot__col" aria-label="Legal">
+            <h3>Fine print</h3>
+            <ul>
+              <li v-for="l in legalLinks" :key="l.to">
+                <RouterLink :to="l.to">{{ l.label }}</RouterLink>
+              </li>
+            </ul>
+          </nav>
         </div>
-        <div class="footer-section">
-          <h3>Resources</h3>
-          <p><RouterLink to="/blog">Blog</RouterLink></p>
-          <p><RouterLink to="/store">Booklets</RouterLink></p>
-          <p><RouterLink to="/videos">Videos</RouterLink></p>
-          <p><RouterLink to="/events">Workshops</RouterLink></p>
+
+        <div class="site-foot__rule" aria-hidden="true"></div>
+
+        <div class="site-foot__bottom">
+          <p class="site-foot__copyright">&copy; {{ new Date().getFullYear() }} Getting There. Made with care.</p>
+          <p class="site-foot__disclaimer">{{ footerDisclaimer }}</p>
         </div>
-        <div class="footer-section">
-          <h3>Contact Us</h3>
-          <p>We'd love to hear from you.</p>
-          <div class="contact-info">
-            <RouterLink to="/contact" class="contact-link">
-              Get in touch
-            </RouterLink>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <div class="footer-legal">
-          <p>&copy; 2025 Getting There. All rights reserved.</p>
-          <div class="legal-links">
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms of Service</a>
-            <a href="/accessibility">Accessibility</a>
-          </div>
-        </div>
-        <div class="footer-disclaimer">
-          <p><small>{{ footerDisclaimer }}</small></p>
-        </div>
-      </div>
+      </AppContainer>
     </div>
   </footer>
 </template>
 
-<style scoped>
-/* Footer */
-footer {
-  background: var(--text-dark);
-  color: white;
-  padding: 4rem 0 2rem;
-}
+<style scoped lang="scss">
+.site-foot {
+  margin-top: 0;
+  background: var(--c-ink);
+  color: var(--c-cream);
+  position: relative;
+  overflow: hidden;
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
+  &__body {
+    padding: var(--s-9) 0 var(--s-7);
+    position: relative;
+    isolation: isolate;
 
-.footer-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 3rem;
-  margin-bottom: 3rem;
-}
-
-.footer-section h3 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: white;
-  font-family: 'Playfair Display', serif;
-}
-
-.footer-section p {
-  margin-bottom: 0.75rem;
-  line-height: 1.6;
-}
-
-.footer-section a {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.footer-section a:hover {
-  color: var(--accent-color);
-}
-
-.credentials {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.credential-badge {
-  display: flex;
-  gap: 5px;
-  background: var(--primary-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-/* Contact Section */
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin: 1rem 0;
-}
-
-.contact-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  border-radius: 8px;
-}
-
-.contact-link:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.contact-icon {
-  font-size: 1.2rem;
-}
-
-.contact-note {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 0.5rem;
-}
-
-.footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 2rem;
-}
-
-.footer-legal {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.legal-links {
-  display: flex;
-  gap: 2rem;
-}
-
-.legal-links a {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.3s ease;
-}
-
-.legal-links a:hover {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.footer-disclaimer {
-  opacity: 0.7;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 1024px) {
-  .footer-content {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .footer-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.4px, transparent 1.4px);
+      background-size: 26px 26px;
+      pointer-events: none;
+      z-index: 0;
+    }
   }
 
-  .footer-legal {
+  &__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: var(--s-7);
+
+    @media (max-width: 960px) { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 560px) { grid-template-columns: 1fr; }
+  }
+
+  &__pitch {
+    display: flex;
     flex-direction: column;
-    text-align: center;
-    gap: 1rem;
+    gap: var(--s-3);
+    align-items: flex-start;
   }
 
-  .legal-links {
+  &__headline {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-4xl);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-tight);
+    margin: 0;
+    color: var(--c-cream);
+    max-width: 18ch;
+  }
+
+  &__copy {
+    color: rgba(251, 245, 233, 0.78);
+    line-height: var(--lh-base);
+    max-width: 42ch;
+    margin: 0;
+  }
+
+  &__col {
+    h3 {
+      font-family: var(--font-body);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: var(--ls-shout);
+      font-size: var(--fs-xs);
+      color: var(--c-marigold);
+      margin: 0 0 var(--s-4);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-2);
+    }
+    a {
+      font-family: var(--font-display);
+      font-size: var(--fs-lg);
+      color: var(--c-cream);
+      text-decoration: none;
+      position: relative;
+      display: inline-block;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0; right: 0; bottom: -2px;
+        height: 2px;
+        background: var(--c-marigold);
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform var(--dur-base) var(--ease-snap);
+      }
+
+      &:hover { color: var(--c-marigold); }
+      &:hover::after { transform: scaleX(1); }
+    }
+  }
+
+  &__rule {
+    position: relative;
+    z-index: 1;
+    margin-top: var(--s-7);
+    height: 14px;
+    background-repeat: repeat-x;
+    background-size: 80px 14px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 14' fill='none' stroke='%23FFB534' stroke-width='2.6' stroke-linecap='round'><path d='M0 7 Q 10 0 20 7 T 40 7 T 60 7 T 80 7' /></svg>");
+  }
+
+  &__bottom {
+    position: relative;
+    z-index: 1;
+    margin-top: var(--s-5);
+    display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--s-3);
+    align-items: flex-start;
   }
 
-  .credentials {
-    justify-content: center;
+  &__copyright {
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--c-cream);
+    margin: 0;
   }
 
-  .contact-link:hover {
-    transform: none;
+  &__disclaimer {
+    font-size: var(--fs-sm);
+    color: rgba(251, 245, 233, 0.55);
+    max-width: 80ch;
+    margin: 0;
+    line-height: var(--lh-base);
   }
 }
 </style>

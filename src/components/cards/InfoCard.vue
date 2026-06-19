@@ -1,142 +1,108 @@
-<template>
-  <div class="step-card fade-in">
-    <div class="step-number">{{ stepNumber }}</div>
-    <div class="step-icon">
-      <img v-if="icon && icon.url" :src="`https://getting-there-cms.onrender.com${icon.url}`" :alt="title" />
-      <component v-else :is="fallbackIconComponent" />
-    </div>
-    <h3>{{ title }}</h3>
-    <p>{{ description }}</p>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import PostItsIcon from '@/components/icons/PostItsIcon.vue';
-import PuzzleIcon from '@/components/icons/PuzzleIcon.vue';
-import ArrowIcon from '@/components/icons/ArrowIcon.vue';
-
-const baseUrl = import.meta.env.VITE_CMS_URL || '';
+import { computed } from 'vue'
+import { AppCard } from '@/components/ui'
+import PostItsIcon from '@/components/icons/PostItsIcon.vue'
+import PuzzleIcon  from '@/components/icons/PuzzleIcon.vue'
+import ArrowIcon   from '@/components/icons/ArrowIcon.vue'
 
 const props = defineProps<{
-  title: string;
-  description: string;
-  stepNumber: number;
-  iconIndex: number;
+  title: string
+  description: string
+  stepNumber: number
+  iconIndex: number
   icon?: {
-    url: string;
-    width: number;
-    height: number;
-    formats?: {
-      small?: {
-        url: string;
-      };
-      thumbnail?: {
-        url: string;
-      };
-    };
-  };
-}>();
-
-// Fallback icon if CMS data is not available
-const fallbackIconComponent = computed(() => {
-  switch (props.iconIndex) {
-    case 0:
-      return PostItsIcon;
-    case 1:
-      return PuzzleIcon;
-    case 2:
-      return ArrowIcon;
-    default:
-      return PostItsIcon;
+    url: string
+    width: number
+    height: number
+    formats?: { small?: { url: string }, thumbnail?: { url: string } }
   }
-});
+}>()
+
+const fallbackIcon = computed(() => {
+  switch (props.iconIndex) {
+    case 0: return PostItsIcon
+    case 1: return PuzzleIcon
+    case 2: return ArrowIcon
+    default: return PostItsIcon
+  }
+})
+
+// Rotate accent tones for visual variety across the step grid
+const tone = computed(() => {
+  const palette = ['marigold', 'mint', 'fuchsia', 'cobalt'] as const
+  return palette[(props.iconIndex ?? 0) % palette.length]
+})
 </script>
 
-<style scoped>
-.step-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
+<template>
+  <AppCard variant="plaque" tone="paper" :shadow-tone="tone" pad="lg" class="info-card">
+    <span class="info-card__num" :data-tone="tone">{{ stepNumber }}</span>
+    <div class="info-card__icon">
+      <img v-if="icon && icon.url" :src="`https://getting-there-cms.onrender.com${icon.url}`" :alt="title" />
+      <component v-else :is="fallbackIcon" />
+    </div>
+    <h3 class="info-card__title">{{ title }}</h3>
+    <p class="info-card__desc">{{ description }}</p>
+  </AppCard>
+</template>
+
+<style scoped lang="scss">
+.info-card {
   text-align: center;
   position: relative;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
 
-.step-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px var(--shadow-medium);
-}
+  :deep(.app-card__body) {
+    align-items: center;
+    padding-top: var(--s-7);
+  }
 
-.step-number {
-  position: absolute;
-  top: -15px;
-  left: 2rem;
-  width: 30px;
-  height: 30px;
-  background: var(--primary-color);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
+  &__num {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 2.5px solid var(--c-ink);
+    background: var(--c-marigold);
+    color: var(--c-ink);
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+    box-shadow: 3px 3px 0 0 var(--c-ink);
+    z-index: 2;
 
-.step-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: center;
-}
+    &[data-tone='cobalt']   { background: var(--c-cobalt);   color: var(--c-cream); }
+    &[data-tone='mint']     { background: var(--c-mint);     color: var(--c-ink); }
+    &[data-tone='fuchsia']  { background: var(--c-fuchsia);  color: var(--c-cream); }
+  }
 
-.step-icon svg, .step-icon img {
-  width: 6rem;
-  height: 6rem;
-  object-fit: contain;
-  transition: all 0.3s ease;
-}
+  &__icon {
+    width: 84px; height: 84px;
+    display: grid; place-items: center;
+    background: var(--c-cream-2);
+    border-radius: var(--r-asym-c);
+    border: 2px solid var(--c-ink);
+    margin-bottom: var(--s-2);
 
-/* Colorful filters for each step icon */
-.step-card:nth-child(1) .step-icon img {
-  filter: invert(37%) sepia(93%) saturate(1990%) hue-rotate(316deg) brightness(102%) contrast(101%);
-  /* Vibrant Pink/Magenta */
-}
+    img, :deep(svg) { width: 56px; height: 56px; object-fit: contain; }
+  }
 
-.step-card:nth-child(1):hover .step-icon img {
-  filter: invert(37%) sepia(93%) saturate(1990%) hue-rotate(316deg) brightness(102%) contrast(101%) drop-shadow(0 4px 8px rgba(236, 64, 122, 0.4));
-}
+  &__title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-2xl);
+    margin: 0;
+    color: var(--c-ink);
+    line-height: var(--lh-snug);
+  }
 
-.step-card:nth-child(2) .step-icon img {
-  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%);
-  /* Bright Cyan/Turquoise */
-}
-
-.step-card:nth-child(2):hover .step-icon img {
-  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%) drop-shadow(0 4px 8px rgba(0, 188, 212, 0.4));
-}
-
-.step-card:nth-child(3) .step-icon img {
-  filter: invert(65%) sepia(97%) saturate(1186%) hue-rotate(358deg) brightness(102%) contrast(104%);
-  /* Bright Orange/Coral */
-}
-
-.step-card:nth-child(3):hover .step-icon img {
-  filter: invert(65%) sepia(97%) saturate(1186%) hue-rotate(358deg) brightness(102%) contrast(104%) drop-shadow(0 4px 8px rgba(255, 152, 0, 0.4));
-}
-
-.step-card h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.step-card p {
-  color: var(--text-light);
-  line-height: 1.6;
+  &__desc {
+    font-family: var(--font-body);
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
+    margin: 0;
+  }
 }
 </style>

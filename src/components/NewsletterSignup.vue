@@ -98,7 +98,7 @@ async function submit() {
 }
 
 .newsletter-title {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-display);
   font-size: 1.4rem;
   margin: 0 0 0.5rem;
   color: var(--text-dark);

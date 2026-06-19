@@ -1,939 +1,420 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  AppBadge,
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppEyebrow,
+  AppGrid,
+  AppHero,
+  AppSection,
+  AppSpinner,
+} from '@/components/ui'
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
-const isLoading = ref(true);
-const orderDetails = ref<any>(null);
-const customerInfo = ref<any>(null);
-const error = ref<string | null>(null);
-const isPending = ref(false);
+const isLoading = ref(true)
+const orderDetails = ref<any>(null)
+const customerInfo = ref<any>(null)
+const error = ref<string | null>(null)
+const isPending = ref(false)
 
 const verifyOrder = async () => {
-  isLoading.value = true;
-  error.value = null;
-  isPending.value = false;
+  isLoading.value = true
+  error.value = null
+  isPending.value = false
 
   try {
-    // Get order ID from query params
-    const orderId = route.query.internal_order_id || route.query.internalOrderId;
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const orderId = route.query.internal_order_id || route.query.internalOrderId
+    const apiUrl = import.meta.env.VITE_API_URL
 
-    if (!orderId) {
-      throw new Error('No order ID found');
-    }
+    if (!orderId) throw new Error('No order ID found')
 
-    // Verify order with backend
-    const response = await fetch(`${apiUrl}/checkout/verify-payment?internalOrderId=${orderId}`);
+    const response = await fetch(`${apiUrl}/checkout/verify-payment?internalOrderId=${orderId}`)
+    if (!response.ok) throw new Error('Failed to verify order')
 
-    if (!response.ok) {
-      throw new Error('Failed to verify order');
-    }
+    const data = await response.json()
 
-    const data = await response.json();
-    
-    // Check if payment is still pending (webhook hasn't processed yet)
     if (data.pending) {
-      isPending.value = true;
-      orderDetails.value = data;
-      // Use customer info from backend response (preferred) or fall back to localStorage
+      isPending.value = true
+      orderDetails.value = data
       if (data.customer) {
-        customerInfo.value = data.customer;
+        customerInfo.value = data.customer
       } else {
-        const savedCustomer = localStorage.getItem('gettingThereCustomer');
-        if (savedCustomer) {
-          customerInfo.value = JSON.parse(savedCustomer);
-        }
+        const savedCustomer = localStorage.getItem('gettingThereCustomer')
+        if (savedCustomer) customerInfo.value = JSON.parse(savedCustomer)
       }
     } else {
-      orderDetails.value = data;
-      // Use customer info from backend response (preferred) or fall back to localStorage
+      orderDetails.value = data
       if (data.customer) {
-        customerInfo.value = data.customer;
+        customerInfo.value = data.customer
       } else {
-        const savedCustomer = localStorage.getItem('gettingThereCustomer');
-        if (savedCustomer) {
-          customerInfo.value = JSON.parse(savedCustomer);
-        }
+        const savedCustomer = localStorage.getItem('gettingThereCustomer')
+        if (savedCustomer) customerInfo.value = JSON.parse(savedCustomer)
       }
-
-      // Clear cart only when payment is confirmed
-      localStorage.removeItem('gettingThereCart');
-      localStorage.removeItem('gettingThereCustomer');
+      localStorage.removeItem('gettingThereCart')
+      localStorage.removeItem('gettingThereCustomer')
     }
-
   } catch (err) {
-    console.error('Order verification error:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to verify order';
+    console.error('Order verification error:', err)
+    error.value = err instanceof Error ? err.message : 'Failed to verify order'
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
-const goToStore = () => {
-  router.push('/store');
-};
+onMounted(verifyOrder)
 
-const goHome = () => {
-  router.push('/');
-};
-
-onMounted(() => {
-  verifyOrder();
-});
+const nextSteps = [
+  { title: 'Check your email', body: 'Your download links have been sent to your email address.' },
+  { title: 'Download your resources', body: 'Click the download links in your email to access your digital books.' },
+  { title: 'Start your journey', body: 'Begin reading and exploring your new therapeutic resources.' },
+]
 </script>
 
 <template>
-  <div class="success-page">
-    <!-- Loading State -->
-    <div v-if="isLoading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Verifying your order...</p>
-    </div>
+  <main class="success-page">
+    <!-- Loading -->
+    <template v-if="isLoading">
+      <AppSection tone="cream" pad="xl">
+        <AppContainer size="sm">
+          <AppCard variant="plaque" tone="paper" shadow-tone="cobalt" pad="lg" class="success-page__center">
+            <div class="success-page__loading">
+              <AppSpinner />
+              <p>Verifying your order…</p>
+            </div>
+          </AppCard>
+        </AppContainer>
+      </AppSection>
+    </template>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="error-container">
-      <div class="error-icon">⚠️</div>
-      <h1>Order Verification Failed</h1>
-      <p>{{ error }}</p>
-      <div class="error-actions">
-        <button @click="goToStore" class="cta-btn primary">Return to Store</button>
-        <a href="mailto:support@gthere.net" class="cta-btn secondary">Contact Support</a>
-      </div>
-    </div>
+    <!-- Error -->
+    <template v-else-if="error">
+      <AppHero variant="compact" tone="fuchsia" align="center">
+        <template #eyebrow>
+          <AppEyebrow tone="ink">Verification failed</AppEyebrow>
+        </template>
+        <template #title>We hit a snag verifying your order</template>
+        <template #lede>{{ error }}</template>
+        <template #actions>
+          <AppButton variant="ink" @click="router.push('/store')">Return to store</AppButton>
+          <AppButton variant="ghost" href="mailto:support@gthere.net">Contact support</AppButton>
+        </template>
+      </AppHero>
+    </template>
 
-    <!-- Pending State - Payment Processing -->
-    <div v-else-if="isPending" class="pending-container">
-      <div class="pending-icon-wrapper">
-        <div class="pending-icon">⏳</div>
-      </div>
-      <h1>Payment Processing</h1>
-      <p class="pending-subtitle">Your order is being verified</p>
-      
-      <div class="pending-details-card">
-        <div class="card-header">
-          <h2>📦 Order Information</h2>
-          <span class="order-number">Order ID: {{ orderDetails?.orderId || 'Processing' }}</span>
-        </div>
+    <!-- Pending -->
+    <template v-else-if="isPending">
+      <AppHero variant="compact" tone="marigold" align="center">
+        <template #eyebrow>
+          <AppEyebrow tone="ink">Payment processing</AppEyebrow>
+        </template>
+        <template #title>Your order is being verified</template>
+        <template #lede>
+          We've received your payment. It's currently being processed by our payment processor.
+        </template>
+      </AppHero>
 
-        <div class="pending-message">
-          <div class="message-icon">🔄</div>
-          <div class="message-content">
-            <h3>Payment Verification in Progress</h3>
-            <p>We've received your payment and it's currently being processed by our payment processor.</p>
-            <p class="customer-email" v-if="customerInfo?.email">Order confirmation will be sent to: <strong>{{ customerInfo.email }}</strong></p>
-          </div>
-        </div>
-
-        <div class="pending-instructions">
-          <h3>What to do next:</h3>
-          <ul>
-            <li>⏱️ <strong>Wait a few minutes</strong> - Payment verification typically takes 1-3 minutes</li>
-            <li>🔄 <strong>Refresh this page</strong> to check if your payment has been verified</li>
-            <li>📧 <strong>Check your email</strong> - You'll receive confirmation once processing is complete</li>
-            <li>💬 <strong>Contact support</strong> if this status persists for more than 10 minutes</li>
-          </ul>
-        </div>
-
-        <div class="pending-actions">
-          <button @click="verifyOrder" class="cta-btn primary">
-            <span class="refresh-icon">🔄</span>
-            Refresh Status
-          </button>
-          <button @click="goToStore" class="cta-btn secondary">Continue Shopping</button>
-        </div>
-      </div>
-
-      <!-- Support Contact -->
-      <div class="pending-support">
-        <p>Having issues? Contact us at <a href="mailto:support@gthere.net">support@gthere.net</a></p>
-      </div>
-    </div>
-
-    <!-- Success State -->
-    <div v-else class="success-content">
-      <!-- Success Header -->
-      <div class="success-header">
-        <div class="success-icon-wrapper">
-          <div class="success-icon">✓</div>
-        </div>
-        <h1>Thank You for Your Purchase!</h1>
-        <p class="success-subtitle">Your order has been confirmed and your digital resources are ready</p>
-      </div>
-
-      <!-- Order Details Card -->
-      <div class="order-details-card">
-        <div class="card-header">
-          <h2>📧 Order Confirmation</h2>
-          <span class="order-number">Order ID: {{ orderDetails?.orderId || 'Processing' }}</span>
-        </div>
-
-        <div class="confirmation-message">
-          <div class="message-icon">📱</div>
-          <div class="message-content">
-            <h3>Check Your Email</h3>
-            <p>We've sent your digital resources and order confirmation to:</p>
-            <p class="email-address">{{ customerInfo?.email || 'your email address' }}</p>
-            <p class="email-note">If you don't see it within a few minutes, please check your spam folder.</p>
-          </div>
-        </div>
-
-        <!-- Order Items -->
-        <div class="order-items" v-if="orderDetails?.items">
-          <h3>Your Digital Resources</h3>
-          <div class="items-list">
-            <div v-for="item in orderDetails.items" :key="item.id" class="order-item">
-              <div class="item-icon">📚</div>
-              <div class="item-info">
-                <h4>{{ item.name }}</h4>
-                <p>Digital Edition • Instant Download</p>
+      <AppSection tone="cream" pad="lg">
+        <AppContainer size="md">
+          <AppCard variant="plaque" tone="paper" shadow-tone="marigold" pad="lg">
+            <template #eyebrow>
+              <AppEyebrow tone="marigold">Order Info</AppEyebrow>
+            </template>
+            <template #title>Verification in progress</template>
+            <p v-if="customerInfo?.email" class="success-page__muted">
+              Order confirmation will be sent to: <strong>{{ customerInfo.email }}</strong>
+            </p>
+            <ul class="success-page__instructions">
+              <li><strong>Wait a few minutes</strong> — payment verification usually takes 1-3 minutes</li>
+              <li><strong>Refresh this page</strong> to check on your payment</li>
+              <li><strong>Check your email</strong> — you'll receive confirmation once processing completes</li>
+              <li><strong>Contact support</strong> if this status persists more than 10 minutes</li>
+            </ul>
+            <template #footer>
+              <AppBadge tone="marigold">Order ID: {{ orderDetails?.orderId || 'Processing' }}</AppBadge>
+              <div class="success-page__actions">
+                <AppButton variant="primary" @click="verifyOrder">Refresh status</AppButton>
+                <AppButton variant="ghost" @click="router.push('/store')">Continue shopping</AppButton>
               </div>
-              <div class="item-price">${{ (item.amount / 100).toFixed(2) }}</div>
+            </template>
+          </AppCard>
+
+          <p class="success-page__support">
+            Having issues? Contact <a href="mailto:support@gthere.net">support@gthere.net</a>
+          </p>
+        </AppContainer>
+      </AppSection>
+    </template>
+
+    <!-- Success -->
+    <template v-else>
+      <AppHero variant="magazine" tone="mint" align="center">
+        <template #eyebrow>
+          <AppEyebrow tone="ink">Order confirmed</AppEyebrow>
+        </template>
+        <template #title>Thank you for your purchase!</template>
+        <template #lede>
+          Your order has been confirmed and your digital resources are ready.
+        </template>
+      </AppHero>
+
+      <AppSection tone="cream" pad="lg">
+        <AppContainer size="md">
+          <AppCard variant="plaque" tone="paper" shadow-tone="cobalt" pad="lg">
+            <template #eyebrow>
+              <AppEyebrow tone="cobalt">Order confirmation</AppEyebrow>
+            </template>
+            <template #title>Check your email</template>
+            <p class="success-page__muted">We've sent your digital resources and order confirmation to:</p>
+            <p class="success-page__email">{{ customerInfo?.email || 'your email address' }}</p>
+            <p class="success-page__note">
+              If you don't see it within a few minutes, please check your spam folder.
+            </p>
+
+            <div v-if="orderDetails?.items" class="success-page__items">
+              <h3>Your digital resources</h3>
+              <ul>
+                <li v-for="item in orderDetails.items" :key="item.id">
+                  <div>
+                    <strong>{{ item.name }}</strong>
+                    <span>Digital Edition • Instant Download</span>
+                  </div>
+                  <span class="success-page__price">${{ (item.amount / 100).toFixed(2) }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="orderDetails?.total" class="success-page__total">
+              <span>Total paid</span>
+              <span class="success-page__total-amount">${{ (orderDetails.total / 100).toFixed(2) }}</span>
+            </div>
+
+            <template #footer>
+              <AppBadge tone="cobalt">Order ID: {{ orderDetails?.orderId || 'Processing' }}</AppBadge>
+            </template>
+          </AppCard>
+        </AppContainer>
+      </AppSection>
+
+      <AppSection tone="cream-2" pad="xl">
+        <AppContainer size="lg">
+          <header class="success-page__lead">
+            <AppEyebrow tone="fuchsia">What's next</AppEyebrow>
+            <h2 class="success-page__heading">Three quick steps</h2>
+          </header>
+          <AppGrid :min="240" gap="lg">
+            <AppCard
+              v-for="(step, i) in nextSteps"
+              :key="step.title"
+              variant="flat"
+              tone="paper"
+              pad="lg"
+            >
+              <span class="success-page__step-num">0{{ i + 1 }}</span>
+              <h3 class="success-page__step-title">{{ step.title }}</h3>
+              <p class="success-page__muted">{{ step.body }}</p>
+            </AppCard>
+          </AppGrid>
+        </AppContainer>
+      </AppSection>
+
+      <AppSection tone="ink" pad="lg">
+        <AppContainer size="md">
+          <div class="success-page__cta">
+            <AppEyebrow tone="marigold">30-day guarantee</AppEyebrow>
+            <h2 class="success-page__cta-title">Not satisfied? Get a refund.</h2>
+            <p>No questions asked. Just reach out and we'll make it right.</p>
+            <div class="success-page__actions">
+              <AppButton variant="primary" @click="router.push('/store')">Browse more</AppButton>
+              <AppButton variant="ghost" @click="router.push('/')">Return home</AppButton>
             </div>
           </div>
-        </div>
-
-        <!-- Order Total -->
-        <div class="order-total" v-if="orderDetails?.total">
-          <div class="total-row">
-            <span>Total Paid</span>
-            <span class="total-amount">${{ (orderDetails.total / 100).toFixed(2) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Next Steps -->
-      <div class="next-steps-card">
-        <h2>🎯 What Happens Next?</h2>
-        <div class="steps-grid">
-          <div class="step-item">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h3>Check Your Email</h3>
-              <p>Your download links have been sent to your email address</p>
-            </div>
-          </div>
-          <div class="step-item">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h3>Download Your Resources</h3>
-              <p>Click the download links in your email to access your digital books</p>
-            </div>
-          </div>
-          <div class="step-item">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h3>Start Your Journey</h3>
-              <p>Begin reading and exploring your new therapeutic resources</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Support Section -->
-      <div class="support-card">
-        <div class="support-icon">💚</div>
-        <div class="support-content">
-          <h3>Need Help?</h3>
-          <p>If you have any questions or issues accessing your resources, our support team is here to help.</p>
-          <div class="support-actions">
-            <a href="mailto:support@gthere.net" class="support-link">📧 support@gthere.net</a>
-            <a href="tel:+1234567890" class="support-link">📞 (123) 456-7890</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <button @click="goToStore" class="cta-btn primary">Browse More Resources</button>
-        <button @click="goHome" class="cta-btn secondary">Return Home</button>
-      </div>
-
-      <!-- Guarantee Reminder -->
-      <div class="guarantee-reminder">
-        <div class="guarantee-icon">🔄</div>
-        <p><strong>30-Day Money-Back Guarantee</strong> • Not satisfied? Contact us for a full refund, no questions asked.</p>
-      </div>
-    </div>
-  </div>
+        </AppContainer>
+      </AppSection>
+    </template>
+  </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .success-page {
-  min-height: 100vh;
-  background: var(--bg-light);
-  padding: 6rem 2rem 4rem;
-}
+  &__center { margin-block: var(--s-6); }
 
-/* Loading State */
-.loading-container {
-  max-width: 500px;
-  margin: 4rem auto;
-  text-align: center;
-  padding: 3rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(74, 124, 89, 0.1);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  margin: 0 auto 1.5rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-container p {
-  color: var(--text-light);
-  font-size: 1.1rem;
-}
-
-/* Error State */
-.error-container {
-  max-width: 600px;
-  margin: 4rem auto;
-  text-align: center;
-  padding: 3rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
-}
-
-.error-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-.error-container h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.error-container p {
-  color: var(--text-light);
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-.error-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* Pending State */
-.pending-container {
-  max-width: 800px;
-  margin: 4rem auto;
-  text-align: center;
-}
-
-.pending-icon-wrapper {
-  margin-bottom: 1.5rem;
-}
-
-.pending-icon {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #f59e0b, #fb923c);
-  color: white;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.9;
-  }
-}
-
-.pending-container h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-}
-
-.pending-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-light);
-  margin-bottom: 3rem;
-}
-
-.pending-details-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  border: 2px solid #fbbf24;
-  text-align: left;
-}
-
-.pending-message {
-  background: #fef3c7;
-  padding: 2rem;
-  border-radius: 15px;
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  border: 1px solid #fbbf24;
-}
-
-.pending-message .message-icon {
-  font-size: 2.5rem;
-  flex-shrink: 0;
-  animation: rotate 2s linear infinite;
-  transform-origin: center center;
-  display: inline-block;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.pending-message .message-content {
-  flex: 1;
-}
-
-.pending-message h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.pending-message p {
-  color: var(--text-light);
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
-}
-
-.customer-email {
-  margin-top: 1rem !important;
-  padding-top: 1rem;
-  border-top: 1px solid #fbbf24;
-}
-
-.pending-instructions {
-  margin: 2rem 0;
-}
-
-.pending-instructions h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.pending-instructions ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.pending-instructions li {
-  padding: 0.75rem 0;
-  color: var(--text-light);
-  line-height: 1.6;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.pending-instructions li:last-child {
-  border-bottom: none;
-}
-
-.pending-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-}
-
-.refresh-icon {
-  display: inline-block;
-  margin-right: 0.5rem;
-}
-
-.pending-support {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px var(--shadow-light);
-}
-
-.pending-support p {
-  margin: 0;
-  color: var(--text-light);
-}
-
-.pending-support a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.pending-support a:hover {
-  text-decoration: underline;
-}
-
-/* Success Content */
-.success-content {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* Success Header */
-.success-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.success-icon-wrapper {
-  margin-bottom: 1.5rem;
-}
-
-.success-icon {
-  width: 80px;
-  height: 80px;
-  background: var(--success-color);
-  color: white;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  font-weight: 700;
-  animation: scaleIn 0.5s ease;
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.success-header h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-}
-
-.success-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-light);
-}
-
-/* Order Details Card */
-.order-details-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-light);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid var(--border-light);
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.card-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin: 0;
-}
-
-.order-number {
-  background: var(--bg-sage);
-  color: var(--primary-color);
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-/* Confirmation Message */
-.confirmation-message {
-  background: var(--bg-sage);
-  padding: 2rem;
-  border-radius: 15px;
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-light);
-}
-
-.message-icon {
-  font-size: 2.5rem;
-  flex-shrink: 0;
-}
-
-.message-content h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.message-content p {
-  color: var(--text-light);
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
-}
-
-.email-address {
-  font-weight: 700;
-  color: var(--primary-color);
-  font-size: 1.1rem;
-  margin: 0.75rem 0 !important;
-}
-
-.email-note {
-  font-size: 0.9rem;
-  font-style: italic;
-}
-
-/* Order Items */
-.order-items h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.items-list {
-  margin-bottom: 1.5rem;
-}
-
-.order-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.order-item:last-child {
-  border-bottom: none;
-}
-
-.item-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.item-info {
-  flex: 1;
-}
-
-.item-info h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: var(--text-dark);
-}
-
-.item-info p {
-  font-size: 0.85rem;
-  color: var(--text-light);
-  margin: 0;
-}
-
-.item-price {
-  font-weight: 700;
-  color: var(--primary-color);
-  font-size: 1.1rem;
-}
-
-/* Order Total */
-.order-total {
-  padding-top: 1.5rem;
-  border-top: 2px solid var(--border-light);
-}
-
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--text-dark);
-}
-
-.total-amount {
-  color: var(--primary-color);
-  font-size: 1.5rem;
-}
-
-/* Next Steps Card */
-.next-steps-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-light);
-}
-
-.next-steps-card h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--text-dark);
-  text-align: center;
-}
-
-.steps-grid {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.step-item {
-  display: flex;
-  gap: 1.5rem;
-  align-items: start;
-  padding: 1.5rem;
-  background: var(--bg-light);
-  border-radius: 15px;
-  border: 1px solid var(--border-light);
-}
-
-.step-number {
-  width: 40px;
-  height: 40px;
-  background: var(--primary-color);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.step-content h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.step-content p {
-  color: var(--text-light);
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* Support Card */
-.support-card {
-  background: linear-gradient(135deg, rgba(74, 124, 89, 0.1) 0%, rgba(127, 166, 80, 0.1) 100%);
-  padding: 2rem;
-  border-radius: 20px;
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(74, 124, 89, 0.2);
-}
-
-.support-icon {
-  font-size: 2.5rem;
-  flex-shrink: 0;
-}
-
-.support-content h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.support-content p {
-  color: var(--text-light);
-  margin-bottom: 1rem;
-  line-height: 1.6;
-}
-
-.support-actions {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.support-link {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: color 0.3s ease;
-}
-
-.support-link:hover {
-  color: var(--secondary-color);
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-
-.cta-btn {
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  font-weight: 700;
-  font-size: 1.05rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.cta-btn.primary {
-  background: var(--primary-color);
-  color: white;
-  box-shadow: 0 4px 15px var(--shadow-light);
-}
-
-.cta-btn.primary:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--shadow-medium);
-}
-
-.cta-btn.secondary {
-  background: white;
-  color: var(--text-dark);
-  border: 2px solid var(--border-light);
-}
-
-.cta-btn.secondary:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-/* Guarantee Reminder */
-.guarantee-reminder {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  justify-content: center;
-  text-align: center;
-  box-shadow: 0 4px 15px var(--shadow-light);
-  border: 1px solid var(--border-light);
-}
-
-.guarantee-icon {
-  font-size: 2rem;
-}
-
-.guarantee-reminder p {
-  margin: 0;
-  color: var(--text-dark);
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 640px) {
-  .success-page {
-    padding: 5rem 1rem 3rem;
-  }
-
-  .success-header h1 {
-    font-size: 2rem;
-  }
-
-  .order-details-card,
-  .next-steps-card {
-    padding: 1.5rem;
-  }
-
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .confirmation-message {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .support-card {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .support-actions {
+  &__loading {
+    display: flex;
     flex-direction: column;
     align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-5) 0;
+    text-align: center;
+    color: var(--c-text-muted);
+
+    p { margin: 0; }
   }
 
-  .action-buttons {
+  &__muted {
+    margin: 0;
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
+  }
+
+  &__instructions {
+    margin: var(--s-4) 0 0;
+    padding-left: var(--s-5);
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
+
+    li { margin-bottom: var(--s-2); }
+    strong { color: var(--c-ink); }
+  }
+
+  &__email {
+    margin: var(--s-2) 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    color: var(--c-cobalt);
+  }
+
+  &__note {
+    margin: 0 0 var(--s-4);
+    color: var(--c-text-subtle);
+    font-size: var(--fs-sm);
+  }
+
+  &__items {
+    margin-top: var(--s-5);
+    padding-top: var(--s-4);
+    border-top: 2px dashed var(--c-ink);
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: var(--fs-md);
+      color: var(--c-ink);
+      margin: 0 0 var(--s-3);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--s-3);
+      padding: var(--s-3) 0;
+      border-bottom: 1px dashed var(--c-ink-soft);
+
+      strong {
+        display: block;
+        font-family: var(--font-display);
+        color: var(--c-ink);
+        font-size: var(--fs-md);
+      }
+
+      span:not(.success-page__price) {
+        display: block;
+        font-size: var(--fs-xs);
+        color: var(--c-text-subtle);
+        text-transform: uppercase;
+        letter-spacing: var(--ls-wide);
+      }
+    }
+  }
+
+  &__price {
+    font-family: var(--font-accent);
+    color: var(--c-cobalt);
+    font-size: var(--fs-md);
+  }
+
+  &__total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: var(--s-4);
+    padding-top: var(--s-3);
+    border-top: 3px solid var(--c-ink);
+
+    span:first-child {
+      font-family: var(--font-display);
+      font-size: var(--fs-lg);
+      color: var(--c-ink);
+    }
+  }
+
+  &__total-amount {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    color: var(--c-fuchsia);
+  }
+
+  &__lead {
+    display: flex;
     flex-direction: column;
-    width: 100%;
+    align-items: center;
+    gap: var(--s-3);
+    margin-bottom: var(--s-7);
+    text-align: center;
   }
 
-  .cta-btn {
-    width: 100%;
+  &__heading {
+    font-family: var(--font-display);
+    font-size: var(--fs-4xl);
+    color: var(--c-ink);
+    margin: 0;
   }
 
-  .guarantee-reminder {
+  &__step-num {
+    font-family: var(--font-accent);
+    color: var(--c-fuchsia);
+    font-size: var(--fs-lg);
+  }
+
+  &__step-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    color: var(--c-ink);
+    margin: var(--s-1) 0 var(--s-2);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    margin-top: var(--s-3);
+  }
+
+  &__support {
+    margin: var(--s-5) 0 0;
+    text-align: center;
+    color: var(--c-text-muted);
+    font-size: var(--fs-sm);
+
+    a { color: var(--c-cobalt); font-weight: 600; }
+  }
+
+  &__cta {
+    text-align: center;
+    color: var(--c-cream);
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: var(--s-3);
+
+    p { margin: 0; color: var(--c-cream); opacity: 0.85; }
+  }
+
+  &__cta-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-3xl);
+    color: var(--c-cream);
+    margin: 0;
   }
 }
 </style>

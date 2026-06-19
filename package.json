@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@vueuse/head": "^2.0.0",
+    "lucide-vue-next": "^1.0.0",
     "openssl": "^2.0.0",
     "pinia": "^2.2.4",
     "vite-plugin-sitemap": "^0.8.2",

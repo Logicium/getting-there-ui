@@ -1,655 +1,963 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import InfoCard from "@/components/cards/InfoCard.vue";
-import ServiceCard from "@/components/cards/ServiceCard.vue";
-import ResourceCard from "@/components/cards/ResourceCard.vue";
-import NewsletterSignup from "@/components/NewsletterSignup.vue";
+import { onMounted, ref } from 'vue'
+import NewsletterSignup from '@/components/NewsletterSignup.vue'
+import {
+  AppBlob,
+  AppButton,
+  AppContainer,
+  AppDots,
+  AppEyebrow,
+  AppHero,
+  AppMarquee,
+  AppSection,
+  AppSpinner,
+  AppSquiggle,
+} from '@/components/ui'
+import { ArrowUpRight } from 'lucide-vue-next'
 
-// Interface for the hero section data
-interface HeroSection {
-  id: number;
-  title: string;
-  description: string;
-  tag: string;
-  imagecarousel: null | any;
+interface CmsImage {
+  id: number
+  url: string
+  width: number
+  height: number
+  alternativeText?: string | null
+  formats?: { small?: { url: string }; thumbnail?: { url: string } }
 }
+interface HeroSection { id: number; title: string; description: string; tag: string; imagecarousel: CmsImage[] | null }
+interface InfoCardCMS { id: number; title: string; description: string; icon: CmsImage | null }
+interface HowItWorks { id: number; title: string; infocards: InfoCardCMS[] }
+interface ServiceCardCMS { id: number; title: string; description: string | null; linkLocation: string | null; icon: CmsImage | null }
+interface ServicesComponent { id: number; title: string; servicecards: ServiceCardCMS[] }
+interface ResourceCardCMS { id: number; title: string; description: string; icon: CmsImage | null }
+interface ResourcesComponent { id: number; title: string; resourcecards: ResourceCardCMS[] }
+interface CTAComponent { id: number; actiontext: string; buttontext: string }
 
-// Interface for info card in How It Works section
-interface InfoCard {
-  id: number;
-  title: string;
-  description: string;
-  icon: null | any;
-}
-
-// Interface for How It Works section
-interface HowItWorks {
-  id: number;
-  title: string;
-  infocards: InfoCard[];
-}
-
-// Interface for service card in Services section
-interface ServiceCard {
-  id: number;
-  title: string;
-  description: string | null;
-  linkLocation: string | null;
-  icon: null | any;
-}
-
-// Interface for Services section
-interface ServicesComponent {
-  id: number;
-  title: string;
-  servicecards: ServiceCard[];
-}
-
-// Interface for resource card in Resources section
-interface ResourceCard {
-  id: number;
-  title: string;
-  description: string;
-  icon: null | any;
-}
-
-// Interface for Resources section
-interface ResourcesComponent {
-  id: number;
-  title: string;
-  image: null | any;
-  resourcecards: ResourceCard[];
-}
-
-// Interface for CTA section
-interface CTAComponent {
-  id: number;
-  actiontext: string;
-  buttontext: string;
-}
-
-// Interface for Action Button
-interface ActionButton {
-  id: number;
-  buttonText: string;
-  linkLocation: string;
-}
-
-// Interface for the home page data
 interface HomePageData {
   data: {
-    id: number;
-    documentId: string;
-    createdAt: string;
-    updatedAt: string;
-    publishedAt: string;
-    herosection: HeroSection;
-    howitworks: HowItWorks;
-    servicescomponent: ServicesComponent;
-    resourcescomponent: ResourcesComponent;
-    ctacomponent: CTAComponent;
-    actionbutton: ActionButton;
-    Video: {
-      id: number;
-      documentId: string;
-      name: string;
-      alternativeText: string | null;
-      caption: string | null;
-      width: number | null;
-      height: number | null;
-      formats: any | null;
-      hash: string;
-      ext: string;
-      mime: string;
-      size: number;
-      url: string;
-      previewUrl: string | null;
-      provider: string;
-      provider_metadata: any | null;
-      createdAt: string;
-      updatedAt: string;
-      publishedAt: string;
-    } | null;
-  };
-  meta: Record<string, any>;
+    herosection: HeroSection
+    howitworks: HowItWorks
+    servicescomponent: ServicesComponent
+    resourcescomponent: ResourcesComponent
+    ctacomponent: CTAComponent
+  }
 }
 
-// State for all sections data
-const heroData = ref<HeroSection | null>(null);
-const howItWorksData = ref<HowItWorks | null>(null);
-const servicesData = ref<ServicesComponent | null>(null);
-const resourcesData = ref<ResourcesComponent | null>(null);
-const ctaData = ref<CTAComponent | null>(null);
-const actionButtonData = ref<ActionButton | null>(null);
-const videoData = ref<HomePageData['data']['Video']>(null);
-const isLoading = ref(true);
-const error = ref<string | null>(null);
-const videoPlayer = ref<HTMLVideoElement | null>(null);
-const isVideoPlaying = ref(false);
+const heroData = ref<HeroSection | null>(null)
+const howItWorksData = ref<HowItWorks | null>(null)
+const servicesData = ref<ServicesComponent | null>(null)
+const resourcesData = ref<ResourcesComponent | null>(null)
+const ctaData = ref<CTAComponent | null>(null)
+const isLoading = ref(true)
+const error = ref<string | null>(null)
 
-// Function to observe fade-in elements
-const observeFadeElements = () => {
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  };
+const CMS_BASE = 'https://getting-there-cms.onrender.com'
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, observerOptions);
+const cmsIcon = (icon: CmsImage | null | undefined) => {
+  if (!icon) return null
+  const path = icon.formats?.small?.url ?? icon.url
+  return path ? `${CMS_BASE}${path}` : null
+}
 
-  // Observe all fade-in elements
-  document.querySelectorAll('.fade-in').forEach(el => {
-    observer.observe(el);
-  });
-};
-
-// Function to fetch all sections data from CMS
 const fetchPageData = async () => {
-  isLoading.value = true;
-  error.value = null;
-
+  isLoading.value = true
+  error.value = null
   try {
-    const response = await fetch(`${import.meta.env.VITE_CMS_URL}/api/home-page?populate=all`);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
-    }
-
-    const data: HomePageData = await response.json();
-    heroData.value = data.data.herosection;
-    howItWorksData.value = data.data.howitworks;
-    console.log(data.data.howitworks);
-    servicesData.value = data.data.servicescomponent;
-    resourcesData.value = data.data.resourcescomponent;
-    ctaData.value = data.data.ctacomponent;
-    actionButtonData.value = data.data.actionbutton;
-    videoData.value = data.data.Video;
-
-    // Wait for the DOM to update with the new data
-    setTimeout(() => {
-      observeFadeElements();
-    }, 100);
-
-    return data; // Return the data to allow Promise chaining
-  } catch (err) {
-    console.error('Error fetching page data:', err);
-    error.value = err instanceof Error ? err.message : 'An unknown error occurred';
-    throw err; // Re-throw to allow Promise chaining with .catch()
+    const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/home-page?populate=all`)
+    if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`)
+    const json: HomePageData = await res.json()
+    heroData.value = json.data.herosection
+    howItWorksData.value = json.data.howitworks
+    servicesData.value = json.data.servicescomponent
+    resourcesData.value = json.data.resourcescomponent
+    ctaData.value = json.data.ctacomponent
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'An unknown error occurred'
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
-// Function to set up hero image rotation
-const setupHeroImageRotation = () => {
-  let currentImageIndex = 0;
-  const heroImages = document.querySelectorAll('.hero-image');
-
-  // Only set up rotation if we have images
-  if (heroImages.length <= 1) return;
-
-  function rotateHeroImages() {
-    heroImages[currentImageIndex]?.classList.remove('active');
-    currentImageIndex = (currentImageIndex + 1) % heroImages.length;
-    heroImages[currentImageIndex]?.classList.add('active');
-  }
-
-  // Start image rotation after 3 seconds, then every 6 seconds (slower for calming effect)
-  setTimeout(() => {
-    setInterval(rotateHeroImages, 6000);
-  }, 3000);
-};
-
-// Function to play the video
-const playVideo = () => {
-  if (videoPlayer.value) {
-    videoPlayer.value.play();
-    isVideoPlaying.value = true;
-  }
-};
-
-// Function to hide the play button when the video is playing
-const hidePlayButton = () => {
-  isVideoPlaying.value = true;
-};
-
-// Function to show the play button when the video is paused or ended
-const showPlayButton = () => {
-  isVideoPlaying.value = false;
-};
-
-onMounted(() => {
-  // Fetch all page data from CMS
-  fetchPageData().then(() => {
-    // Set up hero image rotation after data is loaded
-    setTimeout(() => {
-      setupHeroImageRotation();
-    }, 500); // Small delay to ensure DOM is updated
-  });
-
-  // Initial observation of fade-in elements that might already be in the DOM
-  observeFadeElements();
-
-  // Header scroll effect
-  window.addEventListener('scroll', () => {
-    const header = document.querySelector('header');
-    if (window.scrollY > 100) {
-      if (header) {
-        header.style.background = 'rgba(255, 255, 255, 0.98)';
-        header.style.boxShadow = '0 2px 20px var(--shadow-light)';
-      }
-    } else {
-      if (header) {
-        header.style.background = 'rgba(255, 255, 255, 0.95)';
-        header.style.boxShadow = 'none';
-      }
-    }
-  });
-});
+onMounted(fetchPageData)
 </script>
 
 <template>
-  <main>
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-      <!-- Full-bleed background carousel — always fills the hero box -->
-      <div class="hero-bg" aria-hidden="true">
-        <template v-if="heroData && heroData.imagecarousel && heroData.imagecarousel.length > 0">
-          <div
-            v-for="(image, index) in heroData.imagecarousel"
-            :key="image.id"
-            :class="['hero-image', index === 0 ? 'active' : '']"
-            :style="{ backgroundImage: `url('https://getting-there-cms.onrender.com${image.url}')` }"
-          ></div>
-        </template>
-        <template v-else>
-          <div class="hero-image active" style="background-image: url('/andrej-lisakov-Stdn0PNUyHM-unsplash.jpg')"></div>
-          <div class="hero-image" style="background-image: url('/fortytwo-1xMG-yqR2GM-unsplash.jpg')"></div>
-          <div class="hero-image" style="background-image: url('/hrant-khachatryan-V9sHuZ11lmk-unsplash.jpg')"></div>
-        </template>
-        <div class="hero-scrim"></div>
-      </div>
-
-      <div v-if="isLoading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Loading content...</p>
-      </div>
-
-      <div v-else-if="error" class="error-container">
-        <p>{{ error }}</p>
-        <button @click="fetchPageData" class="retry-button">Retry</button>
-      </div>
-
-      <div v-else-if="heroData" class="hero-content">
-        <div class="hero-text">
-          <div class="hero-badge">{{ heroData.tag }}</div>
-          <h1>{{ heroData.title }}</h1>
-          <p>{{ heroData.description }}</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section v-if="howItWorksData" class="how-it-works">
-      <div class="container">
-        <h2 class="section-title fade-in">{{ howItWorksData.title }}</h2>
-        <div class="steps-grid">
-          <InfoCard
-            v-for="(card, index) in howItWorksData.infocards"
-            :key="card.id"
-            :title="card.title"
-            :description="card.description"
-            :step-number="index + 1"
-            :icon-index="index"
-            :icon="card.icon"
+  <main class="home">
+    <!-- HERO -->
+    <AppHero variant="editorial" tone="cream" class="home-hero">
+      <template #eyebrow>
+        <AppEyebrow v-if="heroData?.tag" tone="fuchsia">{{ heroData.tag }}</AppEyebrow>
+      </template>
+      <template #title>
+        <span v-if="heroData">{{ heroData.title }}</span>
+        <span v-else>A grief-aware community for getting <em>through</em>, together.</span>
+      </template>
+      <template #lede>
+        <p v-if="heroData">{{ heroData.description }}</p>
+        <p v-else>Workshops, gatherings, and resources for navigating loss with curiosity, courage and creativity.</p>
+      </template>
+      <template #actions>
+        <AppButton to="/events" variant="primary" size="lg">Find a gathering</AppButton>
+        <AppButton to="/about" variant="ghost" size="lg">What we do</AppButton>
+      </template>
+      <template #media>
+        <figure class="home-hero-figure" aria-hidden="true">
+          <AppBlob tone="marigold" class="home-hero-figure__blob home-hero-figure__blob--a" />
+          <AppBlob tone="fuchsia"  class="home-hero-figure__blob home-hero-figure__blob--b" />
+          <img
+            v-if="heroData?.imagecarousel?.length"
+            :src="`${CMS_BASE}${heroData.imagecarousel[0].url}`"
+            :alt="heroData.imagecarousel[0].alternativeText ?? ''"
+            class="home-hero-figure__img"
           />
-        </div>
-      </div>
-    </section>
+          <img v-else src="/picture-1.jpg" alt="" class="home-hero-figure__img" />
+          <AppDots tone="cobalt" class="home-hero-figure__dots" />
+        </figure>
+      </template>
+    </AppHero>
 
-    <!-- Services Section -->
-    <section v-if="servicesData" class="services" id="services">
-      <div class="container">
-        <h2 class="section-title fade-in">{{ servicesData.title }}</h2>
-        <div class="services-grid">
-          <ServiceCard
-            v-for="(card, index) in servicesData.servicecards"
-            :key="card.id"
-            :title="card.title"
-            :description="card.description"
-            :link-location="card.linkLocation"
-            :icon-index="index"
-            :icon="card.icon"
-          />
-        </div>
-      </div>
-    </section>
+    <AppMarquee tone="marigold" :items="['Community', 'Care', 'Conversation', 'Curiosity', 'Creativity']" />
 
-    <!-- Resources Preview Section -->
-    <section v-if="resourcesData" class="resources-preview">
-      <div class="container">
-        <div class="resources-content">
-          <div class="resources-text fade-in">
-            <h2>{{ resourcesData.title }}</h2>
-            <ResourceCard
-              v-for="(card, index) in resourcesData.resourcecards"
+    <!-- LOADING / ERROR -->
+    <AppSection v-if="isLoading" tone="cream" pad="lg">
+      <AppContainer size="md">
+        <div class="home-state">
+          <AppSpinner size="lg" />
+          <p>Loading content...</p>
+        </div>
+      </AppContainer>
+    </AppSection>
+
+    <AppSection v-else-if="error" tone="cream" pad="lg">
+      <AppContainer size="md">
+        <div class="home-state">
+          <p>{{ error }}</p>
+          <AppButton variant="primary" @click="fetchPageData">Try again</AppButton>
+        </div>
+      </AppContainer>
+    </AppSection>
+
+    <!-- HOW IT WORKS — STICKY ASIDE + SCROLLING STEPS ON MARIGOLD -->
+    <AppSection v-if="howItWorksData" tone="marigold" pad="xl" class="home-manifesto-section">
+      <AppContainer size="lg">
+        <div class="home-manifesto">
+          <aside class="home-manifesto__aside">
+            <AppEyebrow tone="fuchsia">How it works</AppEyebrow>
+            <h2 class="home-manifesto__title">{{ howItWorksData.title }}</h2>
+            <p class="home-manifesto__count">
+              <span>{{ howItWorksData.infocards.length.toString().padStart(2, '0') }}</span> steps
+            </p>
+          </aside>
+
+          <ol class="home-manifesto__list">
+            <li
+              v-for="(card, i) in howItWorksData.infocards"
               :key="card.id"
-              :title="card.title"
-              :description="card.description"
-              :icon-index="index"
-              :icon="card.icon"
-            />
-          </div>
-          <div class="resources-visual fade-in">
-            <img
-              src="/picture-1.jpg"
-              alt="Getting There community"
-              class="resources-visual-image"
-            />
-          </div>
+              class="home-manifesto__step-row"
+            >
+              <span class="home-manifesto__num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
+              <div class="home-manifesto__art" aria-hidden="true">
+                <img
+                  v-if="cmsIcon(card.icon)"
+                  :src="cmsIcon(card.icon) ?? ''"
+                  :alt="''"
+                  loading="lazy"
+                />
+              </div>
+              <div class="home-manifesto__copy">
+                <h3 class="home-manifesto__step">{{ card.title }}</h3>
+                <p class="home-manifesto__body">{{ card.description }}</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </AppContainer>
+    </AppSection>
+
+    <!-- SERVICES — COMPACT EDITORIAL GRID WITH HAND-DRAWN ICONS -->
+    <AppSection v-if="servicesData" tone="ink" pad="xl" id="services" class="home-spread-section">
+      <AppContainer size="lg">
+        <header class="home-spread__head">
+          <AppEyebrow tone="marigold">What we offer</AppEyebrow>
+          <h2 class="home-spread__title">{{ servicesData.title }}</h2>
+        </header>
+
+        <ul class="home-spread">
+          <li
+            v-for="(card, i) in servicesData.servicecards"
+            :key="card.id"
+            class="home-spread__row"
+            :data-tone="(['marigold', 'cobalt', 'fuchsia', 'mint'] as const)[i % 4]"
+          >
+            <div class="home-spread__art" aria-hidden="true">
+              <img
+                v-if="cmsIcon(card.icon)"
+                :src="cmsIcon(card.icon) ?? ''"
+                :alt="''"
+                loading="lazy"
+              />
+            </div>
+            <div class="home-spread__copy">
+              <span class="home-spread__tag">{{ String(i + 1).padStart(2, '0') }} — {{ servicesData.servicecards.length.toString().padStart(2, '0') }}</span>
+              <h3 class="home-spread__heading">{{ card.title }}</h3>
+              <p v-if="card.description" class="home-spread__body">{{ card.description }}</p>
+              <RouterLink
+                v-if="card.linkLocation"
+                :to="card.linkLocation"
+                class="home-spread__cta"
+              >
+                Read on
+                <ArrowUpRight :size="16" :stroke-width="2.25" aria-hidden="true" />
+              </RouterLink>
+            </div>
+          </li>
+        </ul>
+      </AppContainer>
+    </AppSection>
+
+    <!-- PULL-QUOTE: bleed fuchsia divider -->
+    <AppSection tone="fuchsia" pad="xl" class="home-pullquote-section">
+      <AppContainer size="md">
+        <figure class="home-pullquote">
+          <span class="home-pullquote__mark" aria-hidden="true">“</span>
+          <blockquote class="home-pullquote__quote">
+            You don’t have to be okay to be welcome. Show up as you are—
+            <em>we will meet you there.</em>
+          </blockquote>
+          <figcaption class="home-pullquote__by">— The Getting There Studio</figcaption>
+        </figure>
+      </AppContainer>
+    </AppSection>
+
+    <AppSquiggle tone="cobalt" />
+
+    <!-- RESOURCES — FULL-BLEED STRIP SPREAD -->
+    <AppSection v-if="resourcesData" tone="cream-2" pad="xl" class="home-resources-section">
+      <div class="home-resources-fullbleed">
+        <header class="home-resources-intro">
+          <AppEyebrow tone="marigold">Free resources</AppEyebrow>
+          <h2 class="u-display u-display--md home-resources-intro__title">{{ resourcesData.title }}</h2>
+          <p class="home-resources-intro__lede">Guides, prompts, and practical tools to help you keep moving with care.</p>
+        </header>
+
+        <div class="home-resources-stage">
+          <ol class="home-toc">
+            <li
+              v-for="(card, i) in resourcesData.resourcecards"
+              :key="card.id"
+              class="home-toc__row"
+              :data-tone="(['marigold', 'cobalt', 'fuchsia', 'mint'] as const)[i % 4]"
+            >
+              <div class="home-toc__icon" aria-hidden="true">
+                <img
+                  v-if="cmsIcon(card.icon)"
+                  :src="cmsIcon(card.icon) ?? ''"
+                  :alt="''"
+                  loading="lazy"
+                />
+                <span v-else>{{ String(i + 1).padStart(2, '0') }}</span>
+              </div>
+              <div class="home-toc__body">
+                <h3 class="home-toc__title">{{ card.title }}</h3>
+                <p class="home-toc__dek">{{ card.description }}</p>
+              </div>
+            </li>
+          </ol>
+
+          <figure class="home-resources-float">
+            <img src="/picture-1.jpg" alt="Getting There community" />
+          </figure>
         </div>
       </div>
-    </section>
+    </AppSection>
 
-    <!-- CTA Section -->
-    <section v-if="ctaData" class="cta-section">
-      <div class="container">
-        <div class="cta-content fade-in">
-          <h2>{{ ctaData.actiontext }}</h2>
-          <div class="cta-buttons">
-            <router-link to="/events" class="cta-primary">{{ ctaData.buttontext }}</router-link>
-<!--            <a href="mailto:support@gthere.net" class="cta-secondary">Get Started Today</a>-->
+    <!-- CTA — COVER LINE (centered) -->
+    <AppSection v-if="ctaData" tone="ink" pad="xl">
+      <AppContainer size="md">
+        <div class="home-cta">
+          <p class="home-cta__kicker">· Vol. 01 · The invitation</p>
+          <h2 class="home-cta__title">{{ ctaData.actiontext }}</h2>
+          <div class="home-cta__rule" aria-hidden="true" />
+          <div class="home-cta__buttons">
+            <AppButton :to="'/events'" variant="primary" size="lg">{{ ctaData.buttontext }}</AppButton>
           </div>
-
-          <div class="cta-newsletter">
+          <div class="home-cta__newsletter">
             <NewsletterSignup
               variant="cta"
               source="home-cta"
               title="Stay in the loop"
-              description="Subscribe to our weekly newsletter to keep up to date on changes, additions, and special events or offers"
+              description="Subscribe for updates on gatherings, classes, and seasonal offerings."
               button-text="Subscribe"
             />
           </div>
         </div>
-      </div>
-    </section>
+      </AppContainer>
+    </AppSection>
   </main>
 </template>
 
 <style scoped lang="scss">
-@import '@/assets/common.scss';
-@import '@/assets/scss/mixins';
-@import '@/assets/scss/variables';
+/* Home hero: free-standing single image floating behind text, blobs bleed outward */
+.home-hero {
+  // Strip the default editorial media chrome so the image floats freely
+  :deep(.app-hero__media) {
+    aspect-ratio: auto;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+    background: transparent;
+  }
 
-/* Hero Section — full-bleed image with overlaid text */
-.hero {
+  // Lift the visible blobs in AppHero so they read more prominently
+  :deep(.app-hero__shapes .shape--marigold) { opacity: 1; }
+  :deep(.app-hero__shapes .shape--cobalt)   { opacity: 1; }
+  :deep(.app-hero__shapes .shape--fuchsia)  { opacity: 1; }
+
+  @media (min-width: 1024px) {
+    :deep(.app-hero__inner) {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
+      gap: var(--s-5);
+    }
+  }
+}
+
+.home-hero-figure {
   position: relative;
-  min-height: 100vh;
-  min-height: 100svh;
+  margin: 0;
   width: 100%;
+  aspect-ratio: 4 / 3;
+  isolation: isolate;
+
+  @media (min-width: 1024px) {
+    aspect-ratio: 5 / 4;
+  }
+
+  &__img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 3px solid var(--c-ink);
+    border-radius: var(--r-asym-c);
+    box-shadow: var(--shadow-block);
+  }
+
+  &__blob {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+
+    &--a {
+      top: -14%;
+      left: -16%;
+      width: 60%;
+      height: 60%;
+    }
+
+    &--b {
+      bottom: -16%;
+      right: -14%;
+      width: 52%;
+      height: 52%;
+    }
+  }
+
+  &__dots {
+    position: absolute;
+    z-index: 2;
+    bottom: -6%;
+    right: 6%;
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.home-section-head {
+  text-align: center;
+  margin-bottom: var(--s-8);
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  overflow: hidden;
-  padding: 0;
-  color: #fff;
-
-  @include mobile-only {
-    align-items: flex-end;
-  }
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
 }
 
-.hero-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 8rem $spacing-xl $spacing-3xl;
-  display: block;
-
-  @include mobile-only {
-    padding: 6rem $spacing-lg $spacing-2xl;
-    text-align: left;
-  }
+.home-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+  text-align: center;
+  color: var(--c-text-muted);
 }
 
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+/* ------------------------------------------------------------------ */
+/* HOW IT WORKS: sticky aside + scrolling steps on marigold           */
+/* ------------------------------------------------------------------ */
+.home-manifesto-section {
   overflow: hidden;
 }
 
-.hero-image {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0;
-  transition: opacity 2s ease-in-out;
-  transform: scale(1.05);
-  animation: heroKenBurns 18s ease-in-out infinite alternate;
+.home-manifesto {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-6);
 
-  &.active {
-    opacity: 1;
+  @media (min-width: 880px) {
+    grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.4fr);
+    gap: var(--s-10);
+    align-items: start;
   }
 }
 
-@keyframes heroKenBurns {
-  from { transform: scale(1.02) translate3d(0, 0, 0); }
-  to   { transform: scale(1.12) translate3d(-1%, -1%, 0); }
+.home-manifesto__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+
+  @media (min-width: 880px) {
+    position: sticky;
+    top: var(--s-7);
+  }
 }
 
-.hero-scrim {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(20, 30, 22, 0.15) 0%, rgba(20, 30, 22, 0.55) 55%, rgba(20, 30, 22, 0.85) 100%),
-    linear-gradient(90deg, rgba(20, 30, 22, 0.45) 0%, rgba(20, 30, 22, 0) 60%);
-  pointer-events: none;
-}
-
-.hero-text {
-  max-width: 640px;
-  color: #fff;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
-}
-
-.hero-badge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  padding: $spacing-sm $spacing-md;
-  border-radius: $radius-2xl;
-  font-size: $font-size-sm;
+.home-manifesto__title {
+  font-family: var(--font-display);
   font-weight: 600;
-  margin-bottom: $spacing-lg;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  text-shadow: none;
+  font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+  margin: 0;
 }
 
-.hero h1 {
-  font-size: clamp(2.25rem, 6vw, 4rem);
-  font-weight: 700;
-  margin-bottom: $spacing-lg;
-  line-height: 1.1;
-  color: #fff;
-  font-family: 'Playfair Display', serif;
+.home-manifesto__count {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-shout);
+  text-transform: uppercase;
+  color: var(--c-ink);
+  opacity: 0.65;
+  margin: var(--s-2) 0 0;
+
+  span {
+    font-family: var(--font-accent);
+    font-size: var(--fs-2xl);
+    line-height: 0.9;
+    color: var(--c-fuchsia);
+    -webkit-text-stroke: 1.2px var(--c-ink);
+    margin-right: var(--s-2);
+    letter-spacing: 0;
+    text-transform: none;
+  }
 }
 
-.hero p {
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
-  margin-bottom: $spacing-xl;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.92);
+.home-manifesto__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1.5px solid var(--c-ink);
+}
+
+.home-manifesto__step-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'num art'
+    'copy copy';
+  column-gap: var(--s-4);
+  row-gap: var(--s-3);
+  padding: var(--s-6) 0;
+  border-bottom: 1.5px solid var(--c-ink);
+
+  @media (min-width: 560px) {
+    grid-template-columns: auto minmax(0, 1fr) 96px;
+    grid-template-areas: 'num copy art';
+    column-gap: var(--s-5);
+    align-items: start;
+    padding: var(--s-7) 0;
+  }
+}
+
+.home-manifesto__num {
+  grid-area: num;
+  font-family: var(--font-accent);
+  font-size: clamp(var(--fs-4xl), 8vw, 5.5rem);
+  line-height: 0.85;
+  color: var(--c-fuchsia);
+  -webkit-text-stroke: 1.5px var(--c-ink);
+  letter-spacing: -0.04em;
+}
+
+.home-manifesto__art {
+  grid-area: art;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 560px) {
+    width: 96px;
+    height: 96px;
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+}
+
+.home-manifesto__copy {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
   max-width: 56ch;
 }
 
-.hero-cta {
-  @include flex-row($spacing-md);
-  flex-wrap: wrap;
-
-  @include mobile-only {
-    justify-content: flex-start;
-  }
+.home-manifesto__step {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(var(--fs-xl), 2.4vw, var(--fs-2xl));
+  line-height: var(--lh-tight);
+  color: var(--c-ink);
+  margin: 0;
 }
 
-.hero .cta-secondary {
-  background: transparent;
-  color: #fff;
-  border: 1.5px solid rgba(255, 255, 255, 0.7);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: #fff;
-    color: #fff;
-  }
+.home-manifesto__body {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  color: var(--c-ink);
+  margin: 0;
 }
 
-/* How It Works Section */
-.how-it-works {
-  padding: $spacing-3xl 0;
-  background: var(--bg-light);
+/* ------------------------------------------------------------------ */
+/* SERVICES: compact rows with hand-drawn icons on ink                */
+/* ------------------------------------------------------------------ */
+.home-spread-section {
+  color: var(--c-cream);
 }
 
-.steps-grid {
-  @include grid-auto(300px, $spacing-xl);
-  margin-top: $spacing-2xl;
-
-  @include mobile-only {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Services Section */
-.services {
-  padding: $spacing-3xl 0;
-  background: white;
-}
-
-.services-grid {
-  @include grid-auto(280px, $spacing-xl);
-  margin-top: $spacing-2xl;
-}
-
-/* Resources Preview Section */
-.resources-preview {
-  padding: $spacing-3xl 0;
-  background: white;
-}
-
-.resources-content {
-  @include grid-two($spacing-3xl);
-  align-items: center;
-}
-
-.resources-text h2 {
-  @include heading-large;
-  font-family: 'Playfair Display', serif;
-}
-
-.resources-visual {
-  position: relative;
-  height: 400px;
-  background: var(--gradient);
-  border-radius: $radius-xl;
-  overflow: hidden;
-  @include flex-center;
-}
-
-.resources-visual-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* CTA Section */
-.cta-section {
-  padding: $spacing-3xl 0;
-  background: var(--text-dark);
-  color: white;
-}
-
-.cta-content {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.cta-section h2 {
-  @include heading-large;
-  color: white;
-  font-family: 'Playfair Display', serif;
-}
-
-.cta-section p {
-  font-size: $font-size-lg;
-  margin-bottom: $spacing-xl;
-  opacity: 0.9;
-  line-height: 1.6;
-}
-
-.cta-buttons {
-  @include flex-row($spacing-md);
-  justify-content: center;
-  margin-bottom: $spacing-xl;
-  flex-wrap: wrap;
-
-  @include mobile-only {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-.cta-newsletter {
-  margin-top: $spacing-lg;
-  padding-top: $spacing-lg;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+.home-spread__head {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-bottom: var(--s-7);
+  max-width: 36ch;
 }
 
-.cta-section .cta-primary {
-  @include button-base(var(--accent-color), white);
+.home-spread__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-cream);
+  margin: 0;
+}
 
-  &:hover {
-    background: var(--warning-color);
-    transform: translateY(-2px);
+.home-spread {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.18);
+
+  @media (min-width: 720px) {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--s-8);
   }
 }
 
-.cta-section .cta-secondary {
-  @include button-base(transparent, rgba(255, 255, 255, 0.9));
-  border: 2px solid rgba(255, 255, 255, 0.5);
+.home-spread__row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  column-gap: var(--s-5);
+  align-items: start;
+  padding: var(--s-5) 0;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.18);
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: white;
-    color: white;
-    transform: translateY(-2px);
+  @media (min-width: 720px) {
+    padding: var(--s-6) 0;
+  }
+
+  &[data-tone='marigold'] {
+    --service-tone: var(--c-marigold);
+    --service-icon-filter: invert(74%) sepia(43%) saturate(792%) hue-rotate(355deg) brightness(102%) contrast(97%);
+  }
+
+  &[data-tone='cobalt'] {
+    --service-tone: var(--c-cobalt);
+    --service-icon-filter: invert(33%) sepia(70%) saturate(1412%) hue-rotate(193deg) brightness(94%) contrast(92%);
+  }
+
+  &[data-tone='fuchsia'] {
+    --service-tone: var(--c-fuchsia);
+    --service-icon-filter: invert(39%) sepia(56%) saturate(1280%) hue-rotate(293deg) brightness(93%) contrast(98%);
+  }
+
+  &[data-tone='mint'] {
+    --service-tone: var(--c-mint-deep);
+    --service-icon-filter: invert(62%) sepia(31%) saturate(542%) hue-rotate(108deg) brightness(90%) contrast(90%);
   }
 }
 
-.cta-assurance {
-  @include flex-row($spacing-xl);
+.home-spread__art {
+  width: 88px;
+  height: 88px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  opacity: 0.8;
-  font-size: $font-size-sm;
+  background: color-mix(in srgb, var(--service-tone, var(--c-marigold)) 24%, var(--c-cream));
+  border: 2px solid color-mix(in srgb, var(--service-tone, var(--c-marigold)) 58%, var(--c-ink));
+  border-radius: var(--r-md);
+  padding: var(--s-2);
 
-  @include mobile-only {
-    flex-direction: column;
-    gap: $spacing-md;
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: var(--service-icon-filter, none) drop-shadow(0 1px 0 rgba(255, 255, 255, 0.2));
+  }
+}
+
+.home-spread__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  max-width: 44ch;
+}
+
+.home-spread__tag {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-shout);
+  text-transform: uppercase;
+  color: var(--c-marigold);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-spread__heading {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(var(--fs-xl), 2.6vw, var(--fs-3xl));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-cream);
+  margin: 0;
+}
+
+.home-spread__body {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+}
+
+.home-spread__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--c-marigold);
+  text-decoration: none;
+  padding-bottom: 3px;
+  border-bottom: 1.5px solid var(--c-marigold);
+  transition: color var(--dur-fast) var(--ease-snap), gap var(--dur-fast) var(--ease-snap);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--c-cream);
+    border-bottom-color: var(--c-cream);
+    gap: var(--s-3);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* PULL-QUOTE: bleed fuchsia divider                                  */
+/* ------------------------------------------------------------------ */
+.home-pullquote-section {
+  text-align: center;
+}
+
+.home-pullquote {
+  margin: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.home-pullquote__mark {
+  font-family: var(--font-accent);
+  font-size: clamp(6rem, 16vw, 12rem);
+  line-height: 0.6;
+  color: var(--c-ink);
+  display: block;
+  margin-top: var(--s-2);
+  margin-bottom: calc(var(--s-3) * -1);
+}
+
+.home-pullquote__quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(var(--fs-2xl), 4.2vw, var(--fs-5xl));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+  margin: 0;
+  max-width: 22ch;
+
+  em {
+    font-style: italic;
+    color: var(--c-cream);
+    background: var(--c-ink);
+    padding: 0 0.2em;
+  }
+}
+
+.home-pullquote__by {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-shout);
+  text-transform: uppercase;
+  color: var(--c-ink);
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------------ */
+/* RESOURCES: full-bleed single-color strip spread                    */
+/* ------------------------------------------------------------------ */
+.home-resources-section {
+  overflow: hidden;
+}
+
+.home-resources-fullbleed {
+  width: min(1400px, 100%);
+  margin-inline: auto;
+  padding-inline: clamp(var(--s-4), 3.2vw, var(--s-8));
+}
+
+.home-resources-intro {
+  max-width: 42ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-bottom: var(--s-6);
+
+  &__title {
+    margin: 0;
+  }
+
+  &__lede {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
+  }
+}
+
+.home-resources-stage {
+  position: relative;
+  min-height: clamp(460px, 56vw, 760px);
+}
+
+.home-toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--c-ink);
+}
+
+.home-toc__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: center;
+  min-height: clamp(104px, 10vw, 140px);
+  padding: var(--s-4) max(50vw, 420px) var(--s-4) var(--s-6);
+  background: var(--c-cobalt);
+  border-bottom: 2px solid var(--c-ink);
+
+  &[data-tone='marigold'] {
+    background: var(--c-marigold);
+  }
+
+  &[data-tone='cobalt'] {
+    background: var(--c-cobalt);
+  }
+
+  &[data-tone='fuchsia'] {
+    background: var(--c-fuchsia);
+  }
+
+  &[data-tone='mint'] {
+    background: var(--c-mint);
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  @media (max-width: 920px) {
+    grid-template-columns: 64px minmax(0, 1fr);
+    padding: var(--s-4) var(--s-4) var(--s-4) var(--s-4);
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: 56px minmax(0, 1fr);
+    padding: var(--s-3) var(--s-3) var(--s-3) var(--s-3);
+  }
+}
+
+.home-toc__icon {
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, white 28%, transparent);
+  border: 2px solid rgba(0, 0, 0, 0.45);
+  border-radius: var(--r-sm);
+
+  img {
+    max-width: 84%;
+    max-height: 84%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+  }
+
+  span {
+    font-family: var(--font-accent);
+    font-size: var(--fs-2xl);
+    line-height: 1;
+    color: color-mix(in srgb, var(--c-paper) 92%, white);
+  }
+
+  @media (max-width: 560px) {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+.home-toc__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.home-toc__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(var(--fs-lg), 2.1vw, var(--fs-2xl));
+  line-height: var(--lh-tight);
+  color: color-mix(in srgb, var(--c-paper) 95%, white);
+}
+
+.home-toc__dek {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: color-mix(in srgb, var(--c-paper) 82%, white);
+  max-width: 52ch;
+}
+
+.home-resources-float {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: clamp(14px, 2.4vw, 34px);
+  transform: translateY(-50%);
+  width: min(52%, 760px);
+  max-height: 106%;
+  margin: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 3px solid var(--c-ink);
+    border-radius: var(--r-asym-a);
+    box-shadow: var(--shadow-block);
+  }
+
+  @media (max-width: 920px) {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    width: 100%;
+    max-height: none;
+    margin-top: var(--s-4);
+    aspect-ratio: 16 / 10;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* CTA: centered cover line                                           */
+/* ------------------------------------------------------------------ */
+.home-cta {
+  text-align: center;
+  color: var(--c-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-5);
+
+  &__kicker {
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-shout);
+    text-transform: uppercase;
+    color: var(--c-marigold);
+    margin: 0;
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(var(--fs-3xl), 5.5vw, var(--fs-5xl));
+    line-height: 1.05;
+    letter-spacing: var(--ls-tight);
+    color: var(--c-cream);
+    margin: 0;
+    max-width: 22ch;
+  }
+
+  &__rule {
+    width: 96px;
+    height: 3px;
+    background: var(--c-marigold);
+    border-radius: 2px;
+  }
+
+  &__buttons {
+    display: flex; flex-wrap: wrap; gap: var(--s-3); justify-content: center;
+    margin-top: var(--s-2);
+  }
+
+  &__newsletter {
+    max-width: 520px;
+    width: 100%;
+    margin-top: var(--s-4);
+    padding-top: var(--s-5);
+    border-top: 1.5px solid rgba(255, 255, 255, 0.18);
   }
 }
 </style>

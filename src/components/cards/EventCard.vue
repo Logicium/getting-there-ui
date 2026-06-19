@@ -1,223 +1,141 @@
 <script setup lang="ts">
-import type { Event } from '@/types/event';
-import { formatTime, formatDate, formatPrice } from '@/utils/formatUtils';
-import { getCategoryFromTitle, getEventIcon } from '@/utils/eventUtils';
+import type { Event } from '@/types/event'
+import { formatTime, formatDate, formatPrice } from '@/utils/formatUtils'
+import { getCategoryFromTitle, getEventIcon } from '@/utils/eventUtils'
+import { AppCard, AppBadge, AppEyebrow } from '@/components/ui'
+import { MapPin, Wifi, Clock, Users } from 'lucide-vue-next'
 
-interface Props {
-  event: Event;
-  linkCard?: boolean;
-}
+interface Props { event: Event; linkCard?: boolean }
+const props = defineProps<Props>()
 
-const props = defineProps<Props>();
-const cmsUrl = 'https://getting-there-cms.onrender.com';
+const cmsBase = 'https://getting-there-cms.onrender.com'
+
+const status = (() => {
+  const s = props.event.availabilityStatus
+  if (s === 'filling')  return { label: 'Filling fast', tone: 'fuchsia' as const }
+  if (s === 'waitlist') return { label: 'Waitlist',     tone: 'plum' as const }
+  return { label: 'Open', tone: 'mint' as const }
+})()
+
+const isOnline = !!props.event.Location?.match(/online|virtual/i)
+const priceLabel =
+  props.event.Price === null ? 'TBD' :
+  props.event.Price && props.event.Price > 0 ? `${formatPrice(props.event.Price)} / session` :
+  'Free'
 </script>
 
 <template>
-  <component 
-    :is="linkCard ? 'RouterLink' : 'div'" 
-    :to="linkCard ? `/events/${event.documentId}` : undefined" 
-    class="therapy-event-card"
-    :data-category="(event.Category && event.Category.trim().toLowerCase()) || getCategoryFromTitle(event.Title)" 
+  <AppCard
+    variant="ticket"
+    tone="paper"
+    shadow-tone="ink"
+    :to="linkCard ? `/events/${event.documentId}` : undefined"
+    :interactive="linkCard"
+    pad="md"
+    :data-category="(event.Category && event.Category.trim().toLowerCase()) || getCategoryFromTitle(event.Title)"
     :data-date="event.date || ''"
   >
-    <div class="therapy-event-image">
-      <div class="therapy-event-status" 
-           :class="{
-             'status-available': event.availabilityStatus === 'available',
-             'status-filling': event.availabilityStatus === 'filling',
-             'status-waitlist': event.availabilityStatus === 'waitlist'
-           }">
-        {{ event.availabilityStatus === 'available' ? 'Open' : 
-           event.availabilityStatus === 'filling' ? 'Filling' : 
-           event.availabilityStatus === 'waitlist' ? 'Waitlist' : 'Open' }}
-      </div>
-      <img v-if="event.Image && event.Image.formats && event.Image.formats.large"
-           :src="cmsUrl + event.Image.formats.large.url"
-           :alt="event.Title"
-           class="event-img">
-      <div v-else class="event-visual-icon">{{ getEventIcon(event.Title) }}</div>
-    </div>
-    <div class="therapy-event-content">
-      <div class="therapy-event-date" v-if="event.date || event.Frequency">
-        📅 {{ event.date ? formatDate(event.date) : event.Frequency }}
-      </div>
-      <h3 class="therapy-event-title">{{ event.Title }}</h3>
-      <p class="therapy-event-description">
-        {{ event.Description }}
-      </p>
-      <div class="therapy-event-details">
-        <div class="therapy-event-detail" v-if="event.Location">
-          <span class="therapy-event-detail-icon">{{ event.Location.includes('Online') || event.Location.includes('Virtual') ? '💻' : '📍' }}</span>
-          <span>{{ event.Location }}</span>
+    <template #media>
+      <div class="event-card__media">
+        <img
+          v-if="event.Image?.formats?.large"
+          :src="cmsBase + event.Image.formats.large.url"
+          :alt="event.Title"
+        />
+        <div v-else class="event-card__glyph">
+          <component :is="getEventIcon(event.Title)" :size="56" :stroke-width="1.75" />
         </div>
-        <div class="therapy-event-detail" v-if="event.TimeStart && event.TimeEnd">
-          <span class="therapy-event-detail-icon">⏰</span>
-          <span>{{ formatTime(event.TimeStart) }} - {{ formatTime(event.TimeEnd) }}</span>
-        </div>
-        <div class="therapy-event-detail" v-if="event.GroupSize">
-          <span class="therapy-event-detail-icon">👥</span>
-          <span>{{ event.GroupSize }}</span>
-        </div>
+        <AppBadge :tone="status.tone" size="sm" class="event-card__status">{{ status.label }}</AppBadge>
       </div>
-      <div class="therapy-event-footer">
-        <div class="therapy-event-price" v-if="event.Price !== null && event.Price > 0">{{ formatPrice(event.Price) }}/session</div>
-        <div class="therapy-event-price" v-else-if="event.Price === null">TBD</div>
-        <div class="therapy-event-price" v-else>Free</div>
-<!--        <router-link v-if="!linkCard" :to="`/events/${event.documentId}`" class="therapy-event-btn">Learn More</router-link>-->
-<!--        <button v-else class="therapy-event-btn">Learn More</button>-->
-      </div>
-    </div>
-  </component>
+    </template>
+
+    <template #eyebrow>
+      <AppEyebrow tone="cobalt">{{ event.date ? formatDate(event.date) : (event.Frequency || 'Workshop') }}</AppEyebrow>
+    </template>
+
+    <template #title>{{ event.Title }}</template>
+
+    <p class="event-card__desc">{{ event.Description }}</p>
+
+    <ul class="event-card__meta">
+      <li v-if="event.Location">
+        <component :is="isOnline ? Wifi : MapPin" :size="14" :stroke-width="2" />
+        {{ event.Location }}
+      </li>
+      <li v-if="event.TimeStart && event.TimeEnd">
+        <Clock :size="14" :stroke-width="2" />
+        {{ formatTime(event.TimeStart) }} – {{ formatTime(event.TimeEnd) }}
+      </li>
+      <li v-if="event.GroupSize">
+        <Users :size="14" :stroke-width="2" />
+        {{ event.GroupSize }}
+      </li>
+    </ul>
+
+    <template #footer>
+      <span class="event-card__price">{{ priceLabel }}</span>
+      <span v-if="!linkCard" class="event-card__cta">Learn more →</span>
+    </template>
+  </AppCard>
 </template>
 
 <style scoped lang="scss">
-@import '@/assets/common.scss';
+.event-card {
+  &__media {
+    aspect-ratio: 16 / 10;
+    position: relative;
+    background: var(--c-cream-2);
 
-.therapy-event-card {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  transition: all 0.4s ease;
-  position: relative;
-  border: 1px solid var(--border-light);
-  display: block;
-  text-decoration: none;
-  color: inherit;
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 50px var(--shadow-medium);
+    img { width: 100%; height: 100%; object-fit: cover; }
   }
-}
-
-.therapy-event-image {
-  height: 180px;
-  background: var(--bg-sage);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.event-visual-icon {
-  font-size: 3.5rem;
-  opacity: 0.8;
-}
-
-.event-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.therapy-event-status {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-
-  &.status-available {
-    background: var(--success-color);
-    color: white;
+  &__glyph {
+    position: absolute;
+    inset: 0;
+    display: grid; place-items: center;
+    color: var(--c-cobalt);
+    :deep(svg) { stroke: var(--c-cobalt); }
   }
-
-  &.status-filling {
-    background: var(--warning-color);
-    color: white;
+  &__status {
+    position: absolute;
+    top: var(--s-3);
+    right: var(--s-3);
   }
-
-  &.status-waitlist {
-    background: var(--text-light);
-    color: white;
+  &__desc {
+    font-family: var(--font-body);
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
+    margin: 0;
   }
-}
-
-.therapy-event-content {
-  padding: 2rem;
-}
-
-.therapy-event-date {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--primary-color);
-  font-weight: 600;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.therapy-event-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  line-height: 1.3;
-}
-
-.therapy-event-description {
-  color: var(--text-light);
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-
-.therapy-event-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-}
-
-.therapy-event-detail {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--text-light);
-  font-size: 0.9rem;
-}
-
-.therapy-event-detail-icon {
-  width: 20px;
-  text-align: center;
-}
-
-.therapy-event-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-
-  @media (max-width: 768px) {
+  &__meta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
-  }
-}
+    gap: var(--s-2);
 
-.therapy-event-price {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text-dark);
-}
-
-.therapy-event-btn {
-  @extend .cta-primary;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-
-  &.waitlist-btn {
-    background: var(--text-light);
-    cursor: default;
-
-    &:hover {
-      background: var(--text-light);
-      transform: none;
+    li {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--s-2);
+      font-size: var(--fs-sm);
+      color: var(--c-text);
+      :deep(svg) {
+        flex-shrink: 0;
+        color: var(--c-cobalt);
+      }
     }
+  }
+  &__price {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-xl);
+    color: var(--c-ink);
+  }
+  &__cta {
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--c-cobalt);
   }
 }
 </style>

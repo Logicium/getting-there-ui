@@ -1,290 +1,381 @@
 <script setup lang="ts">
-import { mockCourses } from '@/data/courses'
+import { computed, ref } from 'vue'
+import { mockCourses, type Course } from '@/data/courses'
 import { useRouter } from 'vue-router'
+import {
+  AppBadge,
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppEmptyState,
+  AppEyebrow,
+  AppGrid,
+  AppHero,
+  AppSection,
+} from '@/components/ui'
 
 const router = useRouter()
 
+type Level = Course['level']
+const levels: Level[] = ['Beginner', 'Intermediate', 'Advanced']
+const activeLevel = ref<Level | 'All'>('All')
+
+const filteredCourses = computed(() =>
+  activeLevel.value === 'All'
+    ? mockCourses
+    : mockCourses.filter((c) => c.level === activeLevel.value),
+)
+
+const featuredCourse = computed(() => filteredCourses.value[0])
+const restCourses = computed(() => filteredCourses.value.slice(1))
+
+type ShadowRotation = 'marigold' | 'fuchsia' | 'cobalt'
+const rotatingShadows: ShadowRotation[] = ['marigold', 'fuchsia', 'cobalt']
+const shadowFor = (i: number): ShadowRotation =>
+  rotatingShadows[i % rotatingShadows.length]
+
 function viewCourse(courseId: string) {
   router.push(`/classes/${courseId}`)
+}
+
+function setLevel(level: Level | 'All') {
+  activeLevel.value = level
+}
+
+function clearFilter() {
+  activeLevel.value = 'All'
 }
 </script>
 
 <template>
   <main class="classes-page">
-    <section class="hero">
-      <div class="container">
-        <h1>Online Classes</h1>
-        <p class="subtitle">Transform your life with courses in positive psychology</p>
-      </div>
-    </section>
+    <AppHero variant="editorial" tone="cream" align="left">
+      <template #eyebrow>
+        <AppEyebrow tone="cobalt">Online classes</AppEyebrow>
+      </template>
+      <template #title>Learn at your own pace</template>
+      <template #lede>
+        <p>
+          Self-paced courses in positive psychology, resilience, and the
+          gentle art of moving through change.
+        </p>
+      </template>
+      <template #actions>
+        <AppButton href="#catalog" variant="primary" size="lg">Browse the catalog</AppButton>
+      </template>
+    </AppHero>
 
-    <section class="courses-section">
-      <div class="container">
-        <div class="courses-grid">
-          <div 
-            v-for="course in mockCourses" 
-            :key="course.id" 
-            class="course-card"
-            @click="viewCourse(course.id)"
+    <AppSection tone="mint" pad="lg" id="catalog">
+      <AppContainer size="lg">
+        <header class="classes-head">
+          <AppEyebrow tone="fuchsia">Filter</AppEyebrow>
+          <h2 class="u-display u-display--sm">Browse by level</h2>
+        </header>
+        <div class="classes-filters" role="tablist" aria-label="Filter by level">
+          <button
+            type="button"
+            class="classes-filter-btn"
+            :aria-pressed="activeLevel === 'All'"
+            @click="setLevel('All')"
           >
-            <div class="course-thumbnail">
-              <img :src="course.thumbnailUrl" :alt="course.title" />
-              <div class="course-level">{{ course.level }}</div>
+            <AppBadge :tone="activeLevel === 'All' ? 'ink' : 'cream'" filled size="md">
+              All courses
+            </AppBadge>
+          </button>
+          <button
+            v-for="level in levels"
+            :key="level"
+            type="button"
+            class="classes-filter-btn"
+            :aria-pressed="activeLevel === level"
+            @click="setLevel(level)"
+          >
+            <AppBadge
+              :tone="activeLevel === level ? 'ink' : 'cream'"
+              filled
+              size="md"
+            >
+              {{ level }}
+            </AppBadge>
+          </button>
+        </div>
+      </AppContainer>
+    </AppSection>
+
+    <AppSection v-if="featuredCourse" tone="cream-2" pad="xl">
+      <AppContainer size="lg">
+        <header class="classes-head">
+          <AppEyebrow tone="marigold">Featured course</AppEyebrow>
+          <h2 class="u-display u-display--md">Start here</h2>
+        </header>
+        <AppCard
+          variant="postcard"
+          tone="paper"
+          shadow-tone="cobalt"
+          pad="lg"
+          interactive
+          class="classes-featured"
+          @click="viewCourse(featuredCourse.id)"
+        >
+          <template #media>
+            <div class="classes-featured__media">
+              <img :src="featuredCourse.thumbnailUrl" :alt="featuredCourse.title" />
+              <span class="classes-featured__level">
+                <AppBadge tone="cobalt" filled>{{ featuredCourse.level }}</AppBadge>
+              </span>
             </div>
-            <div class="course-content">
-              <h3>{{ course.title }}</h3>
-              <p class="course-subtitle">{{ course.subtitle }}</p>
-              <p class="course-description">{{ course.description }}</p>
-              
-              <div class="course-meta">
-                <div class="meta-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                  <span>{{ course.duration }}</span>
-                </div>
-                <div class="meta-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                  </svg>
-                  <span>{{ course.totalLessons }} lessons</span>
-                </div>
-              </div>
-
-              <div class="instructor">
-                <img 
-                  v-if="course.instructor.avatar" 
-                  :src="course.instructor.avatar" 
-                  :alt="course.instructor.name"
-                  class="instructor-avatar"
-                />
-                <div class="instructor-info">
-                  <div class="instructor-name">{{ course.instructor.name }}</div>
-                  <div class="instructor-title">{{ course.instructor.title }}</div>
-                </div>
-              </div>
-
-              <button class="view-course-btn">
-                View Course
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </button>
+          </template>
+          <template #eyebrow>
+            <AppEyebrow tone="cobalt">
+              {{ featuredCourse.duration }} · {{ featuredCourse.totalLessons }} lessons
+            </AppEyebrow>
+          </template>
+          <template #title>{{ featuredCourse.title }}</template>
+          <p class="classes-featured__subtitle">{{ featuredCourse.subtitle }}</p>
+          <p class="classes-featured__desc">{{ featuredCourse.description }}</p>
+          <div class="classes-featured__instructor">
+            <img
+              v-if="featuredCourse.instructor.avatar"
+              :src="featuredCourse.instructor.avatar"
+              :alt="featuredCourse.instructor.name"
+            />
+            <div>
+              <div class="classes-featured__name">{{ featuredCourse.instructor.name }}</div>
+              <div class="classes-featured__title">{{ featuredCourse.instructor.title }}</div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
+          <template #footer>
+            <AppButton :to="`/classes/${featuredCourse.id}`" variant="primary" size="lg">
+              View course
+            </AppButton>
+          </template>
+        </AppCard>
+      </AppContainer>
+    </AppSection>
+
+    <AppSection tone="cream" pad="xl">
+      <AppContainer size="lg">
+        <header class="classes-head">
+          <AppEyebrow tone="cobalt">More classes</AppEyebrow>
+          <h2 class="u-display u-display--md">Keep exploring</h2>
+        </header>
+
+        <AppEmptyState
+          v-if="filteredCourses.length === 0"
+          title="No classes match that filter"
+          message="Try a different level or clear filters to see everything."
+        >
+          <template #actions>
+            <AppButton variant="primary" @click="clearFilter">Show all classes</AppButton>
+          </template>
+        </AppEmptyState>
+
+        <AppEmptyState
+          v-else-if="restCourses.length === 0"
+          title="That's everything for now"
+          message="More classes are on the way."
+        />
+
+        <AppGrid v-else :min="300" gap="md">
+          <AppCard
+            v-for="(course, i) in restCourses"
+            :key="course.id"
+            variant="plaque"
+            tone="paper"
+            :shadow-tone="shadowFor(i)"
+            interactive
+            pad="md"
+            class="classes-card"
+            @click="viewCourse(course.id)"
+          >
+            <template #media>
+              <div class="classes-card__media">
+                <img :src="course.thumbnailUrl" :alt="course.title" />
+                <span class="classes-card__level">
+                  <AppBadge tone="ink" filled size="sm">{{ course.level }}</AppBadge>
+                </span>
+              </div>
+            </template>
+            <template #eyebrow>
+              <AppEyebrow tone="fuchsia">
+                {{ course.duration }} · {{ course.totalLessons }} lessons
+              </AppEyebrow>
+            </template>
+            <template #title>{{ course.title }}</template>
+            <p class="classes-card__subtitle">{{ course.subtitle }}</p>
+            <p class="classes-card__desc">{{ course.description }}</p>
+            <div class="classes-card__instructor">
+              <img
+                v-if="course.instructor.avatar"
+                :src="course.instructor.avatar"
+                :alt="course.instructor.name"
+              />
+              <div>
+                <div class="classes-card__name">{{ course.instructor.name }}</div>
+                <div class="classes-card__title">{{ course.instructor.title }}</div>
+              </div>
+            </div>
+            <template #footer>
+              <AppButton :to="`/classes/${course.id}`" variant="secondary">
+                View course
+              </AppButton>
+            </template>
+          </AppCard>
+        </AppGrid>
+      </AppContainer>
+    </AppSection>
   </main>
 </template>
 
 <style scoped lang="scss">
-.classes-page {
-  min-height: 100vh;
-  padding-top: 80px;
-}
-
-.hero {
-  background: var(--gradient);
-  color: white;
-  padding: 4rem 0;
+.classes-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
   text-align: center;
-
-  h1 {
-    font-size: 3rem;
-    font-family: 'Playfair Display', serif;
-    margin-bottom: 1rem;
-    font-weight: 700;
-  }
-
-  .subtitle {
-    font-size: 1.25rem;
-    opacity: 0.95;
-    max-width: 600px;
-    margin: 0 auto;
-  }
+  margin-bottom: var(--s-7);
 }
 
-.courses-section {
-  padding: 4rem 0;
-  background: var(--bg-light);
+.classes-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  justify-content: center;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.courses-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
-}
-
-.course-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px var(--shadow-light);
-  transition: all 0.3s ease;
+.classes-filter-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
+  font: inherit;
+  color: inherit;
+  border-radius: var(--r-pill);
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px var(--shadow-medium);
+  &:focus-visible {
+    outline: 3px solid var(--c-cobalt);
+    outline-offset: 3px;
   }
 }
 
-.course-thumbnail {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
+.classes-featured {
+  &__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-bottom: 2px solid var(--c-ink);
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-  }
-
-  .course-level {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--primary-color);
-  }
-}
-
-.course-card:hover .course-thumbnail img {
-  transform: scale(1.05);
-}
-
-.course-content {
-  padding: 1.5rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-
-  h3 {
-    font-size: 1.5rem;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-    font-family: 'Playfair Display', serif;
-  }
-
-  .course-subtitle {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    font-size: 0.95rem;
-  }
-
-  .course-description {
-    color: var(--text-light);
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    flex: 1;
-  }
-}
-
-.course-meta {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-light);
-
-  .meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-light);
-    font-size: 0.9rem;
-
-    svg {
-      color: var(--primary-color);
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
-}
 
-.instructor {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-
-  .instructor-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
+  &__level {
+    position: absolute;
+    top: var(--s-4);
+    right: var(--s-4);
   }
 
-  .instructor-info {
-    flex: 1;
-  }
-
-  .instructor-name {
+  &__subtitle {
+    margin: 0;
+    color: var(--c-cobalt);
     font-weight: 600;
-    color: var(--text-dark);
-    font-size: 0.95rem;
+    font-size: var(--fs-lg);
   }
 
-  .instructor-title {
-    font-size: 0.85rem;
-    color: var(--text-light);
-  }
-}
-
-.view-course-btn {
-  width: 100%;
-  padding: 1rem;
-  background: var(--gradient);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-medium);
+  &__desc {
+    margin: 0;
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
   }
 
-  svg {
-    transition: transform 0.3s ease;
+  &__instructor {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin-top: var(--s-3);
+
+    img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--c-ink);
+    }
   }
 
-  &:hover svg {
-    transform: translateX(4px);
+  &__name {
+    font-weight: 700;
+    color: var(--c-ink);
+  }
+
+  &__title {
+    font-size: var(--fs-sm);
+    color: var(--c-text-muted);
   }
 }
 
-@media (max-width: 768px) {
-  .hero h1 {
-    font-size: 2rem;
+.classes-card {
+  &__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-bottom: 2px solid var(--c-ink);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
-  .courses-grid {
-    grid-template-columns: 1fr;
+  &__level {
+    position: absolute;
+    top: var(--s-3);
+    right: var(--s-3);
+  }
+
+  &__subtitle {
+    margin: 0;
+    color: var(--c-cobalt);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+
+  &__desc {
+    margin: 0;
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
+    font-size: var(--fs-sm);
+  }
+
+  &__instructor {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin-top: auto;
+
+    img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--c-ink);
+    }
+  }
+
+  &__name {
+    font-weight: 700;
+    color: var(--c-ink);
+    font-size: var(--fs-sm);
+  }
+
+  &__title {
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
   }
 }
 </style>

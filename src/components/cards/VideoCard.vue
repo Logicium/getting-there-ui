@@ -1,422 +1,228 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue';
-import { RouterLink } from 'vue-router';
-import type { VideoData } from '@/types/video';
+import { computed, ref, watch, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import type { VideoData } from '@/types/video'
+import { AppCard, AppBadge, AppButton } from '@/components/ui'
+import { Star, Lock, Play } from 'lucide-vue-next'
 
 interface Props {
-  video: VideoData;
-  playVideo?: (videoId: string) => void;
-  locked?: boolean;
+  video: VideoData
+  playVideo?: (videoId: string) => void
+  locked?: boolean
 }
+const props = defineProps<Props>()
 
-const props = defineProps<Props>();
+const duration = ref(props.video.duration)
+const thumbnailUrl = ref(props.video.thumbnailUrl || '')
+const thumbnailLoading = ref(true)
+const thumbnailError = ref(false)
 
-// Use a local ref for duration to ensure reactivity
-const duration = ref(props.video.duration);
-const thumbnailUrl = ref(props.video.thumbnailUrl || '');
-const thumbnailLoading = ref(true);
-const thumbnailError = ref(false);
+watch(() => props.video.duration, (d) => { duration.value = d }, { immediate: true })
+watch(() => props.video.thumbnailUrl, (t) => {
+  if (t) { thumbnailUrl.value = t; thumbnailLoading.value = false }
+}, { immediate: true })
 
-// Watch for changes to the video's duration and update the local ref
-watch(() => props.video.duration, (newDuration) => {
-  duration.value = newDuration;
-}, { immediate: true });
-
-// Watch for changes to the video's thumbnail
-watch(() => props.video.thumbnailUrl, (newThumbnail) => {
-  if (newThumbnail) {
-    thumbnailUrl.value = newThumbnail;
-    thumbnailLoading.value = false;
+const categoryLabel = computed(() => {
+  const c = props.video.category?.toLowerCase()
+  switch (c) {
+    case 'goals': return 'Goals'
+    case 'growth': return 'Growth'
+    case 'loss': return 'Loss'
+    case 'fun': return 'Fun'
+    case 'happiness': return 'Happiness'
+    default: return props.video.category || 'Video'
   }
-}, { immediate: true });
+})
 
-const categoryDisplay = computed(() => {
-  const category = props.video.category;
-  switch(category?.toLowerCase()) {
-    case 'goals': return 'Goals';
-    case 'growth': return 'Growth';
-    case 'loss': return 'Loss';
-    case 'fun': return 'Fun';
-    case 'happiness': return 'Happiness';
-    default: return category || 'Video';
+const categoryTone = computed(() => {
+  switch (props.video.category?.toLowerCase()) {
+    case 'goals':     return 'cobalt' as const
+    case 'growth':    return 'mint' as const
+    case 'loss':      return 'plum' as const
+    case 'fun':       return 'fuchsia' as const
+    case 'happiness': return 'marigold' as const
+    default:          return 'ink' as const
   }
-});
-
-const categoryClass = computed(() => {
-  const category = props.video.category;
-  return `category-${category?.toLowerCase() || 'default'}`;
-});
+})
 
 const handleClick = () => {
-  if (props.locked) return;
-  if (props.playVideo) {
-    props.playVideo(props.video.id);
-  }
-};
+  if (props.locked) return
+  props.playVideo?.(props.video.id)
+}
 
-const handleWatchClick = () => {
-  if (props.locked) return;
-  if (props.playVideo) {
-    props.playVideo(props.video.id);
-  }
-};
-
-const handleThumbnailError = () => {
-  thumbnailError.value = true;
-  thumbnailLoading.value = false;
-};
-
-const handleThumbnailLoad = () => {
-  thumbnailLoading.value = false;
-  thumbnailError.value = false;
-};
-
-onMounted(() => {
-  // If there's already a thumbnail, mark as loaded
-  if (props.video.thumbnailUrl) {
-    thumbnailLoading.value = false;
-  }
-});
+onMounted(() => { if (props.video.thumbnailUrl) thumbnailLoading.value = false })
 </script>
 
 <template>
-  <div
-      class="video-card"
-      :class="{ 'video-card--locked': locked }"
-      :data-category="video.category"
-      :data-title="video.title.toLowerCase() + ' ' + video.tags.join(' ')"
+  <AppCard
+    variant="plaque"
+    tone="paper"
+    shadow-tone="ink"
+    pad="md"
+    class="video-card"
+    :class="{ 'video-card--locked': locked }"
+    :data-category="video.category"
+    :data-title="(video.title + ' ' + video.tags.join(' ')).toLowerCase()"
   >
-    <div class="video-thumbnail" @click="handleClick">
-      <div :class="['category-badge', categoryClass]">{{ categoryDisplay }}</div>
-      <div class="video-duration">{{ duration }}</div>
+    <template #media>
+      <div class="video-card__thumb" @click="handleClick">
+        <AppBadge :tone="categoryTone" size="sm" class="video-card__cat">{{ categoryLabel }}</AppBadge>
+        <span class="video-card__duration">{{ duration }}</span>
+        <AppBadge v-if="video.isPremium" tone="fuchsia" size="sm" class="video-card__premium">
+          <Star :size="12" :stroke-width="2.5" fill="currentColor" /> Premium
+        </AppBadge>
 
-      <!-- Premium badge -->
-      <div v-if="video.isPremium" class="premium-badge">⭐ Premium</div>
+        <div v-if="locked" class="video-card__lock">
+          <span class="video-card__lock-icon"><Lock :size="28" :stroke-width="2" /></span>
+          <span>Subscribers only</span>
+        </div>
 
-      <!-- Lock overlay for non-subscribers -->
-      <div v-if="locked" class="lock-overlay">
-        <div class="lock-icon">🔒</div>
-        <span class="lock-text">Subscribers Only</span>
-      </div>
-
-      <!-- Thumbnail loading state -->
-      <div v-if="thumbnailLoading" class="thumbnail-loading">
-        <div class="loading-pulse"></div>
-      </div>
-
-      <!-- Actual thumbnail -->
-      <img
+        <div v-if="thumbnailLoading" class="video-card__loading">
+          <span class="video-card__pulse" />
+        </div>
+        <img
           v-else-if="thumbnailUrl && !thumbnailError"
           :src="thumbnailUrl"
           :alt="video.title"
-          class="thumbnail-image"
-          @error="handleThumbnailError"
-          @load="handleThumbnailLoad"
-      />
+          class="video-card__img"
+          @error="thumbnailError = true; thumbnailLoading = false"
+          @load="thumbnailLoading = false"
+        />
+        <div v-else class="video-card__fallback"><Play :size="40" :stroke-width="2" fill="currentColor" /></div>
 
-      <!-- Fallback gradient with play button -->
-      <div v-else class="thumbnail-fallback">
-        <div class="play-icon">▶️</div>
+        <div v-if="!locked" class="video-card__play" aria-hidden="true"><Play :size="28" :stroke-width="2" fill="currentColor" /></div>
       </div>
+    </template>
 
-      <!-- Play button overlay (always visible on hover) -->
-      <div class="play-overlay">
-        <div class="play-button">▶</div>
-      </div>
-    </div>
-    <div class="video-content">
-      <h3 class="video-title">{{ video.title }}</h3>
-      <p class="video-presenter">{{ video.presenter }}</p>
-      <p class="video-description">{{ video.description }}</p>
-      <div class="video-footer">
-        <template v-if="locked">
-          <router-link to="/subscribe" class="watch-btn subscribe-btn">
-            Subscribe to Watch
-          </router-link>
-        </template>
-        <template v-else>
-          <button
-              class="watch-btn"
-              @click="handleWatchClick"
-          >
-            Watch Now
-          </button>
-        </template>
-      </div>
-    </div>
-  </div>
+    <template #title>{{ video.title }}</template>
+    <p class="video-card__presenter">{{ video.presenter }}</p>
+    <p class="video-card__desc">{{ video.description }}</p>
+
+    <template #footer>
+      <RouterLink v-if="locked" to="/subscribe" class="video-card__subscribe">Subscribe to watch</RouterLink>
+      <AppButton v-else variant="accent" size="sm" @click="handleClick">Watch now</AppButton>
+    </template>
+  </AppCard>
 </template>
 
 <style scoped lang="scss">
-@import '@/assets/scss/mixins';
-@import '@/assets/scss/variables';
-
 .video-card {
-  background: white;
-  border-radius: $radius-xl;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  border: 1px solid var(--border-light);
-  transition: all $transition-slow ease;
-  overflow: hidden;
-  position: relative;
-
-  &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  &__thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--c-ink);
+    cursor: pointer;
+    overflow: hidden;
   }
-}
-
-.video-thumbnail {
-  @include image-container(200px, var(--gradient));
-  cursor: pointer;
-}
-
-/* Thumbnail loading state */
-.thumbnail-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-      90deg,
-      rgba(74, 124, 89, 0.1) 0%,
-      rgba(127, 166, 80, 0.2) 50%,
-      rgba(74, 124, 89, 0.1) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
+  &__img,
+  &__fallback,
+  &__loading {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
   }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.loading-pulse {
-  width: 60px;
-  height: 60px;
-  border-radius: $radius-full;
-  background: rgba(255, 255, 255, 0.3);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.7;
-  }
-}
-
-/* Actual thumbnail image */
-.thumbnail-image {
-  @include image-cover;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* Fallback when thumbnail fails or not available */
-.thumbnail-fallback {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--gradient);
-  @include flex-center;
-}
-
-.play-icon {
-  font-size: $font-size-4xl;
-  opacity: 0.9;
-}
-
-/* Play button overlay */
-.play-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  @include flex-center;
-  opacity: 0;
-  transition: opacity $transition-normal;
-
-  .video-thumbnail:hover & {
-    opacity: 1;
-  }
-}
-
-.play-button {
-  width: 60px;
-  height: 60px;
-  border-radius: $radius-full;
-  background: rgba(255, 255, 255, 0.9);
-  @include flex-center;
-  font-size: $font-size-xl;
-  color: var(--primary-color);
-  transition: transform $transition-normal;
-
-  .video-thumbnail:hover & {
-    transform: scale(1.1);
-  }
-}
-
-.video-duration {
-  position: absolute;
-  bottom: $spacing-md;
-  right: $spacing-md;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $radius-sm;
-  font-size: $font-size-xs;
-  font-weight: 600;
-  z-index: 2;
-}
-
-.category-badge {
-  @include badge-base;
-  position: absolute;
-  top: $spacing-md;
-  left: $spacing-md;
-  color: white;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 2;
-}
-
-.category-goals {
-  background: rgba(74, 124, 89, 0.9);
-}
-
-.category-growth {
-  background: rgba(52, 152, 219, 0.9);
-}
-
-.category-loss {
-  background: rgba(244, 162, 97, 0.9);
-}
-
-.category-fun {
-  background: rgba(155, 89, 182, 0.9);
-}
-
-.category-happiness {
-  background: rgba(241, 196, 15, 0.9);
-}
-
-.category-default {
-  background: rgba(100, 100, 100, 0.9);
-}
-
-.video-content {
-  padding: $spacing-lg;
-}
-
-.video-title {
-  @include heading-small;
-  margin-bottom: $spacing-sm;
-  line-height: 1.3;
-}
-
-.video-presenter {
-  color: var(--primary-color);
-  font-size: $font-size-sm;
-  margin-bottom: $spacing-md;
-  font-weight: 600;
-}
-
-.video-description {
-  @include text-muted;
-  margin-bottom: $spacing-lg;
-  font-size: $font-size-sm;
-}
-
-.video-footer {
-  @include flex-between;
-}
-
-.video-views {
-  color: var(--text-light);
-  font-size: $font-size-sm;
-}
-
-.watch-btn {
-  @include button-primary;
-  padding: $spacing-sm $spacing-md;
-  font-size: $font-size-sm;
-}
-
-.subscribe-btn {
-  background: linear-gradient(135deg, #b8860b, #daa520);
-  text-decoration: none;
-  text-align: center;
-
-  &:hover {
-    box-shadow: 0 6px 20px rgba(184, 134, 11, 0.3);
-  }
-}
-
-/* ---------- Premium / Locked styles ---------- */
-.video-card--locked {
-  .video-thumbnail {
-    cursor: default;
+  &__fallback {
+    display: grid; place-items: center;
+    background: var(--c-cobalt);
+    color: var(--c-cream);
+    font-family: var(--font-display);
+    font-size: 3rem;
   }
 
-  &:hover {
-    transform: translateY(-5px);
+  &__loading {
+    background: linear-gradient(90deg, var(--c-cream-2) 0%, var(--c-cream-3) 50%, var(--c-cream-2) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    display: grid; place-items: center;
   }
-}
+  &__pulse {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--c-marigold);
+    animation: float 1.6s ease-in-out infinite;
+  }
 
-.premium-badge {
-  position: absolute;
-  top: $spacing-md;
-  right: $spacing-md;
-  background: linear-gradient(135deg, #b8860b, #daa520);
-  color: white;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $radius-sm;
-  font-size: $font-size-xs;
-  font-weight: 700;
-  z-index: 2;
-  letter-spacing: 0.5px;
-}
+  &__cat      { position: absolute; top: var(--s-3); left: var(--s-3); z-index: 3; }
+  &__premium  { position: absolute; top: var(--s-3); right: var(--s-3); z-index: 3; }
+  &__duration {
+    position: absolute;
+    bottom: var(--s-3); right: var(--s-3);
+    background: var(--c-ink);
+    color: var(--c-cream);
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--r-sm);
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    z-index: 3;
+  }
 
-.lock-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(3px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-  gap: $spacing-xs;
-}
+  &__lock {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    gap: var(--s-2);
+    background: rgba(24, 22, 35, 0.78);
+    color: var(--c-cream);
+    z-index: 4;
+    font-family: var(--font-body);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wide);
+    font-size: var(--fs-xs);
+  }
+  &__lock-icon { font-size: 2rem; line-height: 1; }
 
-.lock-icon {
-  font-size: 2.5rem;
-}
+  &__play {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    background: rgba(24, 22, 35, 0.35);
+    opacity: 0;
+    transition: opacity var(--dur-base) var(--ease-out);
+    span {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--c-marigold);
+      color: var(--c-ink);
+      display: grid; place-items: center;
+      border: 3px solid var(--c-ink);
+      box-shadow: 4px 4px 0 0 var(--c-ink);
+      font-size: 1.4rem;
+      padding-left: 4px;
+    }
+  }
+  &__thumb:hover &__play { opacity: 1; }
 
-.lock-text {
-  color: white;
-  font-size: $font-size-sm;
-  font-weight: 600;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  &__presenter {
+    margin: 0;
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--c-cobalt);
+    font-size: var(--fs-sm);
+  }
+  &__desc {
+    margin: 0;
+    color: var(--c-text-muted);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-base);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__subscribe {
+    background: var(--c-fuchsia);
+    color: var(--c-cream);
+    padding: 0.6rem 1.2rem;
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-pill);
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    box-shadow: 3px 3px 0 0 var(--c-ink);
+    transition: transform var(--dur-fast) var(--ease-snap), box-shadow var(--dur-fast);
+    &:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 0 var(--c-ink); }
+  }
 }
 </style>

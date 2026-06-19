@@ -2,492 +2,578 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import {
+  AppBadge,
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppEyebrow,
+  AppHero,
+  AppSection,
+} from '@/components/ui'
+
+type Plan = 'monthly' | 'yearly'
 
 const authStore = useAuthStore()
 const router = useRouter()
 
 const loading = ref(false)
 const error = ref('')
-const success = ref(false)
-const selectedPlan = ref<'monthly' | 'yearly'>('monthly')
+const selectedPlan = ref<Plan>('monthly')
+const checkingStatus = ref(true)
 
-const planDetails = computed(() => {
-  if (selectedPlan.value === 'yearly') {
-    return {
-      amount: 80,
-      period: '/year',
-      label: 'Yearly',
-      savings: 'Save $16 compared to monthly',
-    }
-  }
-  return {
+const plans: Record<Plan, {
+  amount: number
+  period: string
+  label: string
+  badge: string
+  savings: string
+  recommended: boolean
+}> = {
+  monthly: {
     amount: 8,
     period: '/month',
     label: 'Monthly',
-    savings: 'Cancel anytime',
-  }
-})
+    badge: 'Flexible',
+    savings: 'Cancel anytime — no long-term commitment.',
+    recommended: false,
+  },
+  yearly: {
+    amount: 80,
+    period: '/year',
+    label: 'Yearly',
+    badge: 'Best value',
+    savings: 'Save $16 vs. paying month-to-month.',
+    recommended: true,
+  },
+}
 
-// Square Payment Form
-let card: any = null
+const currentPlan = computed(() => plans[selectedPlan.value])
+
+const benefits = [
+  {
+    icon: '✓',
+    title: 'Unlimited course access',
+    body: 'Every Getting There course, present and future — start, stop, and revisit any lesson.',
+  },
+  {
+    icon: '✦',
+    title: 'Track your progress',
+    body: 'Resume where you left off, mark lessons complete, and earn certificates as you finish.',
+  },
+  {
+    icon: '★',
+    title: 'New content first',
+    body: 'Members get early access to new courses, workshops, and downloadable resources.',
+  },
+  {
+    icon: '♡',
+    title: 'Cancel anytime',
+    body: 'Manage your billing from your account. Cancel in one click — keep access until period end.',
+  },
+]
+
+const faqs = [
+  {
+    q: 'How will I be billed?',
+    a: 'Your card is charged today and then automatically on the same day each billing period. You can cancel anytime from your account.',
+  },
+  {
+    q: 'Is my card information secure?',
+    a: 'All payments are processed by Square on their secure, PCI-compliant checkout page. We never see or store your card details.',
+  },
+  {
+    q: 'Can I switch plans later?',
+    a: 'Yes — cancel your current plan and re-subscribe to the new one from your account. Existing access carries over until your current period ends.',
+  },
+  {
+    q: 'What happens when I cancel?',
+    a: 'You keep full access to every course until the end of the period you’ve already paid for. After that, your subscription simply stops.',
+  },
+]
 
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
-    router.push('/login')
+    router.push('/login?redirect=/subscribe')
     return
   }
+  await authStore.checkSubscriptionStatus()
+  checkingStatus.value = false
 
-  // Load Square SDK
-  const script = document.createElement('script')
-  script.src = 'https://sandbox.web.squarecdn.com/v1/square.js'
-  script.async = true
-  script.onload = initializeSquare
-  document.head.appendChild(script)
+  // If they already have an active subscription, send them to account.
+  if (authStore.isSubscribed && authStore.subscription?.status === 'active') {
+    router.replace('/account')
+  }
 })
 
-async function initializeSquare() {
-  try {
-    const payments = (window as any).Square.payments(
-      import.meta.env.VITE_SQUARE_APP_ID || 'sandbox-sq0idb-7vv4_H_fXk0GW_bhJkAhqA',
-      import.meta.env.VITE_SQUARE_LOCATION_ID || 'LED8ZB33BQQ7J'
-    )
-
-    card = await payments.card()
-    await card.attach('#card-container')
-  } catch (e) {
-    console.error('Square initialization error:', e)
-    error.value = 'Failed to load payment form. Please refresh the page.'
-  }
-}
-
-async function handleSubmit() {
-  if (!card) {
-    error.value = 'Payment form not ready. Please wait and try again.'
-    return
-  }
-
+async function handleSubscribe() {
+  if (loading.value) return
   loading.value = true
   error.value = ''
 
-  try {
-    const result = await card.tokenize()
-    
-    if (result.status === 'OK') {
-      // Send token to backend
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/subscription`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authStore.token}`,
-        },
-        body: JSON.stringify({
-          sourceId: result.token,
-          plan: selectedPlan.value,
-        }),
-      })
+  const result = await authStore.startSubscriptionCheckout(selectedPlan.value)
 
-      if (response.status === 401) {
-        error.value = 'Your session has expired. Please log in again.'
-        authStore.logout()
-        setTimeout(() => router.push('/login'), 1500)
-        return
-      }
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => null)
-        throw new Error(errData?.message || 'Payment processing failed')
-      }
-
-      const data = await response.json()
-      
-      if (data.success) {
-        // Update auth store subscription status
-        await authStore.subscribe()
-        success.value = true
-        
-        // Redirect to account page after 2 seconds
-        setTimeout(() => {
-          router.push('/account')
-        }, 2000)
-      }
-    } else {
-      error.value = 'Card validation failed. Please check your card details.'
-    }
-  } catch (e: any) {
-    console.error('Payment error:', e)
-    error.value = e.message || 'Payment processing failed. Please try again.'
-  } finally {
-    loading.value = false
+  if (result.success && result.checkoutUrl) {
+    // Send the user to Square's hosted checkout page.
+    window.location.href = result.checkoutUrl
+    return
   }
+
+  error.value = result.error || 'Could not start checkout. Please try again.'
+  loading.value = false
 }
 </script>
 
 <template>
-  <div class="payment-page">
-    <div class="payment-container">
-      <div class="payment-header">
-        <router-link to="/account" class="back-link">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-          Back to Account
-        </router-link>
+  <main class="subscribe-page">
+    <AppHero variant="compact" tone="cream" align="center">
+      <template #eyebrow>
+        <AppEyebrow tone="cobalt">Membership</AppEyebrow>
+      </template>
+      <template #title>One subscription. Every course.</template>
+      <template #lede>
+        Unlimited access to the full Getting There library, with secure billing
+        through Square. Cancel anytime.
+      </template>
+    </AppHero>
 
-        <h1>Subscribe to Getting There</h1>
-        <p class="subtitle">Get unlimited access to all courses and content</p>
-      </div>
-
-      <div v-if="!success" class="payment-card">
-        <div class="subscription-details">
-          <div class="plan-toggle" role="tablist" aria-label="Billing cycle">
-            <button
-              type="button"
-              role="tab"
-              :aria-selected="selectedPlan === 'monthly'"
-              :class="['plan-toggle-button', { active: selectedPlan === 'monthly' }]"
-              @click="selectedPlan = 'monthly'"
-            >
-              Monthly
-            </button>
-            <button
-              type="button"
-              role="tab"
-              :aria-selected="selectedPlan === 'yearly'"
-              :class="['plan-toggle-button', { active: selectedPlan === 'yearly' }]"
-              @click="selectedPlan = 'yearly'"
-            >
-              Yearly
-            </button>
-          </div>
-
-          <div class="price-display">
-            <span class="currency">$</span>
-            <span class="amount">{{ planDetails.amount }}</span>
-            <span class="period">{{ planDetails.period }}</span>
-          </div>
-          <p class="plan-savings">{{ planDetails.savings }}</p>
-          
-          <ul class="benefits">
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Access to all courses
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Track your progress
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Earn certificates
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Cancel anytime
-            </li>
-          </ul>
+    <AppSection tone="cream-2" pad="xl">
+      <AppContainer size="lg">
+        <div v-if="checkingStatus" class="subscribe-page__loading">
+          <p>Checking your subscription…</p>
         </div>
 
-        <div class="payment-form">
-          <h2>Payment Information</h2>
-          
-          <div id="card-container" class="card-container"></div>
-
-          <p v-if="error" class="error-message">{{ error }}</p>
-
-          <button 
-            class="submit-button" 
-            @click="handleSubmit"
-            :disabled="loading"
+        <div v-else class="subscribe-page__layout">
+          <!-- Plan picker -->
+          <AppCard
+            variant="ticket"
+            tone="paper"
+            shadow-tone="marigold"
+            pad="lg"
+            class="subscribe-page__plans"
           >
-            <span v-if="!loading">Subscribe Now</span>
-            <span v-else>Processing...</span>
-          </button>
+            <template #eyebrow>
+              <AppEyebrow tone="marigold">Choose your plan</AppEyebrow>
+            </template>
+            <template #title>Pick a billing cycle</template>
 
-          <p class="secure-note">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            Your payment information is secure and encrypted
-          </p>
-        </div>
-      </div>
+            <div class="subscribe-page__plan-grid" role="radiogroup" aria-label="Billing cycle">
+              <button
+                v-for="(plan, key) in plans"
+                :key="key"
+                type="button"
+                role="radio"
+                :aria-checked="selectedPlan === key"
+                :class="['subscribe-page__plan', { 'is-active': selectedPlan === key, 'is-recommended': plan.recommended }]"
+                @click="selectedPlan = key as Plan"
+              >
+                <div class="subscribe-page__plan-head">
+                  <span class="subscribe-page__plan-label">{{ plan.label }}</span>
+                  <AppBadge :tone="plan.recommended ? 'mint' : 'cobalt'">
+                    {{ plan.badge }}
+                  </AppBadge>
+                </div>
+                <div class="subscribe-page__plan-price">
+                  <span class="subscribe-page__currency">$</span>
+                  <span class="subscribe-page__amount">{{ plan.amount }}</span>
+                  <span class="subscribe-page__period">{{ plan.period }}</span>
+                </div>
+                <p class="subscribe-page__plan-savings">{{ plan.savings }}</p>
+                <span class="subscribe-page__plan-radio" aria-hidden="true">
+                  <span class="subscribe-page__plan-radio-dot" />
+                </span>
+              </button>
+            </div>
 
-      <div v-else class="success-card">
-        <div class="success-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
+            <p v-if="error" class="subscribe-page__error" role="alert">{{ error }}</p>
+
+            <template #footer>
+              <div class="subscribe-page__cta">
+                <AppButton
+                  variant="primary"
+                  block
+                  :loading="loading"
+                  :disabled="loading"
+                  @click="handleSubscribe"
+                >
+                  {{ loading
+                    ? 'Redirecting to Square…'
+                    : `Continue to checkout — $${currentPlan.amount}${currentPlan.period}` }}
+                </AppButton>
+                <p class="subscribe-page__secure">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  You'll be redirected to Square's secure checkout to enter your payment details.
+                </p>
+              </div>
+            </template>
+          </AppCard>
+
+          <!-- Benefits + summary -->
+          <div class="subscribe-page__side">
+            <AppCard variant="plaque" tone="paper" shadow-tone="cobalt" pad="lg">
+              <template #eyebrow>
+                <AppEyebrow tone="cobalt">What's included</AppEyebrow>
+              </template>
+              <template #title>Everything in your membership</template>
+
+              <ul class="subscribe-page__benefits">
+                <li v-for="b in benefits" :key="b.title">
+                  <span class="subscribe-page__benefit-icon" aria-hidden="true">{{ b.icon }}</span>
+                  <div>
+                    <h3>{{ b.title }}</h3>
+                    <p>{{ b.body }}</p>
+                  </div>
+                </li>
+              </ul>
+            </AppCard>
+
+            <AppCard variant="postcard" tone="marigold" shadow-tone="ink" pad="lg">
+              <template #eyebrow>
+                <AppEyebrow tone="ink">Order summary</AppEyebrow>
+              </template>
+              <template #title>{{ currentPlan.label }} membership</template>
+
+              <dl class="subscribe-page__summary">
+                <div>
+                  <dt>Plan</dt>
+                  <dd>{{ currentPlan.label }} ({{ selectedPlan }})</dd>
+                </div>
+                <div>
+                  <dt>Amount due today</dt>
+                  <dd>${{ currentPlan.amount.toFixed(2) }}</dd>
+                </div>
+                <div>
+                  <dt>Then</dt>
+                  <dd>${{ currentPlan.amount }}{{ currentPlan.period }}, auto-renews</dd>
+                </div>
+                <div>
+                  <dt>Billed by</dt>
+                  <dd>Square (PCI-compliant)</dd>
+                </div>
+              </dl>
+            </AppCard>
+          </div>
         </div>
-        <h2>Subscription Successful!</h2>
-        <p>You now have access to all courses. Redirecting to your account...</p>
-      </div>
-    </div>
-  </div>
+      </AppContainer>
+    </AppSection>
+
+    <AppSection tone="paper" pad="xl">
+      <AppContainer size="md">
+        <div class="subscribe-page__faq-head">
+          <AppEyebrow tone="fuchsia">Common questions</AppEyebrow>
+          <h2>Before you subscribe</h2>
+        </div>
+
+        <div class="subscribe-page__faqs">
+          <details v-for="item in faqs" :key="item.q" class="subscribe-page__faq">
+            <summary>{{ item.q }}</summary>
+            <p>{{ item.a }}</p>
+          </details>
+        </div>
+
+        <div class="subscribe-page__faq-foot">
+          <AppButton variant="ghost" size="sm" to="/account">← Back to account</AppButton>
+        </div>
+      </AppContainer>
+    </AppSection>
+  </main>
 </template>
 
 <style scoped lang="scss">
-.payment-page {
-  min-height: 100vh;
-  background: var(--bg-light);
-  padding: 6rem 2rem 2rem;
-}
+.subscribe-page {
+  &__loading {
+    text-align: center;
+    color: var(--c-text-muted);
+    padding: var(--s-8) 0;
+  }
 
-.payment-container {
-  max-width: 900px;
-  margin: 0 auto;
-}
+  &__layout {
+    display: grid;
+    gap: var(--s-6);
+    grid-template-columns: minmax(0, 1fr);
 
-.payment-header {
-  margin-bottom: 3rem;
-  text-align: center;
+    @media (min-width: 960px) {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      align-items: start;
+    }
+  }
 
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 500;
-    margin-bottom: 2rem;
-    transition: all 0.3s ease;
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+  }
+
+  &__plan-grid {
+    display: grid;
+    gap: var(--s-3);
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--s-3);
+
+    @media (min-width: 600px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__plan {
+    position: relative;
+    text-align: left;
+    background: var(--c-paper);
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-md);
+    padding: var(--s-4) var(--s-4) var(--s-5);
+    cursor: pointer;
+    transition: transform var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-fast);
+    color: var(--c-ink);
 
     &:hover {
-      gap: 0.75rem;
+      transform: translateY(-2px);
+    }
+
+    &.is-active {
+      background: var(--c-cream);
+      box-shadow: 6px 6px 0 var(--c-ink);
+    }
+
+    &.is-recommended::before {
+      content: 'Recommended';
+      position: absolute;
+      top: -10px;
+      right: 12px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: var(--c-mint);
+      color: var(--c-ink);
+      font-size: var(--fs-xs);
+      font-weight: 800;
+      letter-spacing: var(--ls-wide);
+      border: 2px solid var(--c-ink);
     }
   }
 
-  h1 {
-    font-size: 2.5rem;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-    font-family: 'Playfair Display', serif;
-  }
-
-  .subtitle {
-    color: var(--text-light);
-    font-size: 1.1rem;
-  }
-}
-
-.payment-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px var(--shadow-light);
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 0;
-}
-
-.subscription-details {
-  background: var(--gradient);
-  padding: 3rem 2rem;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  .plan-toggle {
-    display: inline-flex;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 999px;
-    padding: 0.25rem;
-    margin-bottom: 1.5rem;
-    align-self: flex-start;
-  }
-
-  .plan-toggle-button {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.95rem;
-    font-weight: 600;
-    padding: 0.55rem 1.25rem;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
-
-    &.active {
-      background: white;
-      color: var(--primary-color);
-    }
-  }
-
-  .price-display {
+  &__plan-head {
     display: flex;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-
-    .currency {
-      font-size: 2rem;
-      margin-top: 0.5rem;
-    }
-
-    .amount {
-      font-size: 4rem;
-      line-height: 1;
-    }
-
-    .period {
-      font-size: 1.2rem;
-      align-self: flex-end;
-      margin-bottom: 0.5rem;
-      opacity: 0.9;
-    }
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-2);
+    margin-bottom: var(--s-2);
   }
 
-  .plan-savings {
-    margin: 0 0 1.5rem;
-    opacity: 0.9;
-    font-size: 0.95rem;
+  &__plan-label {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
   }
 
-  .benefits {
+  &__plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-1);
+    margin: var(--s-2) 0 var(--s-1);
+  }
+
+  &__currency {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+  }
+
+  &__amount {
+    font-family: var(--font-display);
+    font-size: var(--fs-5xl);
+    line-height: 1;
+    color: var(--c-fuchsia);
+  }
+
+  &__period {
+    font-size: var(--fs-md);
+    color: var(--c-text-muted);
+  }
+
+  &__plan-savings {
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: var(--c-text-muted);
+  }
+
+  &__plan-radio {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 2px solid var(--c-ink);
+    background: var(--c-paper);
+    display: grid;
+    place-items: center;
+  }
+
+  &__plan-radio-dot {
+    width: 0;
+    height: 0;
+    border-radius: 999px;
+    background: var(--c-fuchsia);
+    transition: width var(--dur-fast), height var(--dur-fast);
+  }
+
+  &__plan.is-active &__plan-radio-dot {
+    width: 12px;
+    height: 12px;
+  }
+
+  &__error {
+    margin: var(--s-3) 0 0;
+    padding: var(--s-3);
+    background: var(--c-fuchsia-soft);
+    border: 2px solid var(--c-fuchsia);
+    border-radius: var(--r-md);
+    color: var(--c-fuchsia-deep);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+
+  &__cta {
+    width: 100%;
+  }
+
+  &__secure {
+    margin: var(--s-3) 0 0;
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--c-text-subtle);
+    font-size: var(--fs-xs);
+
+    svg { color: var(--c-mint-deep); }
+  }
+
+  &__benefits {
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: var(--s-3) 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
 
     li {
       display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 0;
-      font-size: 1.05rem;
-
-      svg {
-        flex-shrink: 0;
-      }
+      gap: var(--s-3);
+      align-items: flex-start;
     }
-  }
-}
 
-.payment-form {
-  padding: 3rem 2rem;
+    h3 {
+      margin: 0 0 var(--s-1);
+      font-family: var(--font-display);
+      font-size: var(--fs-md);
+    }
 
-  h2 {
-    font-size: 1.5rem;
-    color: var(--text-dark);
-    margin-bottom: 1.5rem;
-    font-family: 'Playfair Display', serif;
-  }
-}
-
-.card-container {
-  margin-bottom: 2rem;
-  min-height: 120px;
-}
-
-.error-message {
-  color: var(--warning-color);
-  background: rgba(231, 111, 81, 0.1);
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 1.25rem;
-  background: var(--gradient);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &:not(:disabled):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--shadow-medium);
-  }
-}
-
-.secure-note {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: center;
-  color: var(--text-lighter);
-  font-size: 0.9rem;
-  margin-top: 1.5rem;
-
-  svg {
-    color: var(--success-color);
-  }
-}
-
-.success-card {
-  background: white;
-  border-radius: 16px;
-  padding: 4rem 2rem;
-  text-align: center;
-  box-shadow: 0 4px 20px var(--shadow-light);
-
-  .success-icon {
-    margin-bottom: 2rem;
-
-    svg {
-      color: var(--success-color);
+    p {
+      margin: 0;
+      font-size: var(--fs-sm);
+      color: var(--c-text-muted);
+      line-height: var(--lh-base);
     }
   }
 
-  h2 {
-    font-size: 2rem;
-    color: var(--text-dark);
-    margin-bottom: 1rem;
-    font-family: 'Playfair Display', serif;
+  &__benefit-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--c-mint);
+    color: var(--c-ink);
+    font-weight: 800;
+    border: 2px solid var(--c-ink);
+    flex-shrink: 0;
   }
 
-  p {
-    color: var(--text-light);
-    font-size: 1.1rem;
-  }
-}
+  &__summary {
+    margin: var(--s-3) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
 
-@media (max-width: 768px) {
-  .payment-card {
-    grid-template-columns: 1fr;
-  }
+    > div {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--s-3);
+      padding-bottom: var(--s-2);
+      border-bottom: 1px dashed rgba(24, 22, 35, 0.25);
+    }
 
-  .subscription-details {
-    padding: 2rem 1.5rem;
+    > div:last-child { border-bottom: 0; }
 
-    .price-display {
-      .amount {
-        font-size: 3rem;
-      }
+    dt {
+      color: var(--c-ink);
+      font-weight: 600;
+    }
+
+    dd {
+      margin: 0;
+      color: var(--c-ink);
+      font-weight: 700;
+      text-align: right;
     }
   }
 
-  .payment-form {
-    padding: 2rem 1.5rem;
+  &__faq-head {
+    text-align: center;
+    margin-bottom: var(--s-5);
 
     h2 {
-      font-size: 1.25rem;
+      font-family: var(--font-display);
+      font-size: var(--fs-3xl);
+      margin: var(--s-2) 0 0;
     }
   }
 
-  .payment-header h1 {
-    font-size: 2rem;
+  &__faqs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+
+  &__faq {
+    background: var(--c-cream);
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-md);
+    padding: var(--s-3) var(--s-4);
+
+    summary {
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-size: var(--fs-md);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--s-3);
+
+      &::-webkit-details-marker { display: none; }
+
+      &::after {
+        content: '+';
+        font-weight: 800;
+        color: var(--c-cobalt);
+      }
+    }
+
+    &[open] summary::after { content: '−'; }
+
+    p {
+      margin: var(--s-3) 0 0;
+      color: var(--c-text-muted);
+      line-height: var(--lh-base);
+    }
+  }
+
+  &__faq-foot {
+    margin-top: var(--s-5);
+    text-align: center;
   }
 }
 </style>

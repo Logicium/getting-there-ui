@@ -1,0 +1,14 @@
+// =============================================================================
+// Single global stylesheet entry — imported once in src/main.ts
+// Order matters: tokens → reset → typography → animations → utilities → legacy
+// =============================================================================
+
+// Fonts (single, focused load: display + body + playful accent)
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700;800&family=Caprasimo&display=swap');
+
+@import 'tokens';
+@import 'reset';
+@import 'typography';
+@import 'animations';
+@import 'utilities';
+@import 'legacy';

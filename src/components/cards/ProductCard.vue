@@ -1,276 +1,181 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { BookData } from '@/data/data';
-
-// Add base URL for image paths
-const baseUrl = import.meta.env.VITE_CMS_URL || '';
+import { computed } from 'vue'
+import type { BookData } from '@/data/data'
+import { AppCard, AppBadge, AppButton } from '@/components/ui'
 
 interface Props {
-  book: BookData;
-  addToCart: (bookId: string, target: HTMLElement) => void;
-  showBookPreview: (bookId: string) => void;
-  digitalOnly?: boolean;
+  book: BookData
+  addToCart: (bookId: string, target: HTMLElement) => void
+  showBookPreview: (bookId: string) => void
+  digitalOnly?: boolean
 }
+const props = defineProps<Props>()
 
-const props = defineProps<Props>();
-
-// Category badge display logic
 const categoryBadge = computed(() => {
-  const category = props.book.category?.toLowerCase();
-  switch(category) {
-    case 'goals': return { text: 'Goals', class: 'category-goals' };
-    case 'growth': return { text: 'Growth', class: 'category-growth' };
-    case 'loss': return { text: 'Loss & Grief', class: 'category-loss' };
-    case 'fun': return { text: 'Fun', class: 'category-fun' };
-    case 'happiness': return { text: 'Happiness', class: 'category-happiness' };
-    default: return null;
+  switch (props.book.category?.toLowerCase()) {
+    case 'goals':     return { text: 'Goals',       tone: 'cobalt' as const }
+    case 'growth':    return { text: 'Growth',      tone: 'mint' as const }
+    case 'loss':      return { text: 'Loss & Grief',tone: 'plum' as const }
+    case 'fun':       return { text: 'Fun',         tone: 'fuchsia' as const }
+    case 'happiness': return { text: 'Happiness',   tone: 'marigold' as const }
+    default:          return null
   }
-});
+})
 
-const handleAddToCart = (event: Event) => {
-  props.addToCart(props.book.id, event.target as HTMLElement);
-};
+const cardTone = computed(() => {
+  switch (props.book.category?.toLowerCase()) {
+    case 'goals':
+      return 'cobalt' as const
+    case 'growth':
+      return 'mint' as const
+    case 'loss':
+      return 'fuchsia' as const
+    case 'fun':
+      return 'marigold' as const
+    case 'happiness':
+      return 'marigold' as const
+    default:
+      return 'cream-2' as const
+  }
+})
 
-const handlePreview = () => {
-  props.showBookPreview(props.book.id);
-};
+const cardShadowTone = computed(() => {
+  switch (props.book.category?.toLowerCase()) {
+    case 'goals':
+      return 'cobalt' as const
+    case 'growth':
+      return 'mint' as const
+    case 'loss':
+      return 'fuchsia' as const
+    case 'fun':
+      return 'marigold' as const
+    case 'happiness':
+      return 'marigold' as const
+    default:
+      return 'ink' as const
+  }
+})
+
+const handleAdd     = (e: Event) => props.addToCart(props.book.id, e.target as HTMLElement)
+const handlePreview = ()         => props.showBookPreview(props.book.id)
 </script>
 
 <template>
-  <div class="product-card fade-in" :data-category="book.category?.toLowerCase()">
-    <div class="product-image">
-      <div v-if="categoryBadge" :class="categoryBadge.class">{{ categoryBadge.text }}</div>
-      <div v-if="book.imageUrl" class="blurred-background" :style="{ backgroundImage: `url('https://getting-there-cms.onrender.com${book.imageUrl}')` }"></div>
-      <img v-if="book.imageUrl" :src="'https://getting-there-cms.onrender.com' + book.imageUrl" alt="Book cover" class="book-cover-image" />
-      <div v-else class="fallback-image">{{ book.id.charAt(0).toUpperCase() }}📱</div>
-    </div>
-    <div class="product-content">
-      <h3 class="product-title">{{ book.title }}</h3>
-      <p class="product-author">by {{ book.author }}</p>
-      <p class="product-description">{{ book.description }}</p>
-
-      <div class="product-pricing">
-        <div class="price-display">
-          <span class="price">${{ book.formats.digital.price.toFixed(2) }}</span>
-          <span class="format-type">Digital Edition</span>
-        </div>
-        <div class="instant-access">📱 Instant Download</div>
+  <AppCard variant="postcard" :tone="cardTone" :shadow-tone="cardShadowTone" pad="md" class="product-card"
+           :data-category="book.category?.toLowerCase()">
+    <template #media>
+      <div class="product-card__media">
+        <div
+          v-if="book.imageUrl"
+          class="product-card__bg"
+          :style="{ backgroundImage: `url('https://getting-there-cms.onrender.com${book.imageUrl}')` }"
+        />
+        <img
+          v-if="book.imageUrl"
+          :src="'https://getting-there-cms.onrender.com' + book.imageUrl"
+          alt="Book cover"
+          class="product-card__cover"
+        />
+        <div v-else class="product-card__fallback">{{ book.id.charAt(0).toUpperCase() }}</div>
+        <AppBadge v-if="categoryBadge" :tone="categoryBadge.tone" size="sm" class="product-card__cat">
+          {{ categoryBadge.text }}
+        </AppBadge>
       </div>
+    </template>
 
-      <div class="product-footer">
-        <button class="add-to-cart-btn" @click="handleAddToCart">Add to Cart</button>
-        <button class="quick-view-btn" @click="handlePreview">Preview</button>
-      </div>
+    <template #title>{{ book.title }}</template>
+    <p class="product-card__author">by {{ book.author }}</p>
+    <p class="product-card__desc">{{ book.description }}</p>
+
+    <div class="product-card__price">
+      <span class="product-card__amount">${{ book.formats.digital.price.toFixed(2) }}</span>
+      <span class="product-card__fmt">Digital edition · Instant download</span>
     </div>
-  </div>
+
+    <template #footer>
+      <AppButton variant="primary" size="sm" @click="handleAdd">Add to cart</AppButton>
+      <AppButton variant="ghost"  size="sm" @click="handlePreview">Preview</AppButton>
+    </template>
+  </AppCard>
 </template>
 
 <style scoped lang="scss">
-@import '@/assets/scss/mixins';
-@import '@/assets/scss/variables';
-
 .product-card {
-  background: white;
-  border-radius: $radius-xl;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  border: 1px solid var(--border-light);
-  transition: all $transition-slow ease;
-  overflow: hidden;
-  position: relative;
-
-  &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-  }
-}
-
-.product-image {
-  height: 180px;
-  background: var(--gradient);
-  @include flex-center;
-  color: white;
-  font-size: $font-size-4xl;
-  position: relative;
-  overflow: hidden;
-}
-
-.blurred-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  filter: blur(15px);
-  transform: scale(1.1); /* Prevent blur edges from showing */
-  z-index: 1;
-}
-
-.book-cover-image {
-  position: relative;
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  z-index: 2;
-  transition: transform $transition-normal;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-
-  .product-card:hover & {
-    transform: scale(1.05);
-  }
-}
-
-.fallback-image {
-  @include flex-center;
-  width: 100%;
-  height: 100%;
-}
-
-.bestseller-badge,
-.new-badge,
-.category-goals,
-.category-growth,
-.category-loss,
-.category-fun,
-.category-happiness {
-  @include badge-base;
-  position: absolute;
-  top: $spacing-md;
-  left: $spacing-md;
-  color: white;
-  z-index: 3;
-}
-
-.category-goals {
-  background: var(--soft-blue);
-}
-
-.category-growth {
-  background: var(--success-color);
-}
-
-.category-loss {
-  background: var(--accent-color);
-}
-
-.category-fun {
-  background: var(--lavender);
-  color: var(--text-dark);
-}
-
-.category-happiness {
-  background: var(--warning-color);
-}
-
-.digital-only-badge {
-  @include badge-base;
-  position: absolute;
-  top: $spacing-md;
-  right: $spacing-md;
-  background: var(--soft-blue);
-  color: white;
-}
-
-.product-content {
-  padding: $spacing-lg;
-}
-
-.product-title {
-  @include heading-small;
-  margin-bottom: $spacing-sm;
-  line-height: 1.3;
-}
-
-.product-author {
-  color: var(--primary-color);
-  font-weight: 600;
-  margin-bottom: $spacing-sm;
-  font-size: $font-size-sm;
-}
-
-.product-description {
-  @include text-muted;
-  margin-bottom: $spacing-md;
-  font-size: $font-size-xs;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.product-pricing {
-  @include flex-between;
-  margin-bottom: $spacing-md;
-  padding: $spacing-sm;
-  background: var(--bg-sage);
-  border-radius: $radius-md;
-  border: 1px solid var(--border-light);
-}
-
-.price-display {
-  @include flex-column($spacing-xs);
-}
-
-.price {
-  font-size: $font-size-xl;
-  font-weight: 800;
-  color: var(--primary-color);
-}
-
-.format-type {
-  font-size: $font-size-xs;
-  color: var(--text-light);
-  font-weight: 500;
-}
-
-.instant-access {
-  font-size: $font-size-xs;
-  color: var(--primary-color);
-  font-weight: 600;
-  background: rgba(74, 124, 89, 0.1);
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $radius-sm;
-}
-
-.product-footer {
-  @include flex-row($spacing-sm);
-}
-
-.add-to-cart-btn {
-  @include button-primary;
-  flex: 2;
-  padding: $spacing-sm;
-  font-size: $font-size-sm;
-}
-
-.quick-view-btn {
-  flex: 1;
-  @include button-base(transparent, var(--primary-color));
-  border: 2px solid var(--primary-color);
-  padding: $spacing-sm;
-  font-size: $font-size-sm;
-
-  &:hover {
-    background: var(--primary-color);
-    color: white;
-  }
-}
-
-/* Mobile Responsiveness */
-@include mobile-only {
-  .format-features {
-    flex-direction: column;
-    align-items: center;
-    gap: $spacing-sm;
+  :deep(.app-card__title),
+  :deep(.app-card__eyebrow) {
+    color: var(--c-ink);
   }
 
-  .product-footer {
-    flex-direction: column;
+  &__media {
+    aspect-ratio: 4 / 3;
+    position: relative;
+    background: color-mix(in srgb, var(--c-paper) 70%, var(--c-ink));
+    display: grid; place-items: center;
+    overflow: hidden;
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-md);
   }
+  &__bg {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(22px) saturate(1.2);
+    transform: scale(1.15);
+    opacity: 0.65;
+  }
+  &__cover {
+    position: relative; z-index: 1;
+    max-width: 60%; max-height: 86%;
+    object-fit: contain;
+    box-shadow: 6px 6px 0 0 var(--c-ink);
+  }
+  &__fallback {
+    position: relative; z-index: 1;
+    width: 96px; height: 96px;
+    display: grid; place-items: center;
+    background: var(--c-marigold);
+    color: var(--c-ink);
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-md);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 2.4rem;
+  }
+  &__cat { position: absolute; top: var(--s-3); left: var(--s-3); z-index: 2; }
 
-  .add-to-cart-btn, .quick-view-btn {
-    flex: 1;
+  &__author {
+    margin: 0;
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--c-cobalt);
+    font-size: var(--fs-sm);
+  }
+  &__desc {
+    margin: 0;
+    color: color-mix(in srgb, var(--c-ink) 72%, black);
+    line-height: var(--lh-base);
+    font-size: var(--fs-sm);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  &__price {
+    display: flex; flex-direction: column; gap: 2px;
+    margin-top: auto;
+  }
+  &__amount {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-2xl);
+    color: var(--c-ink);
+  }
+  &__fmt {
+    font-size: var(--fs-xs);
+    color: color-mix(in srgb, var(--c-ink) 64%, black);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wide);
+    font-weight: 600;
   }
 }
 </style>

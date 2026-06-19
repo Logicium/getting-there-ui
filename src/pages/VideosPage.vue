@@ -2,15 +2,24 @@
 import { ref, onMounted, computed } from 'vue';
 import { videoCategories } from '@/data/data';
 import VideoCard from '@/components/cards/VideoCard.vue';
-import FilterSection from '@/components/FilterSection.vue';
 import VideoModal from '@/components/VideoModal.vue';
 import Pagination from '@/components/Pagination.vue';
-import CommunitySupportSection from '@/components/sections/CommunitySupportSection.vue';
-import DisclaimerSection from '@/components/sections/DisclaimerSection.vue';
 import { getVideoDuration, generateVideoThumbnailWithRetry, getCachedThumbnail } from '@/utils/videoUtils';
-import { observeFadeElements } from '@/utils/animationUtils';
 import { useAuthStore } from '@/stores/auth';
 import type { CMSVideo, VideoData } from '@/types/video';
+import {
+  AppBadge,
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppEmptyState,
+  AppEyebrow,
+  AppGrid,
+  AppHero,
+  AppSection,
+  AppSpinner,
+} from '@/components/ui';
+import { Play, Star } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 
@@ -37,117 +46,96 @@ const videos = ref<Record<string, VideoData>>({});
 const videosLoading = ref(true);
 const videosError = ref<string | null>(null);
 
-// Computed properties
 const currentVideo = ref(null as VideoData | null);
 
-// Base filtered videos based on category and search
 const baseFilteredVideos = computed(() => {
   const videosArray = Object.values(videos.value);
-  
   return videosArray.filter(video => {
-    // Category filter
-    const matchesCategory = currentFilter.value === 'all' || 
+    const matchesCategory = currentFilter.value === 'all' ||
       video.category?.toLowerCase() === currentFilter.value.toLowerCase();
-    
-    // Search filter
     const search = searchTerm.value.toLowerCase();
-    const matchesSearch = search === '' || 
+    const matchesSearch = search === '' ||
       video.title.toLowerCase().includes(search) ||
       video.description.toLowerCase().includes(search) ||
       video.category?.toLowerCase().includes(search);
-    
     return matchesCategory && matchesSearch;
   });
 });
 
-// Split into free and premium videos
-const freeVideos = computed(() => baseFilteredVideos.value.filter(v => !v.isPremium));
-const premiumVideos = computed(() => baseFilteredVideos.value.filter(v => v.isPremium));
+const featuredVideo = computed<VideoData | null>(() => {
+  const firstFree = baseFilteredVideos.value.find(v => !v.isPremium);
+  return firstFree ?? baseFilteredVideos.value[0] ?? null;
+});
 
-// filteredVideos remains for pagination/category counts (all videos)
-const filteredVideos = baseFilteredVideos;
+const remainingVideos = computed(() => {
+  const featuredId = featuredVideo.value?.id;
+  return baseFilteredVideos.value.filter(v => v.id !== featuredId);
+});
 
-// Compute paginated videos
+const filteredVideos = remainingVideos;
+
 const paginatedVideos = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return filteredVideos.value.slice(start, end);
 });
 
-// Compute categories with counts
 const categoriesWithCounts = computed(() => {
   const videosArray = Object.values(videos.value);
-  
   return videoCategories.map(category => {
     if (category.id === 'all') {
-      return {
-        ...category,
-        count: videosArray.length
-      };
+      return { ...category, count: videosArray.length };
     }
-    
-    const count = videosArray.filter(video => 
+    const count = videosArray.filter(video =>
       video.category?.toLowerCase() === category.id.toLowerCase()
     ).length;
-    
-    return {
-      ...category,
-      count
-    };
+    return { ...category, count };
   });
 });
 
-// Event handlers
+const featuredCategoryTone = computed<'cobalt' | 'mint' | 'plum' | 'fuchsia' | 'marigold' | 'ink'>(() => {
+  switch (featuredVideo.value?.category?.toLowerCase()) {
+    case 'goals':     return 'cobalt';
+    case 'growth':    return 'mint';
+    case 'loss':      return 'plum';
+    case 'fun':       return 'fuchsia';
+    case 'happiness': return 'marigold';
+    default:          return 'ink';
+  }
+});
+
 const handleFilter = (filter: string) => {
   currentFilter.value = filter;
-  currentPage.value = 1; // Reset to first page when filtering
-};
-
-const handleSearch = (term: string) => {
-  searchTerm.value = term;
-  currentPage.value = 1; // Reset to first page when searching
+  currentPage.value = 1;
 };
 
 const handlePageChange = (page: number) => {
   currentPage.value = page;
-  // Scroll to top of videos section
-  const videosSection = document.querySelector('.therapy-video-section');
+  const videosSection = document.querySelector('.videos__grid-section');
   if (videosSection) {
     videosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  // Re-trigger fade animations for new page items
-  setTimeout(() => {
-    observeFadeElements();
-  }, 50);
-}
+};
 
 const playVideo = (videoId: string) => {
   const video = videos.value[videoId];
-  if (video?.isPremium && !authStore.isSubscribed) {
-    // Non-subscribers cannot play premium videos
-    return;
-  }
+  if (video?.isPremium && !authStore.isSubscribed) return;
   currentVideoId.value = videoId;
   currentVideo.value = video;
   videoModalOpen.value = true;
 };
 
-const closeVideoModal = () => {
-  videoModalOpen.value = false;
-};
+const closeVideoModal = () => { videoModalOpen.value = false; };
 
-// Fetch hero data from CMS
 const fetchHeroData = async () => {
   isLoading.value = true;
   error.value = null;
 
   try {
     const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/videos-page?populate=all`);
-
     if (!res.ok) {
       throw new Error(`Failed to fetch videos page hero: ${res.status} ${res.statusText}`);
     }
-
     const json = await res.json();
     const hero = json?.data?.Hero;
     if (hero) {
@@ -162,74 +150,55 @@ const fetchHeroData = async () => {
   }
 };
 
-// Fetch videos from CMS
 const fetchVideos = async () => {
   videosLoading.value = true;
   videosError.value = null;
 
   try {
     const res = await fetch(`${import.meta.env.VITE_CMS_URL}/api/videos?populate=all`);
-
     if (!res.ok) {
       throw new Error(`Failed to fetch videos: ${res.status} ${res.statusText}`);
     }
-
     const json = await res.json();
     const cmsVideos = json?.data as CMSVideo[];
-
     if (!cmsVideos || !Array.isArray(cmsVideos)) {
       throw new Error('Invalid video data received from CMS');
     }
 
-    // Process videos and get durations + thumbnails
     const processedVideos: Record<string, VideoData> = {};
 
     for (const cmsVideo of cmsVideos) {
       const videoUrl = `https://getting-there-cms.onrender.com${cmsVideo.video.url}`;
-
-      // Extract tags and category
       const tags = cmsVideo.tags.map(tag => tag.tag);
       const category = cmsVideo.Category || 'general';
-
-      // Create a unique ID from the title (slug-like)
       const id = cmsVideo.documentId ||
           cmsVideo.title.toLowerCase()
               .replace(/[^\w\s-]/g, '')
               .replace(/\s+/g, '-');
 
-      // Check for CMS thumbnail first, then cached thumbnail
       let thumbnailUrl: string | undefined = undefined;
-      
       if (cmsVideo.thumbnail && cmsVideo.thumbnail.url) {
-        // Use the CMS-provided thumbnail
         thumbnailUrl = `https://getting-there-cms.onrender.com${cmsVideo.thumbnail.url}`;
       } else {
-        // Fall back to cached thumbnail if no CMS thumbnail
         const cachedThumbnail = getCachedThumbnail(videoUrl);
         thumbnailUrl = cachedThumbnail || undefined;
       }
 
-      // Get video duration - check cache first, then fetch if needed
       let duration = '00:00';
       try {
         getVideoDuration(videoUrl, (actualDuration) => {
           if (videos.value[id]) {
-            const updatedVideo = { ...videos.value[id], duration: actualDuration };
-            videos.value[id] = updatedVideo;
+            videos.value[id] = { ...videos.value[id], duration: actualDuration };
           }
         }).then(initialDuration => {
-          if (initialDuration !== '00:00') {
-            if (videos.value[id]) {
-              const updatedVideo = { ...videos.value[id], duration: initialDuration };
-              videos.value[id] = updatedVideo;
-            }
+          if (initialDuration !== '00:00' && videos.value[id]) {
+            videos.value[id] = { ...videos.value[id], duration: initialDuration };
           }
         });
       } catch (err) {
         console.error(`Error getting duration for video ${cmsVideo.title}:`, err);
       }
 
-      // Transform to VideoData format
       processedVideos[id] = {
         id,
         title: cmsVideo.title,
@@ -237,21 +206,19 @@ const fetchVideos = async () => {
         description: cmsVideo.Description,
         fullDescription: cmsVideo.Description,
         duration,
-        category: category,
+        category,
         views: Math.floor(Math.random() * 5000 + 1000).toString(),
         isFree: !cmsVideo.isPremium,
         isPremium: !!cmsVideo.isPremium,
         tags,
         videoUrl,
-        thumbnailUrl // Use CMS thumbnail, cached thumbnail, or undefined
+        thumbnailUrl
       };
 
-      // Only generate thumbnail if no CMS thumbnail is provided
       if (!cmsVideo.thumbnail) {
         generateVideoThumbnailWithRetry(videoUrl).then(generatedThumbnail => {
           if (generatedThumbnail && videos.value[id]) {
-            const updatedVideo = { ...videos.value[id], thumbnailUrl: generatedThumbnail };
-            videos.value[id] = updatedVideo;
+            videos.value[id] = { ...videos.value[id], thumbnailUrl: generatedThumbnail };
           }
         }).catch(err => {
           console.error(`Failed to generate thumbnail for video ${cmsVideo.title}:`, err);
@@ -269,347 +236,363 @@ const fetchVideos = async () => {
 };
 
 onMounted(async () => {
-  // Fetch both hero data and videos in parallel
-  await Promise.all([
-    fetchHeroData(),
-    fetchVideos()
-  ]);
-
-  // Initial fade animation
-  setTimeout(() => {
-    observeFadeElements();
-  }, 100);
+  await Promise.all([fetchHeroData(), fetchVideos()]);
 });
 </script>
 
 <template>
-  <section class="therapy-videos-hero">
-    <div v-if="isLoading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Loading videos content...</p>
-    </div>
+  <main class="videos">
+    <!-- HERO -->
+    <AppHero variant="editorial" tone="cream" align="center">
+      <template #eyebrow>
+        <AppEyebrow tone="fuchsia">Watch &amp; Learn</AppEyebrow>
+      </template>
+      <template #title>{{ heroTitle }}</template>
+      <template #lede>
+        <p>{{ heroDescription }}</p>
+      </template>
+      <template #actions>
+        <AppButton variant="primary" size="lg" href="#library">Browse the library</AppButton>
+        <AppButton v-if="!authStore.isSubscribed" variant="ghost" size="lg" to="/subscribe">Go premium</AppButton>
+      </template>
+    </AppHero>
 
-    <div v-else-if="error" class="error-container">
-      <p>{{ error }}</p>
-      <button @click="fetchHeroData" class="retry-button">Retry</button>
-    </div>
+    <!-- FEATURED VIDEO -->
+    <AppSection tone="mint" pad="xl">
+      <AppContainer size="lg">
+        <header class="videos__head">
+          <AppEyebrow tone="cobalt">Featured</AppEyebrow>
+          <h2 class="u-display u-display--md">This week's pick</h2>
+        </header>
 
-    <div v-else class="therapy-videos-hero-content">
-      <h1>{{ heroTitle }}</h1>
-      <p>{{ heroDescription }}</p>
-    </div>
-  </section>
-
-  <FilterSection
-      :categories="categoriesWithCounts"
-      :withSearch="true"
-      @filter="handleFilter"
-      @search="handleSearch"
-  />
-
-  <main class="therapy-videos-content">
-    <section class="therapy-video-section">
-      <h2 class="wellness-section-title fade-in">
-        Complete Video Library
-        <div class="section-divider"></div>
-      </h2>
-
-      <!-- Loading State -->
-      <div v-if="videosLoading" class="content-loading-container">
-        <div class="loading-spinner"></div>
-        <p>Loading videos...</p>
-      </div>
-
-      <!-- Error State -->
-      <div v-else-if="videosError" class="content-error-container">
-        <p>{{ videosError }}</p>
-        <button @click="fetchVideos" class="retry-button">Retry</button>
-      </div>
-
-      <!-- Videos Grid -->
-      <div v-else>
-        <div v-if="filteredVideos.length === 0" class="no-results-message">
-          <p>No videos found matching your search criteria.</p>
+        <div v-if="videosLoading" class="videos__state">
+          <AppSpinner size="lg" />
+          <p>Loading videos...</p>
         </div>
 
-        <template v-else>
-          <!-- Free Videos Section -->
-          <div v-if="freeVideos.length > 0" class="video-section-block">
-            <h3 class="video-section-heading free-heading fade-in">
-              <span class="heading-icon">▶</span> Free Videos
-              <span class="video-count">{{ freeVideos.length }} video{{ freeVideos.length !== 1 ? 's' : '' }}</span>
-            </h3>
-            <div class="therapy-videos-grid" id="freeVideos">
-              <VideoCard
-                  v-for="video in freeVideos"
-                  :key="video.id"
-                  :video="video"
-                  :playVideo="playVideo"
+        <AppEmptyState
+          v-else-if="videosError"
+          variant="error"
+          title="Could not load videos"
+          :message="videosError"
+        >
+          <template #actions>
+            <AppButton variant="primary" @click="fetchVideos">Try again</AppButton>
+          </template>
+        </AppEmptyState>
+
+        <AppCard
+          v-else-if="featuredVideo"
+          variant="postcard"
+          tone="paper"
+          shadow-tone="fuchsia"
+          pad="lg"
+          class="videos__featured"
+          :interactive="!(featuredVideo.isPremium && !authStore.isSubscribed)"
+          @click="playVideo(featuredVideo.id)"
+        >
+          <template #media>
+            <div class="videos__featured-media">
+              <img
+                v-if="featuredVideo.thumbnailUrl"
+                :src="featuredVideo.thumbnailUrl"
+                :alt="featuredVideo.title"
+                class="videos__featured-img"
               />
+              <div v-else class="videos__featured-fallback"><Play :size="56" :stroke-width="2" fill="currentColor" /></div>
+              <span class="videos__featured-duration">{{ featuredVideo.duration }}</span>
+              <div class="videos__featured-play" aria-hidden="true"><Play :size="28" :stroke-width="2" fill="currentColor" /></div>
             </div>
-          </div>
-
-          <!-- Premium Videos Section -->
-          <div v-if="premiumVideos.length > 0" class="video-section-block premium-section">
-            <h3 class="video-section-heading premium-heading fade-in">
-              <span class="heading-icon">⭐</span> Premium Content
-              <span class="video-count">{{ premiumVideos.length }} video{{ premiumVideos.length !== 1 ? 's' : '' }}</span>
-            </h3>
-
-            <!-- CTA banner for non-subscribers -->
-            <div v-if="!authStore.isSubscribed" class="premium-cta-banner fade-in">
-              <div class="premium-cta-content">
-                <h4>Unlock Premium Content</h4>
-                <p>Subscribe to access exclusive therapeutic presentations, guided sessions, and in-depth educational content.</p>
-                <p class="premium-cta-pricing">
-                  Starting at <strong>$8/month</strong> &mdash; or save with $80/year.
-                </p>
-              </div>
-              <router-link to="/subscribe" class="premium-cta-button">Subscribe Now</router-link>
+          </template>
+          <template #eyebrow>
+            <div class="videos__featured-tags">
+              <AppBadge :tone="featuredCategoryTone" size="sm">{{ featuredVideo.category }}</AppBadge>
+              <AppBadge v-if="featuredVideo.isPremium" tone="fuchsia" size="sm"><Star :size="12" :stroke-width="2.5" fill="currentColor" /> Premium</AppBadge>
             </div>
+          </template>
+          <template #title>{{ featuredVideo.title }}</template>
+          <p class="videos__featured-presenter">with {{ featuredVideo.presenter }}</p>
+          <p class="videos__featured-desc">{{ featuredVideo.description }}</p>
+          <template #footer>
+            <AppButton
+              v-if="featuredVideo.isPremium && !authStore.isSubscribed"
+              variant="primary"
+              to="/subscribe"
+            >
+              Subscribe to watch
+            </AppButton>
+            <AppButton v-else variant="accent" @click="playVideo(featuredVideo.id)">
+              Watch now
+            </AppButton>
+          </template>
+        </AppCard>
 
-            <div class="therapy-videos-grid" id="premiumVideos">
-              <VideoCard
-                  v-for="video in premiumVideos"
-                  :key="video.id"
-                  :video="video"
-                  :playVideo="playVideo"
-                  :locked="!authStore.isSubscribed"
-              />
-            </div>
-          </div>
+        <AppEmptyState
+          v-else
+          variant="empty"
+          title="No videos to feature"
+          message="Try a different filter or check back soon."
+        />
+      </AppContainer>
+    </AppSection>
 
-          <!-- Pagination -->
+    <!-- LIBRARY -->
+    <AppSection id="library" tone="cream" pad="xl">
+      <AppContainer size="lg">
+        <header class="videos__head">
+          <AppEyebrow tone="marigold">Library</AppEyebrow>
+          <h2 class="u-display u-display--md">Complete video library</h2>
+        </header>
+
+        <div class="videos__filters" role="tablist" aria-label="Filter videos by category">
+          <button
+            v-for="cat in categoriesWithCounts"
+            :key="cat.id"
+            type="button"
+            role="tab"
+            :aria-selected="currentFilter === cat.id"
+            class="videos__filter-btn"
+            @click="handleFilter(cat.id)"
+          >
+            <AppBadge
+              :tone="currentFilter === cat.id ? 'marigold' : 'cream'"
+              size="md"
+            >
+              {{ cat.label }} <span class="videos__filter-count">({{ cat.count }})</span>
+            </AppBadge>
+          </button>
+        </div>
+
+        <div v-if="videosLoading" class="videos__state">
+          <AppSpinner size="lg" />
+          <p>Loading videos...</p>
+        </div>
+
+        <AppEmptyState
+          v-else-if="filteredVideos.length === 0 && !featuredVideo"
+          variant="empty"
+          title="No videos found"
+          message="Try a different filter or check back soon."
+        />
+
+        <div v-else class="videos__grid-section">
+          <AppGrid :min="260" gap="md">
+            <VideoCard
+              v-for="video in paginatedVideos"
+              :key="video.id"
+              :video="video"
+              :play-video="playVideo"
+              :locked="video.isPremium && !authStore.isSubscribed"
+            />
+          </AppGrid>
+
           <Pagination
             v-if="filteredVideos.length > itemsPerPage"
-            :currentPage="currentPage"
-            :totalItems="filteredVideos.length"
-            :itemsPerPage="itemsPerPage"
+            :current-page="currentPage"
+            :total-items="filteredVideos.length"
+            :items-per-page="itemsPerPage"
             @page-change="handlePageChange"
           />
-        </template>
-      </div>
-    </section>
+        </div>
+      </AppContainer>
+    </AppSection>
 
-<!--    <CommunitySupportSection />-->
+    <!-- SUBSCRIBE CTA -->
+    <AppSection tone="ink" pad="xl">
+      <AppContainer size="md">
+        <div class="videos__cta">
+          <AppEyebrow tone="marigold">Premium</AppEyebrow>
+          <h2 class="videos__cta-title">Unlock the full library.</h2>
+          <p class="videos__cta-lede">
+            Subscribe for exclusive therapeutic presentations, guided sessions, and in-depth educational content. Starting at <strong>$8/month</strong> — or save with $80/year.
+          </p>
+          <div class="videos__cta-actions">
+            <AppButton v-if="!authStore.isSubscribed" to="/subscribe" variant="primary" size="lg">Subscribe now</AppButton>
+            <AppButton v-else to="/account" variant="primary" size="lg">Manage subscription</AppButton>
+          </div>
+        </div>
+      </AppContainer>
+    </AppSection>
 
-<!--    <DisclaimerSection />-->
+    <VideoModal
+      :is-open="videoModalOpen"
+      :video="currentVideo"
+      @close="closeVideoModal"
+    />
   </main>
-
-  <VideoModal
-    :isOpen="videoModalOpen"
-    :video="currentVideo"
-    @close="closeVideoModal"
-  />
 </template>
 
 <style scoped lang="scss">
-@import '../assets/common.scss';
-@import '@/assets/scss/mixins';
-@import '@/assets/scss/variables';
-
-.therapy-videos-hero {
-  @extend .hero-base;
-  background: var(--gradient);
-  color: white;
-  text-align: center;
-}
-
-.therapy-videos-hero-content {
-  @extend .hero-content-base;
-}
-
-.hero-wellness-stats {
-  @include flex-row($spacing-2xl);
-  justify-content: center;
-  margin-top: $spacing-xl;
-
-  @include mobile-only {
+.videos {
+  &__head {
+    display: flex;
     flex-direction: column;
-    gap: $spacing-lg;
-  }
-}
-
-.hero-wellness-stat {
-  text-align: center;
-}
-
-.hero-stat-number {
-  font-size: $font-size-3xl;
-  font-weight: 800;
-  display: block;
-  margin-bottom: $spacing-sm;
-}
-
-.hero-stat-label {
-  font-size: $font-size-sm;
-  opacity: 0.8;
-}
-
-.therapy-videos-content {
-  @extend .container;
-  padding: $spacing-3xl $spacing-xl;
-}
-
-.section-description {
-  @include text-muted;
-  font-size: $font-size-lg;
-  text-align: center;
-  margin-bottom: $spacing-2xl;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.therapy-video-section {
-  margin-bottom: $spacing-3xl;
-}
-
-.therapy-videos-grid {
-  @include grid-auto(350px, $spacing-xl);
-}
-
-.no-results-message {
-  text-align: center;
-  padding: $spacing-3xl;
-  color: var(--text-muted);
-  font-size: $font-size-lg;
-}
-
-/* ---------- Free / Premium section blocks ---------- */
-.video-section-block {
-  margin-bottom: $spacing-3xl;
-}
-
-.video-section-heading {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm;
-  font-size: $font-size-xl;
-  font-weight: 700;
-  margin-bottom: $spacing-xl;
-  color: var(--text-dark);
-
-  .heading-icon {
-    font-size: $font-size-lg;
-  }
-
-  .video-count {
-    margin-left: auto;
-    font-size: $font-size-sm;
-    font-weight: 500;
-    color: var(--text-muted);
-  }
-}
-
-.free-heading {
-  color: var(--primary-color, #4a7c59);
-}
-
-.premium-heading {
-  color: var(--premium-color, #b8860b);
-}
-
-/* ---------- Premium CTA Banner ---------- */
-.premium-cta-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.08) 0%, rgba(218, 165, 32, 0.12) 100%);
-  border: 1px solid rgba(184, 134, 11, 0.25);
-  border-radius: $radius-xl;
-  padding: $spacing-xl $spacing-2xl;
-  margin-bottom: $spacing-2xl;
-  gap: $spacing-xl;
-
-  @include mobile-only {
-    flex-direction: column;
+    align-items: center;
+    gap: var(--s-3);
     text-align: center;
-  }
-}
-
-.premium-cta-content {
-  h4 {
-    font-size: $font-size-lg;
-    font-weight: 700;
-    color: var(--premium-color, #b8860b);
-    margin-bottom: $spacing-xs;
+    margin-bottom: var(--s-7);
   }
 
-  p {
-    color: var(--text-muted);
-    font-size: $font-size-sm;
-    margin: 0;
-    max-width: 500px;
+  &__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-8) 0;
+    color: var(--c-text-muted);
   }
 
-  .premium-cta-pricing {
-    margin-top: $spacing-xs;
-    color: var(--text-dark);
-    font-size: $font-size-sm;
+  &__featured {
+    max-width: 920px;
+    margin-inline: auto;
 
-    strong {
-      color: var(--premium-color, #b8860b);
+    &-media {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: var(--c-ink);
+      overflow: hidden;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+    }
+    &-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    &-fallback {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      color: var(--c-cream);
+      :deep(svg) { color: var(--c-cream); }
+    }
+    &-duration {
+      position: absolute;
+      bottom: var(--s-3);
+      right: var(--s-3);
+      padding: 0.2rem 0.6rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--c-cream);
+      font-family: var(--font-body);
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      border-radius: var(--r-sm);
+    }
+    &-play {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--c-marigold);
+      color: var(--c-ink);
+      border: 3px solid var(--c-ink);
+      display: grid; place-items: center;
+      box-shadow: var(--shadow-block-sm);
+      pointer-events: none;
+    }
+    &-tags {
+      display: flex;
+      gap: var(--s-2);
+      flex-wrap: wrap;
+    }
+    &-presenter {
+      margin: 0;
+      font-family: var(--font-body);
+      font-weight: 600;
+      color: var(--c-cobalt);
+      font-size: var(--fs-sm);
+    }
+    &-desc {
+      margin: 0;
+      color: var(--c-text-muted);
+      line-height: var(--lh-base);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    // Horizontal split at desktop so the whole card fits in the fold.
+    @media (min-width: 760px) {
+      flex-direction: row;
+      align-items: stretch;
+      max-height: 380px;
+
+      :deep(.app-card__media) {
+        flex: 0 0 50%;
+        border-bottom: none;
+        border-right: 2px solid var(--c-ink);
+      }
+      :deep(.app-card__body) {
+        flex: 1 1 auto;
+        justify-content: center;
+      }
+      :deep(.app-card__title) {
+        font-size: clamp(var(--fs-xl), 2.4vw, var(--fs-2xl));
+        line-height: var(--lh-tight);
+      }
+      &-media { aspect-ratio: auto; height: 100%; }
     }
   }
-}
 
-.premium-cta-button {
-  @include button-primary;
-  background: linear-gradient(135deg, #b8860b, #daa520);
-  color: white;
-  white-space: nowrap;
-  padding: $spacing-md $spacing-xl;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: $radius-lg;
-  transition: all $transition-normal ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(184, 134, 11, 0.3);
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    justify-content: center;
+    margin-bottom: var(--s-7);
   }
-}
+  &__filter-btn {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
 
-/* Content Loading/Error States (not in white boxes) */
-.content-loading-container,
-.content-error-container {
-  @include loading-container(transparent, var(--text-light), 300px);
-  padding: $spacing-3xl $spacing-xl;
-}
-
-/* Hero Loading/Error States */
-.loading-container,
-.error-container {
-  @include loading-container(transparent, white);
-}
-
-.loading-spinner {
-  @include loading-spinner();
-}
-
-.content-loading-container .loading-spinner {
-  border: 4px solid rgba(74, 124, 89, 0.2);
-  border-top-color: var(--primary-color);
-}
-
-.retry-button {
-  @include button-primary;
-  margin-top: $spacing-md;
-}
-
-.error-container .retry-button {
-  @include button-base(white, var(--primary-color));
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.9);
-    transform: translateY(-2px);
+    &:focus-visible {
+      outline: 3px solid var(--c-cobalt);
+      outline-offset: 3px;
+      border-radius: var(--r-pill);
+    }
   }
-}
+  &__filter-count {
+    opacity: 0.75;
+    font-weight: 600;
+    margin-left: 0.25rem;
+  }
 
-@include mobile-only {
-  .therapy-videos-grid {
-    grid-template-columns: 1fr;
+  &__cta {
+    text-align: center;
+    color: var(--c-cream);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-3);
+  }
+  &__cta-title {
+    font-family: var(--font-display);
+    font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
+    line-height: var(--lh-tight);
+    color: var(--c-cream);
+    margin: 0;
+  }
+  &__cta-lede {
+    color: var(--c-cream);
+    opacity: 0.85;
+    max-width: 56ch;
+    margin: 0 auto var(--s-4);
+
+    strong { color: var(--c-marigold); }
+  }
+  &__cta-actions {
+    display: flex;
+    gap: var(--s-3);
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }
 </style>

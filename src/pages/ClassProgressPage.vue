@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { getCourseById, type Course, type Chapter, type Video, type Quiz } from '@/data/courses'
+import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
+import { getCourseById, type Course } from '@/data/courses'
 import { useProgressStore } from '@/stores/progress'
 import { useAuthStore } from '@/stores/auth'
 
@@ -16,7 +16,7 @@ const sidebarOpen = ref(true)
 
 onMounted(() => {
   course.value = getCourseById(courseId.value)
-  
+
   if (!course.value) {
     router.push('/classes')
     return
@@ -27,17 +27,14 @@ onMounted(() => {
     return
   }
 
-  // Initialize progress if first time
   const firstChapter = course.value.chapters[0]
   const firstContent = firstChapter.content[0]
   progressStore.initializeCourseProgress(courseId.value, firstChapter.id, firstContent.id)
 
-  // Only navigate if we're not already on a content page (chapterId and contentId not in route)
   const currentChapterId = route.params.chapterId
   const currentContentId = route.params.contentId
-  
+
   if (!currentChapterId || !currentContentId) {
-    // Navigate to current or first content only if not already on a content page
     const currentProgress = progressStore.getCourseProgress(courseId.value)
     if (currentProgress) {
       navigateToContent(currentProgress.currentChapterId, currentProgress.currentContentId)
@@ -48,7 +45,7 @@ onMounted(() => {
 function navigateToContent(chapterId: string, contentId: string) {
   const chapter = course.value?.chapters.find(c => c.id === chapterId)
   const content = chapter?.content.find(c => c.id === contentId)
-  
+
   if (content && 'videoUrl' in content) {
     router.push(`/classes/${courseId.value}/learn/${chapterId}/${contentId}/video`)
   } else if (content && 'questions' in content) {
@@ -70,339 +67,332 @@ function toggleSidebar() {
 
 const totalItems = computed(() => {
   if (!course.value) return 0
-  return course.value.chapters.reduce((sum, chapter) => sum + chapter.content.length, 0) + 1 // +1 for final exam
+  return course.value.chapters.reduce((sum, chapter) => sum + chapter.content.length, 0) + 1
 })
 
-const progressPercentage = computed(() => {
-  return progressStore.getProgressPercentage(courseId.value, totalItems.value)
-})
+const progressPercentage = computed(() =>
+  progressStore.getProgressPercentage(courseId.value, totalItems.value),
+)
 </script>
 
 <template>
   <div v-if="course" class="progress-page">
-    <div class="mobile-header">
-      <button class="sidebar-toggle" @click="toggleSidebar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
+    <div class="progress-page__mobile-bar">
+      <button class="progress-page__toggle" @click="toggleSidebar" aria-label="Toggle course menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6"  x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
         </svg>
-        <span>Course Content</span>
+        Course content
       </button>
-      <div class="mobile-progress">
-        <span>{{ progressPercentage }}% Complete</span>
-      </div>
+      <span class="progress-page__mobile-pct">{{ progressPercentage }}%</span>
     </div>
 
-    <aside :class="['course-sidebar', { open: sidebarOpen }]">
-      <div class="sidebar-header">
-        <router-link :to="`/classes/${courseId}`" class="back-link">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
+    <aside :class="['progress-page__sidebar', { 'is-open': sidebarOpen }]">
+      <header class="progress-page__sidebar-head">
+        <RouterLink :to="`/classes/${courseId}`" class="progress-page__back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
           </svg>
-          <span>Back to Course</span>
-        </router-link>
-        
-        <h2>{{ course.title }}</h2>
-        
-        <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: `${progressPercentage}%` }"></div>
+          Back to course
+        </RouterLink>
+
+        <span class="progress-page__eyebrow">Now Learning</span>
+        <h2 class="progress-page__course-title">{{ course.title }}</h2>
+
+        <div class="progress-page__bar">
+          <div class="progress-page__bar-fill" :style="{ width: `${progressPercentage}%` }" />
         </div>
-        <p class="progress-text">{{ progressPercentage }}% Complete</p>
-      </div>
+        <p class="progress-page__pct">{{ progressPercentage }}% complete</p>
+      </header>
 
-      <div class="sidebar-content">
-        <div v-for="(chapter, chapterIndex) in course.chapters" :key="chapter.id" class="chapter-section">
-          <div class="chapter-title">
-            <span class="chapter-number">Chapter {{ chapterIndex + 1 }}</span>
+      <div class="progress-page__sidebar-body">
+        <section
+          v-for="(chapter, chapterIndex) in course.chapters"
+          :key="chapter.id"
+          class="progress-page__chapter"
+        >
+          <header class="progress-page__chapter-head">
+            <span class="progress-page__chapter-num">0{{ chapterIndex + 1 }}</span>
             <h3>{{ chapter.title }}</h3>
-          </div>
+          </header>
 
-          <ul class="content-list">
-            <li 
-              v-for="(item, itemIndex) in chapter.content" 
+          <ul class="progress-page__list">
+            <li
+              v-for="item in chapter.content"
               :key="item.id"
-              :class="['content-item', { completed: isContentComplete(item.id) }]"
+              :class="['progress-page__item', { 'is-complete': isContentComplete(item.id) }]"
               @click="navigateToContent(chapter.id, item.id)"
             >
-              <div class="content-icon">
-                <svg v-if="isContentComplete(item.id)" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              <span class="progress-page__icon">
+                <svg v-if="isContentComplete(item.id)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
-                <svg v-else-if="'videoUrl' in item" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                <svg v-else-if="'videoUrl' in item" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 11l3 3L22 4"></path>
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>
-              </div>
-              <div class="content-info">
-                <span class="content-title">{{ item.title }}</span>
-                <span v-if="'duration' in item" class="content-duration">{{ item.duration }}</span>
-              </div>
+              </span>
+              <span class="progress-page__item-text">
+                <span class="progress-page__item-title">{{ item.title }}</span>
+                <span v-if="'duration' in item" class="progress-page__item-meta">{{ item.duration }}</span>
+              </span>
             </li>
           </ul>
-        </div>
+        </section>
 
-        <div class="chapter-section">
-          <div class="chapter-title">
-            <h3>Final Exam</h3>
-          </div>
-          <ul class="content-list">
-            <li 
-              :class="['content-item', { completed: progressStore.hasCompletedCourse(courseId) }]"
+        <section class="progress-page__chapter">
+          <header class="progress-page__chapter-head">
+            <span class="progress-page__chapter-num">★</span>
+            <h3>Final exam</h3>
+          </header>
+          <ul class="progress-page__list">
+            <li
+              :class="['progress-page__item', { 'is-complete': progressStore.hasCompletedCourse(courseId) }]"
               @click="navigateToFinalExam"
             >
-              <div class="content-icon">
-                <svg v-if="progressStore.hasCompletedCourse(courseId)" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              <span class="progress-page__icon">
+                <svg v-if="progressStore.hasCompletedCourse(courseId)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
+                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
                 </svg>
-              </div>
-              <div class="content-info">
-                <span class="content-title">{{ course.finalExam.title }}</span>
-                <span class="content-duration">{{ course.finalExam.questions.length }} questions</span>
-              </div>
+              </span>
+              <span class="progress-page__item-text">
+                <span class="progress-page__item-title">{{ course.finalExam.title }}</span>
+                <span class="progress-page__item-meta">{{ course.finalExam.questions.length }} questions</span>
+              </span>
             </li>
           </ul>
-        </div>
+        </section>
       </div>
     </aside>
 
-    <main class="content-area">
+    <main class="progress-page__content">
       <RouterView />
     </main>
   </div>
 </template>
 
 <style scoped lang="scss">
+$sidebar-w: 360px;
+
 .progress-page {
   display: flex;
   min-height: 100vh;
   padding-top: 80px;
-}
+  background: var(--c-cream);
 
-.mobile-header {
-  display: none;
-  position: fixed;
-  top: 80px;
-  left: 0;
-  right: 0;
-  background: white;
-  border-bottom: 1px solid var(--border-light);
-  padding: 1rem;
-  z-index: 100;
-  justify-content: space-between;
-  align-items: center;
-
-  .sidebar-toggle {
-    display: flex;
+  &__mobile-bar {
+    display: none;
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: var(--s-3) var(--s-4);
+    background: var(--c-paper);
+    border-bottom: 2px solid var(--c-ink);
+    justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 1rem;
   }
 
-  .mobile-progress {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    font-weight: 600;
-  }
-}
-
-.course-sidebar {
-  width: 360px;
-  background: var(--bg-light);
-  border-right: 1px solid var(--border-light);
-  height: calc(100vh - 80px);
-  overflow-y: auto;
-  position: sticky;
-  top: 80px;
-  flex-shrink: 0;
-}
-
-.sidebar-header {
-  padding: 2rem;
-  background: white;
-  border-bottom: 2px solid var(--border-light);
-
-  .back-link {
+  &__toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--primary-color);
+    gap: var(--s-2);
+    background: none;
+    border: none;
+    color: var(--c-ink);
+    font-family: var(--font-body);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  &__mobile-pct {
+    font-family: var(--font-accent);
+    color: var(--c-cobalt);
+    font-size: var(--fs-md);
+  }
+
+  &__sidebar {
+    width: $sidebar-w;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    background: var(--c-cream-2);
+    border-right: 3px solid var(--c-ink);
+  }
+
+  &__sidebar-head {
+    padding: var(--s-6) var(--s-5);
+    background: var(--c-paper);
+    border-bottom: 3px solid var(--c-ink);
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--c-cobalt);
     text-decoration: none;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    transition: all 0.2s ease;
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wide);
+    margin-bottom: var(--s-4);
+    transition: gap var(--dur-fast) var(--ease-out);
 
-    &:hover {
-      gap: 0.75rem;
-    }
+    &:hover { gap: var(--s-3); }
   }
 
-  h2 {
-    font-size: 1.5rem;
-    color: var(--text-dark);
-    margin-bottom: 1.5rem;
-    font-family: 'Playfair Display', serif;
+  &__eyebrow {
+    display: block;
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    color: var(--c-fuchsia);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wider);
+    font-weight: 700;
+    margin-bottom: var(--s-1);
   }
 
-  .progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--bg-secondary);
-    border-radius: 4px;
+  &__course-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    color: var(--c-ink);
+    margin: 0 0 var(--s-4);
+    line-height: var(--lh-tight);
+  }
+
+  &__bar {
+    height: 10px;
+    background: var(--c-cream-3);
+    border: 2px solid var(--c-ink);
+    border-radius: 999px;
     overflow: hidden;
-    margin-bottom: 0.5rem;
-
-    .progress-fill {
-      height: 100%;
-      background: var(--gradient);
-      transition: width 0.3s ease;
-    }
   }
 
-  .progress-text {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    font-weight: 600;
+  &__bar-fill {
+    height: 100%;
+    background: var(--c-marigold);
+    transition: width var(--dur-md) var(--ease-out);
   }
-}
 
-.sidebar-content {
-  padding: 1rem 0;
-}
+  &__pct {
+    margin: var(--s-2) 0 0;
+    font-family: var(--font-accent);
+    color: var(--c-cobalt);
+    font-size: var(--fs-md);
+  }
 
-.chapter-section {
-  margin-bottom: 1.5rem;
+  &__sidebar-body { padding: var(--s-4) 0; }
 
-  .chapter-title {
-    padding: 1rem 2rem 0.75rem;
+  &__chapter { margin-bottom: var(--s-5); }
 
-    .chapter-number {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--text-lighter);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.25rem;
-    }
+  &__chapter-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    padding: var(--s-2) var(--s-5) var(--s-3);
 
     h3 {
-      font-size: 1.1rem;
-      color: var(--text-dark);
-      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: var(--fs-md);
+      color: var(--c-ink);
+      margin: 0;
     }
   }
-}
 
-.content-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  &__chapter-num {
+    font-family: var(--font-accent);
+    color: var(--c-marigold-deep);
+    font-size: var(--fs-lg);
+  }
 
-  .content-item {
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    padding: 0.875rem 2rem;
+    gap: var(--s-3);
+    padding: var(--s-3) var(--s-5);
     cursor: pointer;
-    transition: all 0.2s ease;
-    border-left: 3px solid transparent;
+    border-left: 4px solid transparent;
+    transition: background var(--dur-fast), border-color var(--dur-fast);
 
     &:hover {
-      background: rgba(74, 124, 89, 0.05);
-      border-left-color: var(--primary-color);
+      background: var(--c-marigold-soft);
+      border-left-color: var(--c-cobalt);
     }
 
-    &.completed {
-      .content-icon svg {
-        color: var(--success-color);
-      }
-
-      .content-title {
-        color: var(--text-light);
-      }
-    }
-
-    .content-icon {
-      flex-shrink: 0;
-      margin-top: 0.1rem;
-
-      svg {
-        color: var(--text-lighter);
-      }
-    }
-
-    .content-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-
-      .content-title {
-        color: var(--text-dark);
-        font-weight: 500;
-        font-size: 0.95rem;
-      }
-
-      .content-duration {
-        color: var(--text-lighter);
-        font-size: 0.85rem;
-      }
+    &.is-complete {
+      .progress-page__icon { color: var(--c-mint-deep); }
+      .progress-page__item-title { color: var(--c-text-muted); }
     }
   }
-}
 
-.content-area {
-  flex: 1;
-  background: white;
-  overflow-y: auto;
-}
+  &__icon {
+    color: var(--c-text-subtle);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
 
-@media (max-width: 968px) {
-  .mobile-header {
+  &__item-text {
     display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
   }
 
-  .progress-page {
-    padding-top: 140px;
+  &__item-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--c-ink);
+    font-size: var(--fs-sm);
   }
 
-  .course-sidebar {
-    position: fixed;
-    top: 140px;
-    left: -100%;
-    width: 100%;
-    max-width: 360px;
-    z-index: 99;
-    transition: left 0.3s ease;
-    height: calc(100vh - 140px);
+  &__item-meta {
+    font-size: var(--fs-xs);
+    color: var(--c-text-subtle);
+  }
 
-    &.open {
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  @media (max-width: 880px) {
+    &__mobile-bar { display: flex; }
+    padding-top: calc(80px + 56px);
+
+    &__sidebar {
+      position: fixed;
+      top: calc(80px + 56px);
       left: 0;
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-    }
-  }
+      bottom: 0;
+      width: min(100%, 340px);
+      z-index: 90;
+      transform: translateX(-100%);
+      transition: transform var(--dur-md) var(--ease-out);
 
-  .content-area {
-    width: 100%;
+      &.is-open { transform: translateX(0); }
+    }
   }
 }
 </style>

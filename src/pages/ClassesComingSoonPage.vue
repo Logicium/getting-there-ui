@@ -1,266 +1,237 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
-import NewsletterSignup from '@/components/NewsletterSignup.vue'
+import { ref } from 'vue'
+import {
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppEyebrow,
+  AppField,
+  AppHero,
+  AppInput,
+  AppSection,
+} from '@/components/ui'
+
+const email = ref('')
+const submitting = ref(false)
+const success = ref(false)
+const error = ref('')
+
+const includes = [
+  '3 hours of video time for each course',
+  'Ability to pace your learning',
+  '20 multiple choice questions at the end',
+  'Certificate of completion for those achieving 70% or higher score on the exam',
+]
+
+const lineup = [
+  {
+    title: 'About Happiness',
+    body: 'A grounded look at what happiness actually is, the different forms it can take, and small shifts that help more of it show up in everyday life.',
+  },
+  {
+    title: 'Setting and Reaching Goals',
+    body: 'A practical walk-through for choosing goals that matter to you, breaking them into doable steps, and building the momentum to follow through.',
+  },
+  {
+    title: 'Communication: Connecting with Others',
+    body: 'Tools for being heard, listening well, and navigating the everyday conversations that shape your closest relationships.',
+  },
+  {
+    title: 'Coping with Loss',
+    body: 'A gentle, paced exploration of grief and the many forms loss can take, with ideas for caring for yourself as you move through it.',
+  },
+]
+
+async function submit() {
+  error.value = ''
+  success.value = false
+  if (!email.value.trim()) {
+    error.value = 'Please add your email.'
+    return
+  }
+  submitting.value = true
+  try {
+    await new Promise((r) => setTimeout(r, 400))
+    success.value = true
+    email.value = ''
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : 'Something went wrong.'
+  } finally {
+    submitting.value = false
+  }
+}
 </script>
 
 <template>
   <main class="coming-soon-page">
-    <!-- Hero -->
-    <section class="hero">
-      <div class="container">
-        <span class="badge">Coming soon</span>
-        <h1>Online Courses Are Being Developed</h1>
-        <p class="lede">
-          We're putting the finishing touches on our first round of
-          courses so stay tuned.
-          You may find the courses meet Continuing Education
+    <AppHero variant="magazine" tone="marigold" align="center">
+      <template #eyebrow>
+        <AppEyebrow tone="ink">Coming soon</AppEyebrow>
+      </template>
+      <template #title>Online courses are being developed</template>
+      <template #lede>
+        <p>
+          We're putting the finishing touches on our first round of courses
+          so stay tuned. You may find the courses meet Continuing Education
           requirements based on your profession.
         </p>
-      </div>
-    </section>
+      </template>
+      <template #media>
+        <AppCard
+          variant="ticket"
+          tone="paper"
+          shadow-tone="marigold"
+          pad="lg"
+          class="coming-soon-notify"
+        >
+          <template #eyebrow>
+            <AppEyebrow tone="marigold">Get notified</AppEyebrow>
+          </template>
+          <template #title>Be first in line</template>
+          <p class="coming-soon-notify__lede">
+            Drop your email and we'll let you know the moment classes launch.
+          </p>
+          <form class="coming-soon-notify__form" novalidate @submit.prevent="submit">
+            <AppField
+              label="Email"
+              required
+              :for="'coming-soon-email'"
+              :error="error"
+            >
+              <AppInput
+                id="coming-soon-email"
+                v-model="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                :disabled="submitting"
+                required
+              />
+            </AppField>
+            <p v-if="success" class="coming-soon-notify__success">
+              You're on the list. We'll be in touch.
+            </p>
+            <AppButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              block
+              :loading="submitting"
+              :disabled="submitting"
+            >
+              {{ submitting ? 'Subscribing...' : 'Notify me' }}
+            </AppButton>
+          </form>
+        </AppCard>
+      </template>
+    </AppHero>
 
-    <!-- What's included -->
-    <section class="includes-section">
-      <div class="container">
-        <h2 class="section-title">What Online Courses Include</h2>
-        <ul class="includes-list">
-          <li>3 hours of video time for each course</li>
-          <li>Ability to pace your learning</li>
-          <li>20 multiple choice questions at the end</li>
-          <li>Certificate of completion for those achieving 70% or higher score on the exam</li>
-        </ul>
-      </div>
-    </section>
+    <AppSection tone="cream" pad="xl">
+      <AppContainer size="md">
+        <header class="coming-soon-head">
+          <AppEyebrow tone="cobalt">What's inside</AppEyebrow>
+          <h2 class="u-display u-display--md">What online courses include</h2>
+        </header>
+        <AppCard variant="plaque" tone="paper" shadow-tone="cobalt" pad="lg">
+          <ul class="coming-soon-list">
+            <li v-for="item in includes" :key="item">{{ item }}</li>
+          </ul>
+        </AppCard>
+      </AppContainer>
+    </AppSection>
 
-    <!-- Course lineup -->
-    <section class="lineup-section">
-      <div class="container">
-        <h2 class="section-title">Course lineup</h2>
-        <p class="lineup-intro">
-          Each course is being designed as a self-paced experience you can fit
-          around the rest of your life. Here's what's on the way:
-        </p>
-        <ul class="course-list">
-          <li>
-            <strong>About Happiness</strong> &mdash; A grounded look at what
-            happiness actually is, the different forms it can take, and small
-            shifts that help more of it show up in everyday life.
-          </li>
-          <li>
-            <strong>Setting and Reaching Goals</strong> &mdash; A practical
-            walk-through for choosing goals that matter to you, breaking them
-            into doable steps, and building the momentum to follow through.
-          </li>
-          <li>
-            <strong>Communication: Connecting with Others</strong> &mdash;
-            Tools for being heard, listening well, and navigating the everyday
-            conversations that shape your closest relationships.
-          </li>
-          <li>
-            <strong>Coping with Loss</strong> &mdash; A gentle, paced
-            exploration of grief and the many forms loss can take, with ideas
-            for caring for yourself as you move through it.
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- Newsletter / meantime -->
-    <section class="meantime-section">
-      <div class="container meantime-container">
-        <div class="meantime-newsletter">
-          <NewsletterSignup
-            variant="card"
-            source="classes-coming-soon"
-            title="Get the newsletter"
-            description="One thoughtful email per week. We'll let you know the moment classes launch."
-            button-text="Subscribe"
-          />
-        </div>
-      </div>
-    </section>
+    <AppSection tone="cream" pad="xl">
+      <AppContainer size="md">
+        <header class="coming-soon-head">
+          <AppEyebrow tone="fuchsia">On the way</AppEyebrow>
+          <h2 class="u-display u-display--md">Course lineup</h2>
+          <p class="coming-soon-intro">
+            Each course is being designed as a self-paced experience you can fit
+            around the rest of your life. Here's what's on the way:
+          </p>
+        </header>
+        <AppCard variant="plaque" tone="paper" shadow-tone="fuchsia" pad="lg">
+          <ul class="coming-soon-list coming-soon-list--lineup">
+            <li v-for="course in lineup" :key="course.title">
+              <strong>{{ course.title }}</strong> &mdash; {{ course.body }}
+            </li>
+          </ul>
+        </AppCard>
+      </AppContainer>
+    </AppSection>
   </main>
 </template>
 
 <style scoped lang="scss">
+.coming-soon-notify {
+  max-width: 460px;
+  margin-inline: auto;
+
+  &__lede {
+    margin: 0;
+    color: var(--c-text-muted);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    margin-top: var(--s-3);
+  }
+
+  &__success {
+    margin: 0;
+    padding: var(--s-3) var(--s-4);
+    background: var(--c-mint);
+    color: var(--c-ink);
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-md);
+    font-weight: 600;
+  }
+}
+
 .coming-soon-page {
-  min-height: 100vh;
-  padding-top: 80px;
-  background: var(--bg-light);
-}
-
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-/* Hero */
-.hero {
-  background: var(--gradient);
-  color: white;
-  padding: 5rem 0 4rem;
-  text-align: center;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.4rem 1rem;
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 1.5rem;
-}
-
-h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 3rem;
-  font-weight: 700;
-  margin: 0 0 1.25rem;
-  line-height: 1.15;
-}
-
-.lede {
-  font-size: 1.15rem;
-  line-height: 1.6;
-  opacity: 0.95;
-  margin: 0 auto;
-  max-width: 640px;
-}
-
-/* What's included */
-.includes-section {
-  padding: 4rem 0 2rem;
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 2rem;
-  text-align: center;
-  margin: 0 0 2rem;
-  color: var(--text-dark);
-}
-
-.includes-list {
-  max-width: 720px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 16px;
-  padding: 2rem 2.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  list-style: disc;
-  color: var(--text-dark);
-  font-size: 1.05rem;
-  line-height: 1.75;
-
-  li {
-    margin-left: 0.25rem;
-  }
-
-  li + li {
-    margin-top: 0.5rem;
+  :deep(.app-hero__media) {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 }
 
-/* Lineup */
-.lineup-section {
-  padding: 3rem 0 4rem;
-}
-
-.lineup-intro {
-  max-width: 720px;
-  margin: 0 auto 2rem;
-  text-align: center;
-  color: var(--text-light);
-  line-height: 1.6;
-  font-size: 1.05rem;
-}
-
-.course-list {
-  max-width: 760px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 16px;
-  padding: 2rem 2.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  list-style: disc;
-  color: var(--text-dark);
-  font-size: 1.05rem;
-  line-height: 1.7;
-
-  li + li {
-    margin-top: 1rem;
-  }
-
-  strong {
-    color: var(--text-dark);
-  }
-}
-
-/* Meantime */
-.meantime-section {
-  padding: 4rem 0 6rem;
-}
-
-.meantime-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-  align-items: center;
-}
-
-.meantime-copy {
-  h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.85rem;
-    margin: 0 0 1rem;
-    color: var(--text-dark);
-  }
-
-  p {
-    color: var(--text-light);
-    line-height: 1.6;
-    margin: 0 0 1.5rem;
-  }
-}
-
-.meantime-links {
+.coming-soon-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  text-align: center;
+  margin-bottom: var(--s-7);
 }
 
-.meantime-link {
-  display: inline-block;
-  padding: 0.7rem 1.25rem;
-  border: 2px solid var(--primary-color);
-  border-radius: 50px;
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.2s ease, color 0.2s ease;
-
-  &:hover {
-    background: var(--primary-color);
-    color: white;
-  }
+.coming-soon-intro {
+  max-width: 640px;
+  margin: 0;
+  color: var(--c-text-muted);
+  line-height: var(--lh-base);
 }
 
-@media (max-width: 880px) {
-  .meantime-container {
-    grid-template-columns: 1fr;
+.coming-soon-list {
+  margin: 0;
+  padding-left: var(--s-5);
+  color: var(--c-text);
+  line-height: var(--lh-base);
+
+  li + li {
+    margin-top: var(--s-3);
   }
 
-  h1 {
-    font-size: 2.1rem;
-  }
+  &--lineup {
+    list-style: disc;
 
-  .includes-list,
-  .course-list {
-    padding: 1.5rem 1.75rem;
+    strong {
+      color: var(--c-ink);
+      font-weight: 700;
+    }
   }
 }
 </style>

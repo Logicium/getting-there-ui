@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ModalDialog from './ModalDialog.vue';
 import type { BookData } from '@/data/data';
+import { BookOpen, FileText } from 'lucide-vue-next';
 
 interface Props {
   isOpen: boolean;
@@ -27,7 +28,7 @@ const handleClose = () => emit('close');
     <div v-if="book" class="therapy-book-preview">
       <div class="therapy-book-preview-image">
         <img v-if="book.imageUrl" :src="`https://getting-there-cms.onrender.com${book.imageUrl}`" alt="Book cover" class="book-cover-img" />
-        <div v-else class="book-cover">📱</div>
+        <div v-else class="book-cover"><BookOpen :size="56" :stroke-width="1.75" /></div>
         <div class="book-badges">
           <span v-if="book.category === 'Best Seller'" class="preview-badge bestseller">Bestseller</span>
           <span v-if="book.category === 'New Releases'" class="preview-badge new">New Release</span>
@@ -40,7 +41,7 @@ const handleClose = () => emit('close');
         <p class="book-description">{{ book.fullDescription }}</p>
 
         <div class="therapy-book-specs">
-          <h4>📋 Digital Book Information</h4>
+          <h4><FileText :size="18" :stroke-width="2" /> Digital Book Information</h4>
           <div v-for="(value, key) in book.specs" :key="key" class="therapy-spec-item">
             <span class="therapy-spec-label">{{ key }}:</span>
             <span class="therapy-spec-value">{{ value }}</span>

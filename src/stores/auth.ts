@@ -14,19 +14,35 @@ export interface User {
 
 export interface SubscriptionDetails {
   id: string
-  status: 'active' | 'cancelled' | 'expired' | 'past_due'
+  status: 'pending' | 'active' | 'cancelled' | 'expired' | 'past_due'
   amount: number
   currency: string
   billingCycle: 'monthly' | 'yearly' | string
   startDate?: string
   nextBillingDate?: string | null
+  lastPaymentDate?: string | null
   endDate?: string | null
+  cardBrand?: string | null
+  cardLast4?: string | null
+  pendingCheckoutUrl?: string | null
+}
+
+export interface PaymentRecord {
+  id: string
+  amount: number
+  currency: string
+  status: 'pending' | 'completed' | 'failed' | 'refunded'
+  paidAt?: string | null
+  receiptUrl?: string | null
+  cardBrand?: string | null
+  cardLast4?: string | null
 }
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('authToken'))
   const user = ref<User | null>(null)
   const subscription = ref<SubscriptionDetails | null>(null)
+  const payments = ref<PaymentRecord[]>([])
 
   // Load user from localStorage if token exists
   if (token.value) {
@@ -167,6 +183,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     user.value = null
     subscription.value = null
+    payments.value = []
     localStorage.removeItem('authToken')
     localStorage.removeItem('user')
   }
@@ -177,6 +194,83 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('user', JSON.stringify(user.value))
     }
     await checkSubscriptionStatus()
+  }
+
+  async function startSubscriptionCheckout(plan: 'monthly' | 'yearly' = 'monthly') {
+    if (!token.value) {
+      return { success: false, error: 'You must be logged in to subscribe.' }
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/subscription/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token.value}`,
+        },
+        body: JSON.stringify({ plan }),
+      })
+
+      if (response.status === 401) {
+        logout()
+        return { success: false, error: 'Your session expired. Please log in again.' }
+      }
+
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok || !data?.checkoutUrl) {
+        return {
+          success: false,
+          error: data?.message || 'Could not start checkout. Please try again.',
+        }
+      }
+
+      return {
+        success: true,
+        checkoutUrl: data.checkoutUrl as string,
+        subscriptionId: data.subscriptionId as string,
+      }
+    } catch (error) {
+      console.error('startSubscriptionCheckout error:', error)
+      return { success: false, error: 'Could not start checkout. Please try again.' }
+    }
+  }
+
+  async function verifySubscriptionCheckout(subscriptionId: string) {
+    if (!token.value) return { success: false }
+    try {
+      const response = await fetch(
+        `${API_URL}/subscription/verify?subscriptionId=${encodeURIComponent(subscriptionId)}`,
+        {
+          headers: { Authorization: `Bearer ${token.value}` },
+        },
+      )
+      if (!response.ok) return { success: false }
+      const data = await response.json()
+      subscription.value = data.subscription || null
+      if (user.value) {
+        user.value.subscribed = !!data.subscribed
+        localStorage.setItem('user', JSON.stringify(user.value))
+      }
+      return { success: true, subscribed: !!data.subscribed, subscription: data.subscription }
+    } catch (error) {
+      console.error('verifySubscriptionCheckout error:', error)
+      return { success: false }
+    }
+  }
+
+  async function loadPaymentHistory() {
+    if (!token.value) return
+    try {
+      const response = await fetch(`${API_URL}/subscription/payments`, {
+        headers: { Authorization: `Bearer ${token.value}` },
+      })
+      if (!response.ok) return
+      const data = await response.json()
+      payments.value = Array.isArray(data?.payments) ? data.payments : []
+    } catch (error) {
+      console.error('loadPaymentHistory error:', error)
+    }
   }
 
   async function unsubscribe() {
@@ -237,6 +331,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     user,
     subscription,
+    payments,
     isAuthenticated,
     isSubscribed,
     loginWithGoogle,
@@ -248,7 +343,10 @@ export const useAuthStore = defineStore('auth', () => {
     updateUserName,
     markCourseCompleted,
     hasCourseCompleted,
-    checkSubscriptionStatus
+    checkSubscriptionStatus,
+    startSubscriptionCheckout,
+    verifySubscriptionCheckout,
+    loadPaymentHistory,
   }
 })
 

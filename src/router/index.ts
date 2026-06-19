@@ -26,6 +26,7 @@ import CertificatePage from "@/pages/CertificatePage.vue";
 import LoginPage from "@/pages/LoginPage.vue";
 import AccountPage from "@/pages/AccountPage.vue";
 import SubscriptionPage from "@/pages/SubscriptionPage.vue";
+import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage.vue";
 import NewsletterPage from "@/pages/NewsletterPage.vue";
 import ContactPage from "@/pages/ContactPage.vue";
 
@@ -185,6 +186,11 @@ const router = createRouter({
       path: '/subscribe',
       name: 'subscribe',
       component: SubscriptionPage,
+    },
+    {
+      path: '/subscribe/success',
+      name: 'subscribe-success',
+      component: SubscriptionSuccessPage,
     },
     {
       path: '/newsletter',

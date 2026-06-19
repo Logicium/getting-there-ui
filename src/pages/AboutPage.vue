@@ -1,5 +1,20 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue';
+﻿<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import {
+  AppBlob,
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppDots,
+  AppEmptyState,
+  AppEyebrow,
+  AppGrid,
+  AppHero,
+  AppMarquee,
+  AppSection,
+  AppSpinner,
+  AppSquiggle,
+} from '@/components/ui';
 
 // CMS base URL
 const CMS_BASE = (import.meta.env.VITE_CMS_URL || '').toString().trim().replace(/\/$/, '');
@@ -18,6 +33,38 @@ const defaultStats = [
   { id: 2, name: 'Years of Service', statistic: 16 },
   { id: 3, name: 'Client Satisfaction', statistic: 95 },
 ];
+
+const defaultApproach = [
+  {
+    id: 1,
+    title: 'Accredited',
+    description: 'All our clinical staff hold accreditation and experience. We maintain active memberships in professional associations and adhere to strict ethical guidelines.',
+    icon: null,
+  },
+  {
+    id: 2,
+    title: 'Privacy & Confidentiality',
+    description: 'We are HIPAA compliant and take your privacy seriously. All interactions are confidential, and your personal information is protected with industry-standard security measures.',
+    icon: null,
+  },
+  {
+    id: 3,
+    title: 'Continuing Education',
+    description: 'Our team regularly participates in ongoing training and education to stay current with the latest research and best practices in emotional wellness.',
+    icon: null,
+  },
+  {
+    id: 4,
+    title: 'Collaborative Care',
+    description: 'We work closely with other healthcare providers when appropriate and can provide referrals to specialized services when needed.',
+    icon: null,
+  },
+];
+
+const approachItems = computed(() => {
+  if (cards.value && Array.isArray(cards.value) && cards.value.length) return cards.value;
+  return defaultApproach;
+});
 
 function getStatSuffix(s: { name: string }) {
   const name = (s?.name || '').toLowerCase();
@@ -130,628 +177,612 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="about-hero">
-    <div v-if="isLoading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Loading about content...</p>
-    </div>
-
-    <div v-else-if="error" class="error-container">
-      <p>{{ error }}</p>
-      <button @click="fetchHero" class="retry-button">Retry</button>
-    </div>
-
-    <div v-else class="about-hero-content">
-      <div class="hero-text">
-        <div class="hero-badge">{{ (hero && hero.tag) || 'Trusted Mental Wellness Support' }}</div>
-        <h1>{{ (hero && hero.title) || 'Compassionate guidance for lasting change' }}</h1>
+  <main class="about-page">
+    <!-- HERO -->
+    <AppHero variant="editorial" tone="cream" class="about-hero">
+      <template #eyebrow>
+        <AppEyebrow tone="fuchsia">{{ (hero && hero.tag) || 'Trusted Mental Wellness Support' }}</AppEyebrow>
+      </template>
+      <template #title>
+        {{ (hero && hero.title) || 'Compassionate guidance for lasting change' }}
+      </template>
+      <template #lede>
         <p>{{ (hero && hero.description) || 'For over a decade, Getting There has been a beacon of hope for individuals seeking emotional wellness and personal growth. Our practical approach, combined with genuine care, has helped thousands find their path to healing and happiness.' }}</p>
-
-        <div class="hero-stats">
-          <div class="stat-item" v-for="s in (hero && hero.stats ? hero.stats : defaultStats)" :key="s.id">
+      </template>
+      <template #meta>
+        <div class="about-stats">
+          <div
+            v-for="s in (hero && hero.stats ? hero.stats : defaultStats)"
+            :key="s.id"
+            class="about-stat"
+          >
             <span class="stat-number" :data-target="s.statistic" :data-suffix="getStatSuffix(s)">0</span>
-            <span class="stat-label">{{ s.name }}</span>
+            <span class="about-stat__label">{{ s.name }}</span>
           </div>
         </div>
-      </div>
-
-      <div class="hero-visual">
-        <div class="hero-image-container">
+      </template>
+      <template #media>
+        <figure class="about-hero-figure" :aria-hidden="!(hero && hero.image)">
+          <AppBlob tone="marigold" class="about-hero-figure__blob about-hero-figure__blob--a" />
+          <AppBlob tone="cobalt" class="about-hero-figure__blob about-hero-figure__blob--b" />
           <template v-if="hero && hero.image">
-            <img 
-              :src="mediaUrl(hero.image) || ''" 
-              :alt="hero.image.alternativeText || hero.title || 'Hero image'" 
-              class="hero-main-image"
+            <img
+              :src="mediaUrl(hero.image) || ''"
+              :alt="hero.image.alternativeText || hero.title || 'About hero image'"
+              class="about-hero-figure__img"
             />
           </template>
           <template v-else>
-            <div class="hero-placeholder">🌱</div>
+            <div class="about-hero-figure__placeholder">ðŸŒ±</div>
           </template>
+          <AppDots tone="fuchsia" class="about-hero-figure__dots" />
+        </figure>
+      </template>
+    </AppHero>
+
+    <!-- LOADING / ERROR -->
+    <AppSection v-if="isLoading" tone="cream" pad="lg">
+      <AppContainer size="md">
+        <div class="about-state">
+          <AppSpinner size="lg" />
+          <p>Loading about content...</p>
         </div>
-      </div>
-    </div>
-  </section>
+      </AppContainer>
+    </AppSection>
 
-  <main class="about-content">
+    <AppSection v-else-if="error" tone="cream" pad="lg">
+      <AppContainer size="md">
+        <AppEmptyState variant="error" :title="error || 'Something went wrong'">
+          <template #actions>
+            <AppButton variant="primary" @click="fetchHero">Retry</AppButton>
+          </template>
+        </AppEmptyState>
+      </AppContainer>
+    </AppSection>
 
-    <!-- Our Story Section -->
-    <section class="section">
-      <h2 class="section-title fade-in">{{ (history && history.title) || 'Our Story' }}</h2>
-      <div class="story-content">
-        <div class="story-text slide-in-left">
-          <template v-if="history && history.content && history.content.length">
-            <p v-for="(block, idx) in history.content" :key="idx">
-              {{ (block.children || []).map((c:any) => c.text).join('') }}
+    <template v-else>
+      <AppMarquee tone="marigold" :items="['Compassion', 'Curiosity', 'Community', 'Change', 'Care']" />
+
+      <!-- STORY -->
+      <AppSection tone="mint" pad="xl">
+        <AppContainer size="lg">
+          <div class="about-story">
+            <div class="about-story__copy slide-in-left">
+              <AppEyebrow tone="cobalt">Our story</AppEyebrow>
+              <h2 class="u-display u-display--md">{{ (history && history.title) || 'Our Story' }}</h2>
+              <div class="about-story__prose">
+                <template v-if="history && history.content && history.content.length">
+                  <p v-for="(block, idx) in history.content" :key="idx">
+                    {{ (block.children || []).map((c:any) => c.text).join('') }}
+                  </p>
+                </template>
+                <template v-else>
+                  <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective emotional wellness support. We began as a small practice in Colorado, born from Dr. Sue Nesbitt's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
+                  <p>Our founder, Dr. Nesbitt, recognized that many people were struggling not with clinical illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
+                  <p>What started as weekend workshops in community centers has grown into a comprehensive wellness platform. Today, we serve thousands through our digital resources, in-person workshops, and personalized coaching programs.</p>
+                  <p>We remain committed to our founding principles: practical methods, genuine compassion, and the belief that everyone has the capacity for positive change when given the right support and tools.</p>
+                </template>
+              </div>
+            </div>
+            <figure class="about-story__figure slide-in-right">
+              <AppBlob tone="fuchsia" class="about-story__blob" />
+              <template v-if="history && history.picture">
+                <img
+                  class="about-story__img"
+                  :src="mediaUrl(history.picture) || ''"
+                  :alt="history.picture.alternativeText || history.title || 'History image'"
+                />
+              </template>
+              <template v-else>
+                <div class="about-story__placeholder">ðŸ§ </div>
+              </template>
+            </figure>
+          </div>
+        </AppContainer>
+      </AppSection>
+
+      <!-- MISSION -->
+      <AppSection tone="cream-2" pad="xl">
+        <AppContainer size="lg">
+          <header class="about-section-head fade-in">
+            <AppEyebrow tone="marigold">Our mission</AppEyebrow>
+            <h2 class="u-display u-display--md">{{ (mission && mission.title) || 'Getting There Mission: Increase Happiness' }}</h2>
+            <p class="about-section-head__lede">
+              {{ (mission && mission.Description) || 'There are many kinds of happiness. Contentment with self and the life one is living is longer lasting than moments of peace or excitement but all three make us happy. Activities and accomplishments give each of us pleasure, another kind of happiness. Getting There offers information, ideas, and strategies designed to provide you with resources as you set and plan your happiness goals of whatever kind.' }}
             </p>
-          </template>
-          <template v-else>
-            <p>Getting There was founded on a simple yet profound belief: everyone deserves access to compassionate, effective emotional wellness support. We began as a small practice in Colorado, born from Dr. Sue Nesbitt's vision to bridge the gap between traditional therapy and accessible wellness coaching.</p>
+          </header>
 
-            <p>Our founder, Dr. Nesbitt, recognized that many people were struggling not with clinical illness, but with life transitions, goal achievement, and emotional resilience. Traditional therapy wasn't always the right fit, yet these individuals needed more than generic self-help resources.</p>
+          <AppGrid :min="280" gap="md">
+            <template v-if="mission && mission.cards && mission.cards.length">
+              <AppCard
+                v-for="card in mission.cards"
+                :key="card.id"
+                variant="plaque"
+                tone="paper"
+                shadow-tone="cobalt"
+                pad="lg"
+              >
+                <div class="value-icon">
+                  <img
+                    v-if="card.icon && card.icon.url"
+                    :src="'https://getting-there-cms.onrender.com'+card.icon.url"
+                    :alt="card.title"
+                    class="value-icon__img"
+                  />
+                  <span v-else aria-hidden="true">
+                    {{ card.title.includes('Compassionate') ? 'ðŸ¤' : card.title.includes('Evidence') ? 'ðŸ”¬' : 'ðŸŒ' }}
+                  </span>
+                </div>
+                <template #title>{{ card.title }}</template>
+                <p>{{ card.description }}</p>
+              </AppCard>
+            </template>
+            <template v-else>
+              <AppCard variant="plaque" tone="paper" shadow-tone="cobalt" pad="lg">
+                <div class="value-icon"><span aria-hidden="true">ðŸ¤</span></div>
+                <template #title>Compassionate Care</template>
+                <p>We approach every interaction with empathy, understanding, and genuine care for your wellbeing and unique journey.</p>
+              </AppCard>
+              <AppCard variant="plaque" tone="paper" shadow-tone="marigold" pad="lg">
+                <div class="value-icon"><span aria-hidden="true">ðŸ”¬</span></div>
+                <template #title>Practical Methods</template>
+                <p>Our approaches are grounded in research from psychology, neuroscience, and positive psychology to ensure they're useful in everyday life.</p>
+              </AppCard>
+              <AppCard variant="plaque" tone="paper" shadow-tone="fuchsia" pad="lg">
+                <div class="value-icon"><span aria-hidden="true">ðŸŒ</span></div>
+                <template #title>Accessible Support</template>
+                <p>We believe wellness support should be available to everyone, regardless of background, location, or circumstances.</p>
+              </AppCard>
+            </template>
+          </AppGrid>
+        </AppContainer>
+      </AppSection>
 
-            <p>What started as weekend workshops in community centers has grown into a comprehensive wellness platform. Today, we serve thousands through our digital resources, in-person workshops, and personalized coaching programs. Our approach combines the rigor of clinical psychology with the accessibility of modern wellness practices.</p>
+      <AppSquiggle tone="cobalt" />
 
-            <p>We remain committed to our founding principles: practical methods, genuine compassion, and the belief that everyone has the capacity for positive change when given the right support and tools.</p>
-          </template>
-        </div>
-        <div class="story-visual slide-in-right">
-          <template v-if="history && history.picture">
-            <img class="story-image" :src="mediaUrl(history.picture) || ''" :alt="history.picture.alternativeText || history.title || 'History image'" />
-          </template>
-          <template v-else>🧠</template>
-        </div>
-      </div>
-    </section>
+      <!-- APPROACH / CREDENTIALS -->
+      <AppSection tone="marigold" pad="xl">
+        <AppContainer size="lg">
+          <div class="about-approach fade-in">
+            <aside class="about-approach__aside">
+              <AppEyebrow tone="ink">Our approach</AppEyebrow>
+              <h2 class="u-display u-display--md">Our Approach to Happiness</h2>
+              <p class="about-approach__lede">
+                We build support around practical tools, trusted care, and progress you can feel in everyday life.
+              </p>
+            </aside>
 
-    <!-- Mission Section -->
-    <section class="section">
-      <div class="mission-section fade-in">
-        <h2 class="section-title">{{ (mission && mission.title) || 'Getting There Mission: Increase Happiness' }}</h2>
-        <p class="mission-text">
-          {{ (mission && mission.Description) || 'There are many kinds of happiness. Contentment with self and the life one is living is longer lasting than moments of peace or excitement but all three make us happy. Activities and accomplishments give each of us pleasure, another kind of happiness. Getting There offers information, ideas, and strategies designed to provide you with resources as you set and plan your happiness goals of whatever kind.' }}
-        </p>
-
-        <div class="mission-values">
-          <div class="value-item" v-for="card in (mission && mission.cards ? mission.cards : [])" :key="card.id">
-            <div class="value-icon" v-if="card.icon && card.icon.url">
-              <img :src="'https://getting-there-cms.onrender.com'+card.icon.url" :alt="card.title" class="icon-image" />
-            </div>
-            <div class="value-icon" v-else>
-              {{ card.title.includes('Compassionate') ? '🤝' : card.title.includes('Evidence') ? '🔬' : '🌍' }}
-            </div>
-            <h3 class="value-title">{{ card.title }}</h3>
-            <p class="value-description">{{ card.description }}</p>
+            <ol class="about-approach__list">
+              <li
+                v-for="(card, i) in approachItems"
+                :key="card.id"
+                class="about-approach__row"
+                :data-tone="(['cobalt', 'fuchsia', 'mint', 'ink'] as const)[i % 4]"
+              >
+                <span class="about-approach__num">{{ String(i + 1).padStart(2, '0') }}</span>
+                <div class="about-approach__copy">
+                  <h3 class="about-approach__title">{{ card.title }}</h3>
+                  <p class="about-approach__desc">{{ card.description }}</p>
+                </div>
+                <div class="about-approach__icon" v-if="card.icon && card.icon.url" aria-hidden="true">
+                  <img
+                    :src="'https://getting-there-cms.onrender.com' + card.icon.url"
+                    :alt="''"
+                    class="value-icon__img"
+                  />
+                </div>
+              </li>
+            </ol>
           </div>
+        </AppContainer>
+      </AppSection>
 
-          <!-- Fallback if no cards are available -->
-          <template v-if="!mission || !mission.cards || mission.cards.length === 0">
-            <div class="value-item">
-              <div class="value-icon">🤝</div>
-              <h3 class="value-title">Compassionate Care</h3>
-              <p class="value-description">We approach every interaction with empathy, understanding, and genuine care for your wellbeing and unique journey.</p>
+      <!-- CTA -->
+      <AppSection tone="ink" pad="xl">
+        <AppContainer size="md">
+          <div class="about-cta fade-in">
+            <h2 class="about-cta__title">{{ (action && action.actiontext) || 'Ready to begin your wellness journey?' }}</h2>
+            <p v-if="action && action.Description" class="about-cta__lede">{{ action.Description }}</p>
+            <div class="about-cta__actions">
+              <AppButton to="/events" variant="primary" size="lg">
+                {{ (action && action.buttontext) || 'Explore Our Programs' }}
+              </AppButton>
             </div>
-            <div class="value-item">
-              <div class="value-icon">🔬</div>
-              <h3 class="value-title">Practical Methods</h3>
-              <p class="value-description">Our approaches are grounded in research from psychology, neuroscience, and positive psychology to ensure they're useful in everyday life.</p>
-            </div>
-            <div class="value-item">
-              <div class="value-icon">🌍</div>
-              <h3 class="value-title">Accessible Support</h3>
-              <p class="value-description">We believe wellness support should be available to everyone, regardless of background, location, or circumstances.</p>
-            </div>
-          </template>
-        </div>
-      </div>
-    </section>
-
-
-    <!-- Credentials Section -->
-    <section class="section">
-      <div class="credentials-section fade-in">
-        <h2 class="section-title">Our Approach to Happiness</h2>
-        <div class="credentials-grid">
-          <div class="credential-item" v-for="card in cards" :key="card.id" v-if="cards && cards.length">
-            <div class="credential-icon" v-if="card.icon && card.icon.url">
-              <img :src="'https://getting-there-cms.onrender.com'+card.icon.url" :alt="card.title" class="icon-image" />
-            </div>
-            <h3>{{ card.title }}</h3>
-            <p>{{ card.description }}</p>
           </div>
-
-          <!-- Fallback if no cards are available -->
-          <template v-if="!cards || !cards.length">
-            <div class="credential-item">
-              <div class="credential-icon">🛡️</div>
-              <h3>Accredited</h3>
-              <p>All our clinical staff hold accreditation and experience. We maintain active memberships in professional associations and adhere to strict ethical guidelines.</p>
-            </div>
-            <div class="credential-item">
-              <div class="credential-icon">🔒</div>
-              <h3>Privacy & Confidentiality</h3>
-              <p>We are HIPAA compliant and take your privacy seriously. All interactions are confidential, and your personal information is protected with industry-standard security measures.</p>
-            </div>
-            <div class="credential-item">
-              <div class="credential-icon">📚</div>
-              <h3>Continuing Education</h3>
-              <p>Our team regularly participates in ongoing training and education to stay current with the latest research and best practices in emotional wellness.</p>
-            </div>
-            <div class="credential-item">
-              <div class="credential-icon">🤝</div>
-              <h3>Collaborative Care</h3>
-              <p>We work closely with other healthcare providers when appropriate and can provide referrals to specialized services when needed.</p>
-            </div>
-          </template>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA Section -->
-    <div class="cta-section fade-in">
-      <h2>{{ (action && action.actiontext) || 'Ready to begin your wellness journey?' }}</h2>
-      <p>{{ (action && action.Description) }}</p>
-      <div class="cta-buttons">
-        <router-link to="/events" class="cta-btn">{{ (action && action.buttontext) || 'Explore Our Programs' }}</router-link>
-      </div>
-    </div>
+        </AppContainer>
+      </AppSection>
+    </template>
   </main>
 </template>
 
 <style scoped lang="scss">
-@import '../assets/common';
-@import '@/assets/scss/mixins';
-@import '@/assets/scss/variables';
+.about-page { color: var(--c-text); }
 
-* {
+/* ----- HERO ----- */
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+.about-stat {
+  border: 2px solid var(--c-ink);
+  background: var(--c-paper);
+  border-radius: var(--r-md);
+  padding: var(--s-4) var(--s-3);
+  text-align: center;
+  box-shadow: 4px 4px 0 0 var(--c-cobalt);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+
+  .stat-number {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--fs-3xl);
+    color: var(--c-ink);
+    line-height: var(--lh-tight);
+  }
+  &__label {
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wide);
+    color: var(--c-text-muted);
+    font-weight: 600;
+  }
+}
+
+.about-hero-figure {
+  position: relative;
   margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Hero Section */
-.about-hero {
-  @extend .hero-base;
-  background: var(--gradient-neutral);
-  color: var(--text-dark);
-
-  &::before {
-    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%234a7c59" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
-    animation: float 30s ease-in-out infinite;
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(180deg); }
-}
-
-.icon-image {
-  width: 70px;
-  height: 70px;
-  margin-right: $spacing-sm;
-}
-
-.about-hero-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 $spacing-xl;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: $spacing-3xl;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-
-  @include mobile-only {
-    grid-template-columns: 1fr;
-    gap: $spacing-xl;
-    text-align: center;
-  }
-}
-
-.hero-badge {
-  display: inline-block;
-  background: var(--bg-sage);
-  color: var(--primary-color);
-  padding: $spacing-sm $spacing-md;
-  border-radius: $radius-2xl;
-  font-size: $font-size-sm;
-  font-weight: 600;
-  margin-bottom: $spacing-lg;
-  border: 1px solid var(--border-light);
-}
-
-.hero-text h1 {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
-  font-weight: 700;
-  margin-bottom: $spacing-lg;
-  line-height: 1.2;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-
-  @include mobile-only {
-    font-size: $font-size-4xl;
-  }
-}
-
-.hero-text p {
-  font-size: $font-size-lg;
-  opacity: 0.9;
-  margin-bottom: $spacing-xl;
-  line-height: 1.6;
-  color: var(--text-light);
-}
-
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: $spacing-xl;
-
-  @include mobile-only {
-    grid-template-columns: 1fr;
-    gap: $spacing-md;
-  }
-}
-
-.stat-item {
-  text-align: center;
-  padding: $spacing-lg;
-  background: white;
-  border-radius: $radius-lg;
-  box-shadow: 0 8px 25px var(--shadow-light);
-  border: 1px solid var(--border-light);
-}
-
-.stat-number {
-  font-size: $font-size-4xl;
-  font-weight: 800;
-  display: block;
-  margin-bottom: $spacing-sm;
-  color: var(--primary-color);
-}
-
-.stat-label {
-  font-size: $font-size-sm;
-  color: var(--text-light);
-  font-weight: 500;
-}
-
-.hero-visual {
-  position: relative;
-  height: 500px;
-  @include flex-center;
-
-  @include mobile-only {
-    height: 300px;
-  }
-}
-
-.hero-image-container {
-  position: relative;
+  aspect-ratio: 4 / 5;
   width: 100%;
-  height: 100%;
-  border-radius: $radius-xl;
-  overflow: hidden;
-  box-shadow: 0 20px 60px var(--shadow-medium);
-}
+  max-width: 460px;
+  margin-inline: auto;
 
-.hero-main-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  @include image-cover;
-  border-radius: $radius-xl;
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: scale(1.02);
+  &__blob {
+    position: absolute;
+    width: 65%; height: 65%;
+    &--a { top: -8%; left: -8%; }
+    &--b { bottom: -6%; right: -4%; width: 50%; height: 50%; }
+  }
+  &__img,
+  &__placeholder {
+    position: relative;
+    z-index: 1;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border: 3px solid var(--c-ink);
+    border-radius: var(--r-asym-a);
+    box-shadow: var(--shadow-block);
+  }
+  &__placeholder {
+    display: grid; place-items: center;
+    font-size: 6rem;
+    background: var(--c-mint);
+  }
+  &__dots {
+    position: absolute;
+    bottom: -4%; right: 6%;
+    width: 64px; height: 64px;
+    z-index: 2;
   }
 }
 
-.hero-placeholder {
-  width: 100%;
-  height: 100%;
-  @include flex-center;
-  font-size: 8rem;
-  background: var(--gradient);
-  border-radius: $radius-xl;
-
-  @include mobile-only {
-    font-size: 4rem;
-  }
-}
-
-/* Main Content */
-.about-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: $spacing-3xl $spacing-xl;
-}
-
-.section {
-  margin-bottom: $spacing-3xl;
-}
-
-/* Our Story Section */
-.story-content {
-  @include grid-two($spacing-3xl);
+/* ----- SECTION HEAD ----- */
+.about-section-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-}
+  gap: var(--s-3);
+  margin-bottom: var(--s-8);
 
-.story-text {
-  font-size: $font-size-lg;
-  line-height: 1.8;
-  color: var(--text-light);
-  text-align: justify;
-
-  p {
-    margin-bottom: $spacing-lg;
+  &__lede {
+    font-family: var(--font-body);
+    color: var(--c-text-muted);
+    max-width: 70ch;
+    line-height: var(--lh-base);
+    margin: 0;
   }
 }
 
-.story-visual {
-  background: var(--gradient);
-  height: 400px;
-  border-radius: $radius-xl;
-  @include flex-center;
-  color: white;
-  font-size: $font-size-4xl;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 15px 40px var(--shadow-medium);
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(1px);
-  }
-
-  img.story-image {
-    position: absolute;
-    inset: 0;
-    @include image-cover;
-  }
-}
-
-/* Mission Section */
-.mission-section {
-  @include card-base(white, $radius-xl, $spacing-3xl);
+/* ----- STATE ----- */
+.about-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
   text-align: center;
+  color: var(--c-text-muted);
 }
 
-.mission-text {
-  font-size: $font-size-xl;
-  line-height: 1.7;
-  color: var(--text-light);
-  max-width: 800px;
-  margin: 0 auto $spacing-xl;
-}
+/* ----- STORY ----- */
+.about-story {
+  display: grid;
+  gap: var(--s-8);
+  align-items: center;
 
-.mission-values {
-  @include grid-auto(300px, $spacing-xl);
-  margin-top: $spacing-2xl;
+  @media (min-width: 880px) {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: var(--s-10);
+  }
 
-  @include mobile-only {
-    grid-template-columns: 1fr;
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+  &__prose p {
+    margin: 0 0 var(--s-3);
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    line-height: var(--lh-base);
+    color: var(--c-text);
+  }
+  &__figure {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 4 / 5;
+  }
+  &__blob {
+    position: absolute;
+    inset: -6% auto auto -6%;
+    width: 60%; height: 60%;
+  }
+  &__img,
+  &__placeholder {
+    position: relative;
+    z-index: 1;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border: 3px solid var(--c-ink);
+    border-radius: var(--r-asym-b);
+    box-shadow: var(--shadow-block);
+  }
+  &__placeholder {
+    display: grid; place-items: center;
+    font-size: 6rem;
+    background: var(--c-cream-2);
   }
 }
 
-.value-item {
-  @include card-base(var(--bg-light), $radius-xl, $spacing-xl);
-  text-align: center;
-
-  &:hover {
-    background: var(--bg-sage);
-  }
-}
-
+/* ----- VALUE ICON (used in mission & approach cards) ----- */
 .value-icon {
-  font-size: $font-size-4xl;
-  margin-bottom: $spacing-md;
-  display: flex;
-  justify-content: center;
+  display: inline-flex;
   align-items: center;
-  transition: all 0.3s ease;
-}
-
-.value-icon img {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  transition: all 0.3s ease;
-}
-
-/* Vibrant color filters for mission value icons */
-.value-item:nth-child(1) .value-icon img,
-.value-item:nth-child(1) .value-icon svg {
-  filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(240deg) brightness(102%) contrast(107%);
-  /* Electric Purple/Violet */
-}
-
-.value-item:nth-child(1):hover .value-icon img,
-.value-item:nth-child(1):hover .value-icon svg {
-  filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(240deg) brightness(102%) contrast(107%) drop-shadow(0 4px 8px rgba(103, 58, 183, 0.5));
-}
-
-.value-item:nth-child(2) .value-icon img,
-.value-item:nth-child(2) .value-icon svg {
-  filter: invert(42%) sepia(93%) saturate(1352%) hue-rotate(335deg) brightness(119%) contrast(119%);
-  /* Hot Pink/Fuchsia */
-}
-
-.value-item:nth-child(2):hover .value-icon img,
-.value-item:nth-child(2):hover .value-icon svg {
-  filter: invert(42%) sepia(93%) saturate(1352%) hue-rotate(335deg) brightness(119%) contrast(119%) drop-shadow(0 4px 8px rgba(233, 30, 99, 0.5));
-}
-
-.value-item:nth-child(3) .value-icon img,
-.value-item:nth-child(3) .value-icon svg {
-  filter: invert(55%) sepia(98%) saturate(1676%) hue-rotate(157deg) brightness(95%) contrast(101%);
-  /* Teal/Aqua */
-}
-
-.value-item:nth-child(3):hover .value-icon img,
-.value-item:nth-child(3):hover .value-icon svg {
-  filter: invert(55%) sepia(98%) saturate(1676%) hue-rotate(157deg) brightness(95%) contrast(101%) drop-shadow(0 4px 8px rgba(0, 150, 136, 0.5));
-}
-
-.value-title {
-  @include heading-small;
-}
-
-.value-description {
-  @include text-muted;
-}
-
-/* Credentials Section */
-.credentials-section {
-  background: var(--bg-light);
-  padding: $spacing-3xl;
-  border-radius: $radius-2xl;
-  border: 1px solid var(--border-light);
-}
-
-.credentials-grid {
-  @include grid-two($spacing-xl);
-  margin-top: $spacing-xl;
-}
-
-.credential-item {
-  @include card-base(white, $radius-xl, $spacing-xl);
-}
-
-.credential-icon {
-  font-size: $font-size-4xl;
-  margin-bottom: $spacing-md;
-  display: flex;
   justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
+  width: 64px; height: 64px;
+  border-radius: var(--r-md);
+  background: var(--c-cream-2);
+  border: 2px solid var(--c-ink);
+  font-size: 1.75rem;
+  margin-bottom: var(--s-2);
+
+  &__img {
+    width: 40px; height: 40px;
+    object-fit: contain;
+  }
 }
 
-.credential-icon img {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  transition: all 0.3s ease;
+/* ----- APPROACH: editorial strip list (no card grid) ----- */
+.about-approach {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-6);
+
+  @media (min-width: 960px) {
+    grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.4fr);
+    gap: var(--s-10);
+    align-items: start;
+  }
 }
 
-/* Vibrant color filters for credential icons */
-.credential-item:nth-child(1) .credential-icon img,
-.credential-item:nth-child(1) .credential-icon svg {
-  filter: invert(63%) sepia(71%) saturate(4456%) hue-rotate(359deg) brightness(101%) contrast(101%);
-  /* Sunny Yellow */
-}
-
-.credential-item:nth-child(1):hover .credential-icon img,
-.credential-item:nth-child(1):hover .credential-icon svg {
-  filter: invert(63%) sepia(71%) saturate(4456%) hue-rotate(359deg) brightness(101%) contrast(101%) drop-shadow(0 4px 8px rgba(255, 193, 7, 0.5));
-}
-
-.credential-item:nth-child(2) .credential-icon img,
-.credential-item:nth-child(2) .credential-icon svg {
-  filter: invert(58%) sepia(96%) saturate(4498%) hue-rotate(128deg) brightness(100%) contrast(102%);
-  /* Vibrant Lime Green */
-}
-
-.credential-item:nth-child(2):hover .credential-icon img,
-.credential-item:nth-child(2):hover .credential-icon svg {
-  filter: invert(58%) sepia(96%) saturate(4498%) hue-rotate(128deg) brightness(100%) contrast(102%) drop-shadow(0 4px 8px rgba(139, 195, 74, 0.5));
-}
-
-.credential-item:nth-child(3) .credential-icon img,
-.credential-item:nth-child(3) .credential-icon svg {
-  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%);
-  /* Bright Cyan/Turquoise */
-}
-
-.credential-item:nth-child(3):hover .credential-icon img,
-.credential-item:nth-child(3):hover .credential-icon svg {
-  filter: invert(47%) sepia(89%) saturate(1853%) hue-rotate(185deg) brightness(98%) contrast(101%) drop-shadow(0 4px 8px rgba(0, 188, 212, 0.4));
-}
-
-.credential-item:nth-child(4) .credential-icon img,
-.credential-item:nth-child(4) .credential-icon svg {
-  filter: invert(62%) sepia(57%) saturate(3333%) hue-rotate(2deg) brightness(103%) contrast(102%);
-  /* Bright Red/Coral */
-}
-
-.credential-item:nth-child(4):hover .credential-icon img,
-.credential-item:nth-child(4):hover .credential-icon svg {
-  filter: invert(62%) sepia(57%) saturate(3333%) hue-rotate(2deg) brightness(103%) contrast(102%) drop-shadow(0 4px 8px rgba(244, 67, 54, 0.5));
-}
-
-.credential-item h3 {
-  @include heading-small;
-}
-
-.credential-item p {
-  @include text-muted;
-}
-
-/* CTA Section */
-.cta-section {
-  background: var(--primary-color);
-  color: white;
-  padding: $spacing-3xl;
-  border-radius: $radius-2xl;
-  text-align: center;
-  margin-top: $spacing-3xl;
-  box-shadow: 0 15px 40px var(--shadow-medium);
+.about-approach__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
 
   h2 {
-    @include heading-large;
-    color: white;
-    font-family: 'Playfair Display', serif;
+    margin: 0;
   }
 
-  p {
-    font-size: $font-size-lg;
-    opacity: 0.9;
-    margin-bottom: $spacing-xl;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
+  @media (min-width: 960px) {
+    position: sticky;
+    top: var(--s-7);
   }
 }
 
-.cta-buttons {
+.about-approach__lede {
+  margin: 0;
+  font-family: var(--font-body);
+  color: color-mix(in srgb, var(--c-ink) 76%, black);
+  line-height: var(--lh-base);
+}
+
+.about-approach__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--c-ink);
+}
+
+.about-approach__row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: start;
+  padding: var(--s-5) var(--s-4) var(--s-5) calc(var(--s-4) + 12px);
+  border-bottom: 2px solid var(--c-ink);
+  position: relative;
+
+  @media (min-width: 680px) {
+    grid-template-columns: 64px minmax(0, 1fr) 72px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 12px;
+    background: var(--approach-tone, var(--c-cobalt));
+  }
+
+  &[data-tone='cobalt'] {
+    --approach-tone: var(--c-cobalt);
+    background: color-mix(in srgb, var(--c-cobalt) 18%, var(--c-marigold));
+  }
+
+  &[data-tone='fuchsia'] {
+    --approach-tone: var(--c-fuchsia);
+    background: color-mix(in srgb, var(--c-fuchsia) 18%, var(--c-marigold));
+  }
+
+  &[data-tone='mint'] {
+    --approach-tone: var(--c-mint-deep);
+    background: color-mix(in srgb, var(--c-mint) 24%, var(--c-marigold));
+  }
+
+  &[data-tone='ink'] {
+    --approach-tone: var(--c-ink);
+    background: color-mix(in srgb, var(--c-ink) 10%, var(--c-marigold));
+  }
+}
+
+.about-approach__num {
+  display: inline-block;
+  font-family: var(--font-accent);
+  font-size: clamp(var(--fs-2xl), 3.2vw, var(--fs-4xl));
+  line-height: 1;
+  color: var(--c-ink);
+  text-align: center;
+}
+
+.about-approach__copy {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--s-2);
 }
 
-.cta-btn {
-  background: var(--accent-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(244, 162, 97, 0.3);
+.about-approach__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(var(--fs-xl), 2.6vw, var(--fs-3xl));
+  line-height: var(--lh-tight);
+  color: var(--c-ink);
+}
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(244, 162, 97, 0.4);
-  }
+.about-approach__desc {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  color: color-mix(in srgb, var(--c-ink) 80%, black);
+}
 
-  &.secondary {
-    background: transparent;
-    border: 2px solid white;
-    box-shadow: none;
+.about-approach__icon {
+  display: none;
 
-    &:hover {
-      background: white;
-      color: var(--primary-color);
-    }
+  @media (min-width: 680px) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    background: color-mix(in srgb, white 70%, var(--approach-tone, var(--c-cobalt)));
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-sm);
   }
 }
+
+.about-approach-card {
+  display: flex;
+  flex-direction: column;
+
+  &__num {
+    display: inline-block;
+    font-family: var(--font-accent);
+    font-size: var(--fs-2xl);
+    line-height: 1;
+    color: var(--c-fuchsia);
+    letter-spacing: var(--ls-tight);
+  }
+
+  :deep(.app-card__title) {
+    font-family: var(--font-display);
+    font-size: clamp(var(--fs-xl), 2.6vw, var(--fs-3xl));
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-tight);
+    color: var(--c-ink);
+    margin: var(--s-2) 0 var(--s-3);
+  }
+
+  :deep(.app-card__body) p,
+  p {
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    line-height: var(--lh-loose);
+    color: var(--c-text);
+    margin: 0;
+  }
+
+  .value-icon {
+    margin-bottom: var(--s-4);
+  }
+}
+
+/* ----- CTA ----- */
+.about-cta {
+  text-align: center;
+  color: var(--c-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+
+  &__title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
+    line-height: var(--lh-tight);
+    color: var(--c-cream);
+    margin: 0;
+  }
+  &__lede {
+    font-family: var(--font-body);
+    color: var(--c-cream);
+    opacity: 0.85;
+    max-width: 60ch;
+    margin: 0;
+    line-height: var(--lh-base);
+  }
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    justify-content: center;
+    margin-top: var(--s-2);
+  }
+}
+
+/* ----- Fade-in classes (observer-driven from script) ----- */
+.fade-in,
+.slide-in-left,
+.slide-in-right {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+  &.visible { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+.slide-in-left  { transform: translateX(-30px); &.visible { transform: none; } }
+.slide-in-right { transform: translateX(30px);  &.visible { transform: none; } }
 </style>

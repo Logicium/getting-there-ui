@@ -3,6 +3,15 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCourseById } from '@/data/courses'
 import { useAuthStore } from '@/stores/auth'
+import {
+  AppBadge,
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppEyebrow,
+  AppHero,
+  AppSection,
+} from '@/components/ui'
 
 const route = useRoute()
 const router = useRouter()
@@ -42,61 +51,58 @@ function handleSubscribe() {
 
 <template>
   <main v-if="course" class="preview-page">
-    <section class="hero">
-      <div class="container">
-        <div class="hero-content">
-          <div class="hero-text">
-            <div class="breadcrumb">
-              <router-link to="/classes">Classes</router-link>
-              <span>/</span>
-              <span>{{ course.title }}</span>
+    <AppHero variant="editorial" tone="cream" align="left">
+      <template #eyebrow>
+        <AppEyebrow tone="cobalt">
+          <router-link to="/classes" class="preview-crumb">Classes</router-link>
+          / {{ course.title }}
+        </AppEyebrow>
+      </template>
+      <template #title>{{ course.title }}</template>
+      <template #lede>
+        <p>{{ course.subtitle }}</p>
+      </template>
+      <template #actions>
+        <AppButton
+          v-if="authStore.isAuthenticated && authStore.isSubscribed"
+          variant="primary"
+          size="lg"
+          @click="startCourse"
+        >
+          Start course
+        </AppButton>
+        <AppButton v-else variant="primary" size="lg" @click="handleSubscribe">
+          Get access
+        </AppButton>
+      </template>
+      <template #meta>
+        <ul class="preview-meta">
+          <li>
+            <span class="preview-meta__label">Duration</span>
+            <AppBadge tone="cobalt" filled>{{ course.duration }}</AppBadge>
+          </li>
+          <li>
+            <span class="preview-meta__label">Lessons</span>
+            <AppBadge tone="marigold" filled>{{ course.totalLessons }}</AppBadge>
+          </li>
+          <li>
+            <span class="preview-meta__label">Level</span>
+            <AppBadge tone="fuchsia" filled>{{ course.level }}</AppBadge>
+          </li>
+          <li v-if="course.instructor.avatar" class="preview-meta__instructor">
+            <img :src="course.instructor.avatar" :alt="course.instructor.name" />
+            <div>
+              <div class="preview-meta__name">{{ course.instructor.name }}</div>
+              <div class="preview-meta__title">{{ course.instructor.title }}</div>
             </div>
-            <h1>{{ course.title }}</h1>
-            <p class="subtitle">{{ course.subtitle }}</p>
-            
-            <div class="course-highlights">
-              <div class="highlight">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <span>{{ course.duration }}</span>
-              </div>
-              <div class="highlight">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                </svg>
-                <span>{{ course.totalLessons }} lessons</span>
-              </div>
-              <div class="highlight">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                </svg>
-                <span>{{ course.level }}</span>
-              </div>
-            </div>
+          </li>
+        </ul>
+      </template>
+    </AppHero>
 
-            <div class="instructor">
-              <img 
-                v-if="course.instructor.avatar" 
-                :src="course.instructor.avatar" 
-                :alt="course.instructor.name"
-              />
-              <div>
-                <div class="instructor-name">{{ course.instructor.name }}</div>
-                <div class="instructor-title">{{ course.instructor.title }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="video-section">
-      <div class="container">
-        <div class="video-wrapper">
+    <AppSection tone="cream-2" pad="lg">
+      <AppContainer size="lg">
+        <div class="preview-video">
           <iframe
             :src="course.introVideo.videoUrl"
             :title="course.introVideo.title"
@@ -105,482 +111,453 @@ function handleSubscribe() {
             allowfullscreen
           ></iframe>
         </div>
-      </div>
-    </section>
+      </AppContainer>
+    </AppSection>
 
-    <section class="content-section">
-      <div class="container">
-        <div class="content-grid">
-          <div class="main-content">
-            <div class="section">
-              <h2>About This Course</h2>
-              <p>{{ course.longDescription }}</p>
-            </div>
+    <AppSection tone="cream" pad="xl">
+      <AppContainer size="lg">
+        <div class="preview-grid">
+          <div class="preview-main">
+            <section class="preview-section">
+              <AppEyebrow tone="cobalt">About this course</AppEyebrow>
+              <h2 class="u-display u-display--md">What it's about</h2>
+              <div class="u-prose">
+                <p>{{ course.longDescription }}</p>
+              </div>
+            </section>
 
-            <div class="section">
-              <h2>What You'll Learn</h2>
-              <ul class="benefits-list">
+            <section class="preview-section">
+              <AppEyebrow tone="marigold">What you'll learn</AppEyebrow>
+              <h2 class="u-display u-display--md">Skills &amp; outcomes</h2>
+              <ul class="preview-benefits">
                 <li v-for="(benefit, index) in course.benefits" :key="index">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
+                  <span class="preview-benefits__bullet" aria-hidden="true">✓</span>
                   <span>{{ benefit }}</span>
                 </li>
               </ul>
-            </div>
+            </section>
 
-            <div class="section">
-              <h2>Course Curriculum</h2>
-              <div class="curriculum">
-                <div v-for="(chapter, index) in course.chapters" :key="chapter.id" class="chapter">
-                  <div class="chapter-header">
-                    <h3>Chapter {{ index + 1 }}: {{ chapter.title }}</h3>
-                    <span class="lesson-count">{{ chapter.content.length }} lessons</span>
-                  </div>
-                  <p class="chapter-description">{{ chapter.description }}</p>
-                  <ul class="lesson-list">
+            <section class="preview-section">
+              <AppEyebrow tone="fuchsia">Curriculum</AppEyebrow>
+              <h2 class="u-display u-display--md">Course modules</h2>
+              <div class="preview-curriculum">
+                <AppCard
+                  v-for="(chapter, index) in course.chapters"
+                  :key="chapter.id"
+                  variant="flat"
+                  tone="paper"
+                  pad="md"
+                >
+                  <template #eyebrow>
+                    <AppEyebrow tone="cobalt">Chapter {{ index + 1 }}</AppEyebrow>
+                  </template>
+                  <template #title>{{ chapter.title }}</template>
+                  <p class="preview-chapter__desc">{{ chapter.description }}</p>
+                  <ul class="preview-lessons">
                     <li v-for="item in chapter.content" :key="item.id">
-                      <svg v-if="'videoUrl' in item" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                      </svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 11l3 3L22 4"></path>
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                      </svg>
-                      <span>{{ item.title }}</span>
-                      <span v-if="'duration' in item" class="duration">{{ item.duration }}</span>
+                      <span class="preview-lessons__type" aria-hidden="true">
+                        {{ 'videoUrl' in item ? '▸' : '✎' }}
+                      </span>
+                      <span class="preview-lessons__title">{{ item.title }}</span>
+                      <span v-if="'duration' in item" class="preview-lessons__duration">
+                        {{ item.duration }}
+                      </span>
                     </li>
                   </ul>
-                </div>
+                  <template #footer>
+                    <AppBadge tone="ink">{{ chapter.content.length }} lessons</AppBadge>
+                  </template>
+                </AppCard>
 
-                <div class="chapter">
-                  <div class="chapter-header">
-                    <h3>Final Exam</h3>
-                    <span class="lesson-count">{{ course.finalExam.questions.length }} questions</span>
-                  </div>
-                  <p class="chapter-description">{{ course.finalExam.description }}</p>
-                </div>
+                <AppCard variant="flat" tone="paper" pad="md">
+                  <template #eyebrow>
+                    <AppEyebrow tone="fuchsia">Assessment</AppEyebrow>
+                  </template>
+                  <template #title>Final exam</template>
+                  <p class="preview-chapter__desc">{{ course.finalExam.description }}</p>
+                  <template #footer>
+                    <AppBadge tone="ink">{{ course.finalExam.questions.length }} questions</AppBadge>
+                  </template>
+                </AppCard>
               </div>
-            </div>
+            </section>
+
+            <section class="preview-section">
+              <AppEyebrow tone="cobalt">Your guide</AppEyebrow>
+              <h2 class="u-display u-display--md">About the instructor</h2>
+              <AppCard variant="plaque" tone="paper" shadow-tone="cobalt" pad="lg">
+                <div class="preview-instructor">
+                  <img
+                    v-if="course.instructor.avatar"
+                    :src="course.instructor.avatar"
+                    :alt="course.instructor.name"
+                  />
+                  <div>
+                    <h3 class="preview-instructor__name">{{ course.instructor.name }}</h3>
+                    <p class="preview-instructor__title">{{ course.instructor.title }}</p>
+                  </div>
+                </div>
+              </AppCard>
+            </section>
           </div>
 
-          <div class="sidebar">
-            <div class="cta-card">
-              <template v-if="!authStore.isAuthenticated">
-                <h3>Start Learning Today</h3>
-                <p class="price">$10<span>/month</span></p>
-                <p class="price-description">Get unlimited access to all courses</p>
-                
-                <ul class="membership-benefits">
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Access to all courses</span>
-                  </li>
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Certificate of completion</span>
-                  </li>
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>New courses added monthly</span>
-                  </li>
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Cancel anytime</span>
-                  </li>
-                </ul>
+          <aside class="preview-sidebar">
+            <AppCard
+              variant="ticket"
+              tone="paper"
+              shadow-tone="fuchsia"
+              pad="lg"
+              class="preview-enroll"
+            >
+              <template #eyebrow>
+                <AppEyebrow v-if="!authStore.isAuthenticated" tone="fuchsia">Membership</AppEyebrow>
+                <AppEyebrow v-else-if="!authStore.isSubscribed" tone="fuchsia">Subscribe</AppEyebrow>
+                <AppEyebrow v-else tone="mint">Ready</AppEyebrow>
+              </template>
 
-                <button class="cta-button" @click="handleSubscribe">Sign Up & Start Learning</button>
-                <p class="login-prompt">Already have an account? <router-link to="/login">Log in</router-link></p>
+              <template #title>
+                <template v-if="!authStore.isAuthenticated">Start learning today</template>
+                <template v-else-if="!authStore.isSubscribed">Subscribe to access</template>
+                <template v-else>Ready to start?</template>
+              </template>
+
+              <!-- Default slot body, switched by auth state -->
+              <template v-if="!authStore.isAuthenticated">
+                <p class="preview-enroll__price">
+                  $10<span class="preview-enroll__period">/month</span>
+                </p>
+                <p class="preview-enroll__price-desc">
+                  Get unlimited access to all courses
+                </p>
+                <ul class="preview-enroll__benefits">
+                  <li><span aria-hidden="true">✓</span> Access to all courses</li>
+                  <li><span aria-hidden="true">✓</span> Certificate of completion</li>
+                  <li><span aria-hidden="true">✓</span> New courses added monthly</li>
+                  <li><span aria-hidden="true">✓</span> Cancel anytime</li>
+                </ul>
               </template>
 
               <template v-else-if="!authStore.isSubscribed">
-                <h3>Subscribe to Access</h3>
-                <p class="price">$10<span>/month</span></p>
-                <p class="price-description">Get unlimited access to all courses</p>
-                
-                <ul class="membership-benefits">
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Access to all courses</span>
-                  </li>
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Certificate of completion</span>
-                  </li>
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>New courses added monthly</span>
-                  </li>
-                  <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Cancel anytime</span>
-                  </li>
+                <p class="preview-enroll__price">
+                  $10<span class="preview-enroll__period">/month</span>
+                </p>
+                <p class="preview-enroll__price-desc">
+                  Get unlimited access to all courses
+                </p>
+                <ul class="preview-enroll__benefits">
+                  <li><span aria-hidden="true">✓</span> Access to all courses</li>
+                  <li><span aria-hidden="true">✓</span> Certificate of completion</li>
+                  <li><span aria-hidden="true">✓</span> New courses added monthly</li>
+                  <li><span aria-hidden="true">✓</span> Cancel anytime</li>
                 </ul>
-
-                <button class="cta-button" @click="handleSubscribe">Subscribe Now</button>
               </template>
 
               <template v-else>
-                <h3>Ready to Start?</h3>
-                <p class="enrolled-message">You're all set! Begin your learning journey now.</p>
-                <button class="cta-button" @click="startCourse">Start Course</button>
+                <p class="preview-enroll__price-desc">
+                  You're all set! Begin your learning journey now.
+                </p>
               </template>
-            </div>
-          </div>
+
+              <template #footer>
+                <template v-if="!authStore.isAuthenticated">
+                  <AppButton variant="primary" size="lg" block @click="handleSubscribe">
+                    Sign up &amp; start learning
+                  </AppButton>
+                  <p class="preview-enroll__login">
+                    Already have an account?
+                    <router-link to="/login">Log in</router-link>
+                  </p>
+                </template>
+                <AppButton
+                  v-else-if="!authStore.isSubscribed"
+                  variant="primary"
+                  size="lg"
+                  block
+                  @click="handleSubscribe"
+                >
+                  Subscribe now
+                </AppButton>
+                <AppButton
+                  v-else
+                  variant="primary"
+                  size="lg"
+                  block
+                  @click="startCourse"
+                >
+                  Start course
+                </AppButton>
+              </template>
+            </AppCard>
+          </aside>
         </div>
-      </div>
-    </section>
+      </AppContainer>
+    </AppSection>
   </main>
 </template>
 
 <style scoped lang="scss">
-.preview-page {
-  min-height: 100vh;
-  padding-top: 80px;
+.preview-crumb {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: var(--c-cobalt-deep);
+  }
 }
 
-.hero {
-  background: var(--gradient);
-  color: white;
-  padding: 3rem 0;
-}
-
-.breadcrumb {
+.preview-meta {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4) var(--s-5);
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  opacity: 0.9;
 
-  a {
-    color: white;
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-.hero-text {
-  h1 {
-    font-size: 2.5rem;
-    font-family: 'Playfair Display', serif;
-    margin-bottom: 0.5rem;
-  }
-
-  .subtitle {
-    font-size: 1.25rem;
-    margin-bottom: 2rem;
-    opacity: 0.95;
-  }
-}
-
-.course-highlights {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
-
-  .highlight {
+  li {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
+    gap: var(--s-2);
+  }
+
+  &__label {
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wide);
+    color: var(--c-text-muted);
+  }
+
+  &__instructor {
+    align-items: center;
+    gap: var(--s-3);
+
+    img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--c-ink);
+    }
+  }
+
+  &__name {
+    font-weight: 700;
+    color: var(--c-ink);
+  }
+
+  &__title {
+    font-size: var(--fs-sm);
+    color: var(--c-text-muted);
   }
 }
 
-.instructor {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-
-  img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .instructor-name {
-    font-weight: 600;
-    font-size: 1.1rem;
-  }
-
-  .instructor-title {
-    font-size: 0.9rem;
-    opacity: 0.9;
-  }
-}
-
-.video-section {
-  padding: 3rem 0;
-  background: var(--bg-light);
-}
-
-.video-wrapper {
+.preview-video {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px var(--shadow-medium);
+  border: 3px solid var(--c-ink);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-block);
 
   iframe {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
   }
 }
 
-.content-section {
-  padding: 3rem 0 4rem;
-  background: white;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.content-grid {
+.preview-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 3rem;
+  gap: var(--s-7);
   align-items: start;
-}
 
-.main-content {
-  .section {
-    margin-bottom: 3rem;
-
-    h2 {
-      font-size: 1.75rem;
-      color: var(--text-dark);
-      margin-bottom: 1.5rem;
-      font-family: 'Playfair Display', serif;
-    }
-
-    p {
-      color: var(--text-light);
-      line-height: 1.8;
-      font-size: 1.05rem;
-    }
+  @media (min-width: 968px) {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: var(--s-8);
   }
 }
 
-.benefits-list {
+.preview-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-9);
+  min-width: 0;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.preview-benefits {
   list-style: none;
   padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
 
   li {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    color: var(--text-light);
-    font-size: 1.05rem;
+    gap: var(--s-3);
+    color: var(--c-text);
+    line-height: var(--lh-base);
+  }
 
-    svg {
-      color: var(--success-color);
-      flex-shrink: 0;
-      margin-top: 0.25rem;
-    }
+  &__bullet {
+    color: var(--c-mint-deep);
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 0.1em;
   }
 }
 
-.curriculum {
-  .chapter {
-    background: var(--bg-light);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-
-    .chapter-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.75rem;
-
-      h3 {
-        font-size: 1.25rem;
-        color: var(--text-dark);
-      }
-
-      .lesson-count {
-        color: var(--text-light);
-        font-size: 0.9rem;
-      }
-    }
-
-    .chapter-description {
-      color: var(--text-light);
-      margin-bottom: 1rem;
-    }
-  }
+.preview-curriculum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
 }
 
-.lesson-list {
+.preview-chapter__desc {
+  margin: 0;
+  color: var(--c-text-muted);
+  line-height: var(--lh-base);
+}
+
+.preview-lessons {
   list-style: none;
   padding: 0;
+  margin: var(--s-3) 0 0;
+  display: flex;
+  flex-direction: column;
 
   li {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    border-top: 1px solid var(--border-light);
-    color: var(--text-light);
-
-    svg {
-      color: var(--primary-color);
-      flex-shrink: 0;
-    }
-
-    span:first-of-type {
-      flex: 1;
-    }
-
-    .duration {
-      color: var(--text-lighter);
-      font-size: 0.9rem;
-    }
-  }
-}
-
-.sidebar {
-  position: sticky;
-  top: 100px;
-}
-
-.cta-card {
-  background: white;
-  border: 2px solid var(--primary-color);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 12px var(--shadow-light);
-
-  h3 {
-    font-size: 1.5rem;
-    color: var(--text-dark);
-    margin-bottom: 1rem;
-    font-family: 'Playfair Display', serif;
+    gap: var(--s-3);
+    padding: var(--s-3) 0;
+    border-top: 1px solid var(--c-cream-3);
+    color: var(--c-text-muted);
   }
 
-  .price {
-    font-size: 2.5rem;
+  &__type {
+    color: var(--c-cobalt);
     font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-
-    span {
-      font-size: 1.25rem;
-      font-weight: 400;
-      color: var(--text-light);
-    }
+    flex-shrink: 0;
   }
 
-  .price-description {
-    color: var(--text-light);
-    margin-bottom: 1.5rem;
+  &__title {
+    flex: 1;
+    color: var(--c-text);
   }
 
-  .enrolled-message {
-    color: var(--text-light);
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
+  &__duration {
+    color: var(--c-text-subtle);
+    font-size: var(--fs-sm);
   }
 }
 
-.membership-benefits {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 2rem;
+.preview-instructor {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
 
-  li {
+  img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--c-ink);
+  }
+
+  &__name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--c-ink);
+    font-size: var(--fs-xl);
+  }
+
+  &__title {
+    margin: var(--s-1) 0 0;
+    color: var(--c-text-muted);
+  }
+}
+
+.preview-sidebar {
+  @media (min-width: 968px) {
+    position: sticky;
+    top: calc(80px + var(--s-4));
+  }
+}
+
+.preview-enroll {
+  &__price {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-4xl);
+    font-weight: 700;
+    color: var(--c-fuchsia-deep);
+    line-height: var(--lh-tight);
+  }
+
+  &__period {
+    font-family: var(--font-body);
+    font-size: var(--fs-lg);
+    font-weight: 400;
+    color: var(--c-text-muted);
+  }
+
+  &__price-desc {
+    margin: 0;
+    color: var(--c-text-muted);
+    line-height: var(--lh-base);
+  }
+
+  &__benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    color: var(--text-dark);
+    flex-direction: column;
+    gap: var(--s-2);
 
-    svg {
-      color: var(--success-color);
-      flex-shrink: 0;
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--s-2);
+      color: var(--c-text);
+
+      span {
+        color: var(--c-mint-deep);
+        font-weight: 800;
+      }
     }
   }
-}
 
-.cta-button {
-  width: 100%;
-  padding: 1rem;
-  background: var(--gradient);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  &__login {
+    margin: var(--s-3) 0 0;
+    text-align: center;
+    color: var(--c-text-muted);
+    font-size: var(--fs-sm);
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-medium);
-  }
-}
-
-.login-prompt {
-  margin-top: 1rem;
-  text-align: center;
-  color: var(--text-light);
-  font-size: 0.9rem;
-
-  a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 600;
-
-    &:hover {
+    a {
+      color: var(--c-cobalt);
       text-decoration: underline;
+      font-weight: 600;
+
+      &:hover {
+        color: var(--c-cobalt-deep);
+      }
     }
-  }
-}
-
-@media (max-width: 968px) {
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: static;
-  }
-
-  .hero-text h1 {
-    font-size: 2rem;
-  }
-
-  .course-highlights {
-    flex-wrap: wrap;
-    gap: 1rem;
   }
 }
 </style>

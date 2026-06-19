@@ -1,0 +1,186 @@
+// =============================================================================
+// Design tokens — Getting There editorial refresh  [LEGACY / BACKUP]
+// Bold, joyful, pop-psych editorial palette: Marigold / Cobalt / Fuchsia / Mint
+// on Ink + Cream.
+//
+// This is the ORIGINAL bold palette, preserved so the pastel refresh can be
+// reverted. To go back to these colors, swap the import in index.scss:
+//     @import 'tokens';            ->  @import 'tokens.editorial';
+// (or copy this file's contents back over _tokens.scss).
+// =============================================================================
+
+:root {
+  // ---- Core palette --------------------------------------------------------
+  --c-marigold:      #FFB534; // joyful warm yellow-orange (primary hue)
+  --c-marigold-soft: #FFE3B0;
+  --c-marigold-deep: #E69411;
+
+  --c-cobalt:        #1F3DDB; // electric editorial blue
+  --c-cobalt-soft:   #C9D2FA;
+  --c-cobalt-deep:   #122594;
+
+  --c-fuchsia:       #FF3D8A; // pop accent
+  --c-fuchsia-soft:  #FFD0E1;
+  --c-fuchsia-deep:  #C81E64;
+
+  --c-mint:          #6BE0B5; // joyful mint
+  --c-mint-soft:     #D1F5E7;
+  --c-mint-deep:     #2BB386;
+
+  --c-plum:          #3F2A56; // dusky secondary
+  --c-ink:           #181623; // near-black warm
+  --c-ink-soft:      #2B2638;
+
+  --c-cream:         #FBF5E9; // primary surface
+  --c-cream-2:       #F5ECD3; // alt surface
+  --c-cream-3:       #EFE3BD;
+  --c-paper:         #FFFFFF;
+
+  // ---- Semantic aliases (preferred for new code) ---------------------------
+  --c-primary:        var(--c-marigold);
+  --c-primary-deep:   var(--c-marigold-deep);
+  --c-on-primary:     var(--c-ink);
+
+  --c-accent:         var(--c-cobalt);
+  --c-accent-deep:    var(--c-cobalt-deep);
+  --c-on-accent:      var(--c-cream);
+
+  --c-secondary:      var(--c-fuchsia);
+  --c-on-secondary:   var(--c-cream);
+
+  --c-positive:       var(--c-mint-deep);
+  --c-positive-soft:  var(--c-mint-soft);
+
+  --c-text:           var(--c-ink);
+  --c-text-muted:     rgba(24, 22, 35, 0.66);
+  --c-text-subtle:    rgba(24, 22, 35, 0.46);
+  --c-text-on-dark:   var(--c-cream);
+
+  --c-surface:        var(--c-cream);
+  --c-surface-alt:    var(--c-cream-2);
+  --c-surface-paper:  var(--c-paper);
+  --c-surface-ink:    var(--c-ink);
+
+  --c-border:         rgba(24, 22, 35, 0.10);
+  --c-border-strong:  rgba(24, 22, 35, 0.22);
+  --c-border-ink:     var(--c-ink);
+
+  // ---- Editorial gradients -------------------------------------------------
+  --g-sunburst:  linear-gradient(135deg, var(--c-marigold) 0%, var(--c-fuchsia) 100%);
+  --g-electric: linear-gradient(135deg, var(--c-cobalt) 0%, var(--c-fuchsia) 100%);
+  --g-meadow:   linear-gradient(135deg, var(--c-mint) 0%, var(--c-cobalt) 100%);
+  --g-paper:    linear-gradient(180deg, var(--c-cream) 0%, var(--c-cream-2) 100%);
+
+  // ---- Shadows -------------------------------------------------------------
+  --shadow-soft:   0 14px 40px rgba(24, 22, 35, 0.08);
+  --shadow-lift:   0 22px 60px rgba(24, 22, 35, 0.14);
+  --shadow-inset:  inset 0 0 0 1px rgba(24, 22, 35, 0.06);
+  // Editorial offset block-shadow (the signature)
+  --shadow-block:        6px 6px 0 0 var(--c-ink);
+  --shadow-block-lift:   10px 10px 0 0 var(--c-ink);
+  --shadow-block-cobalt: 6px 6px 0 0 var(--c-cobalt);
+  --shadow-block-fuchsia:6px 6px 0 0 var(--c-fuchsia);
+  --shadow-block-mint:   6px 6px 0 0 var(--c-mint-deep);
+
+  // ---- Radii (mix of soft + asymmetric for personality) --------------------
+  --r-xs:    6px;
+  --r-sm:    10px;
+  --r-md:    16px;
+  --r-lg:    24px;
+  --r-xl:    34px;
+  --r-2xl:   48px;
+  --r-pill:  999px;
+  --r-asym-a: 32px 8px 32px 8px;  // ticket/postcard
+  --r-asym-b: 8px 32px 8px 32px;  // mirrored
+  --r-asym-c: 40px 12px 40px 40px; // soft-blob
+
+  // ---- Spacing scale -------------------------------------------------------
+  --s-0: 0;
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 8rem;
+
+  // ---- Type ----------------------------------------------------------------
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-accent:  'Caprasimo', 'Fraunces', Georgia, serif;
+
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.875rem;
+  --fs-md:   1rem;
+  --fs-lg:   1.125rem;
+  --fs-xl:   1.375rem;
+  --fs-2xl:  1.75rem;
+  --fs-3xl:  2.25rem;
+  --fs-4xl:  3rem;
+  --fs-5xl:  clamp(2.5rem, 6vw, 4.25rem);
+  --fs-6xl:  clamp(3rem, 8vw, 5.5rem);
+
+  --lh-tight: 1.05;
+  --lh-snug:  1.2;
+  --lh-base:  1.55;
+  --lh-loose: 1.75;
+
+  --ls-tight: -0.02em;
+  --ls-base:  -0.005em;
+  --ls-wide:   0.08em;
+  --ls-wider:  0.12em;
+  --ls-shout:  0.18em;
+
+  // ---- Motion --------------------------------------------------------------
+  --ease-snap:   cubic-bezier(0.2, 0.9, 0.2, 1.2);
+  --ease-out:    cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:    140ms;
+  --dur-base:    240ms;
+  --dur-slow:    420ms;
+
+  // ---- Layout --------------------------------------------------------------
+  --container-max:   1180px;
+  --container-narrow: 760px;
+  --container-wide:  1380px;
+
+  // ---- Legacy aliases (re-map old token names to new palette) --------------
+  // These keep [App.vue, common.scss, components/cards/*, components/sections/*,
+  // pages/*] working with the new palette without per-file edits.
+  --primary-color:    var(--c-cobalt);
+  --secondary-color:  var(--c-cobalt-deep);
+  --accent-color:     var(--c-marigold);
+  --success-color:    var(--c-mint-deep);
+  --warning-color:    var(--c-fuchsia);
+
+  --text-dark:    var(--c-ink);
+  --text-light:   var(--c-text-muted);
+  --text-lighter: var(--c-text-subtle);
+
+  --bg-light:     var(--c-cream);
+  --bg-secondary: var(--c-cream-2);
+  --bg-sage:      var(--c-mint-soft);
+  --white:        var(--c-paper);
+
+  --gradient:         var(--g-electric);
+  --gradient-warm:    var(--g-sunburst);
+  --gradient-neutral: var(--g-paper);
+
+  --lavender:    var(--c-cobalt-soft);
+  --soft-blue:   var(--c-cobalt-soft);
+  --warm-beige:  var(--c-cream-2);
+
+  --premium-gold: var(--c-marigold-deep);
+
+  --shadow-light:  0 8px 24px rgba(24, 22, 35, 0.06);
+  --shadow-medium: 0 16px 40px rgba(24, 22, 35, 0.12);
+  --border-light:  var(--c-border);
+}
+
+@media (prefers-color-scheme: dark) {
+  // Site is intentionally light/editorial; we opt out of OS dark-mode coercion.
+  // (A future opt-in dark theme can flip these via :root[data-theme="dark"].)
+}

@@ -274,7 +274,7 @@
     font-size: clamp(2.5rem, 6vw, 3.5rem);
     font-weight: 700;
     margin-bottom: 1rem;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     color: white;
   }
 
@@ -321,7 +321,7 @@
   font-weight: 700;
   margin-bottom: 3rem;
   color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-display);
 }
 
 .wellness-section-title {

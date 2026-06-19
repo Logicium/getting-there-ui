@@ -1,5 +1,18 @@
 // Event-related utility functions
 
+import type { Component } from 'vue';
+import {
+  Flower,
+  Heart,
+  HeartCrack,
+  Laptop,
+  Users,
+  Sprout,
+  Sun,
+  Cherry,
+  Leaf,
+} from 'lucide-vue-next';
+
 /**
  * Determine event category based on title
  */
@@ -20,30 +33,30 @@ export function getCategoryFromTitle(title: string): string {
 }
 
 /**
- * Determine appropriate icon based on event title
+ * Determine appropriate icon component based on event title
  */
-export function getEventIcon(title: string): string {
+export function getEventIcon(title: string): Component {
   const lowerTitle = title.toLowerCase();
 
   if (lowerTitle.includes('mindful') || lowerTitle.includes('meditation')) {
-    return '🧘‍♀️';
+    return Flower;
   } else if (lowerTitle.includes('couples') || lowerTitle.includes('relationship')) {
-    return '💕';
+    return Heart;
   } else if (lowerTitle.includes('grief') || lowerTitle.includes('loss')) {
-    return '💔';
+    return HeartCrack;
   } else if (lowerTitle.includes('virtual') || lowerTitle.includes('online')) {
-    return '💻';
+    return Laptop;
   } else if (lowerTitle.includes('trauma')) {
-    return '👥';
+    return Users;
   } else if (lowerTitle.includes('anxiety')) {
-    return '🌱';
+    return Sprout;
   } else if (lowerTitle.includes('depression')) {
-    return '☀️';
+    return Sun;
   } else if (lowerTitle.includes('compassion')) {
-    return '🌸';
+    return Cherry;
   }
 
-  return '🌿';
+  return Leaf;
 }
 
 /**

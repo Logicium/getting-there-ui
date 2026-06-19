@@ -1,225 +1,224 @@
 <script setup lang="ts">
-import Plant2Icon from '@/components/icons/Plant2Icon.vue';
+import {
+  Building2,
+  HeartHandshake,
+  Church,
+  GraduationCap,
+  Target,
+  Laptop,
+  Mail,
+} from 'lucide-vue-next'
+import { AppButton, AppCard, AppContainer, AppEyebrow } from '@/components/ui'
+
+const orgTypes = [
+  { icon: Building2, label: 'Corporate Teams', tone: 'cobalt' as const },
+  { icon: HeartHandshake, label: 'Nonprofit Organizations', tone: 'fuchsia' as const },
+  { icon: Church, label: 'Faith Communities', tone: 'marigold' as const },
+  { icon: GraduationCap, label: 'Educational Institutions', tone: 'mint' as const },
+]
+
+const features = [
+  { icon: Target, label: 'Customized content for your community' },
+  { icon: Laptop, label: 'On-site, virtual, or hybrid delivery' },
+]
 </script>
 
 <template>
-  <section class="therapy-private-workshops fade-in">
-    <div class="private-workshops-content">
-      <div class="workshops-text">
-        <h2><Plant2Icon/>Private Workshops for Your Organization</h2>
-        <p class="workshops-subtitle">
-          Bring wellness education and support directly to your team with customized workshops designed for your community's unique needs.
+  <AppContainer size="lg">
+    <div class="private-workshops">
+      <div class="private-workshops__intro">
+        <AppEyebrow tone="marigold">For organizations</AppEyebrow>
+        <h2 class="private-workshops__headline">Private workshops for your organization</h2>
+        <p class="private-workshops__lede">
+          Bring wellness education and support directly to your team with customized workshops
+          designed for your community's unique needs.
         </p>
 
-        <div class="workshop-types">
-          <div class="workshop-type">
-            <span class="type-icon">🏢</span>
-            <span>Corporate Teams</span>
-          </div>
-          <div class="workshop-type">
-            <span class="type-icon">❤️</span>
-            <span>Nonprofit Organizations</span>
-          </div>
-          <div class="workshop-type">
-            <span class="type-icon">⛪</span>
-            <span>Faith Communities</span>
-          </div>
-          <div class="workshop-type">
-            <span class="type-icon">🏫</span>
-            <span>Educational Institutions</span>
-          </div>
-        </div>
+        <ul class="private-workshops__types">
+          <li
+            v-for="t in orgTypes"
+            :key="t.label"
+            class="private-workshops__type"
+            :data-tone="t.tone"
+          >
+            <span class="private-workshops__type-icon" aria-hidden="true">
+              <component :is="t.icon" :size="22" :stroke-width="2" />
+            </span>
+            <span>{{ t.label }}</span>
+          </li>
+        </ul>
       </div>
 
-      <div class="workshops-cta-card">
-        <h3>Ready to Support Your Community?</h3>
+      <AppCard
+        variant="plaque"
+        tone="paper"
+        shadow-tone="cobalt"
+        pad="lg"
+        class="private-workshops__cta"
+      >
+        <template #eyebrow>
+          <AppEyebrow tone="cobalt">Get in touch</AppEyebrow>
+        </template>
+        <template #title>Ready to support your community?</template>
         <p>Get a customized quote for wellness workshops tailored to your organization.</p>
 
-        <div class="workshop-features">
-          <div class="feature-item">
-            <span class="feature-icon">🎯</span>
-            <span>Customized content for your community</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">💻</span>
-            <span>On-site, virtual, or hybrid delivery</span>
-          </div>
-        </div>
+        <ul class="private-workshops__features">
+          <li v-for="f in features" :key="f.label">
+            <span class="private-workshops__feature-icon" aria-hidden="true">
+              <component :is="f.icon" :size="18" :stroke-width="2.25" />
+            </span>
+            <span>{{ f.label }}</span>
+          </li>
+        </ul>
 
-        <div class="cta-buttons-wrapper">
-          <a href="mailto:workshops@gthere.net?subject=Private Workshop Inquiry" class="workshop-cta-primary">
-            Request Information
-          </a>
-          <a href="mailto:gettingthere@gthere.net" class="workshop-cta-secondary">
-            📧 Email: gettingthere@gthere.net
-          </a>
-        </div>
-
-      </div>
+        <template #footer>
+          <div class="private-workshops__actions">
+            <AppButton
+              href="mailto:workshops@gthere.net?subject=Private Workshop Inquiry"
+              variant="primary"
+              size="md"
+            >
+              Request information
+            </AppButton>
+            <a class="private-workshops__email" href="mailto:gettingthere@gthere.net">
+              <Mail :size="16" :stroke-width="2.25" aria-hidden="true" />
+              gettingthere@gthere.net
+            </a>
+          </div>
+        </template>
+      </AppCard>
     </div>
-  </section>
+  </AppContainer>
 </template>
 
 <style scoped lang="scss">
-@import '@/assets/common.scss';
-
-svg {
-  height: 50px;
-  width: 50px;
-  margin-right: 0.5rem;
-}
-
-.therapy-private-workshops {
-  background: var(--primary-color);
-  padding: 4rem 0;
-  margin: 4rem 0;
-  color: white;
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
-    animation: gentleFloat 20s ease-in-out infinite;
-  }
-}
-
-.private-workshops-content {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.private-workshops {
   display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 3rem;
-  align-items: center;
-  position: relative;
-  z-index: 2;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+  align-items: start;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-}
-
-.workshops-text h2 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: white;
-  font-family: 'Playfair Display', serif;
-
-  @media (max-width: 768px) {
-    font-size: 1.8rem;
-  }
-}
-
-.workshops-subtitle {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.workshop-types {
-  @extend .grid-two;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.workshop-type {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-weight: 500;
-  color: white;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
-  }
-}
-
-.type-icon {
-  font-size: 1.2rem;
-}
-
-.workshops-cta-card {
-  @extend .card-base;
-  text-align: center;
-  padding: 2.5rem;
-  background: white;
-
-  h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--text-dark);
+  @media (min-width: 960px) {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+    gap: var(--s-8);
   }
 
-  p {
-    color: var(--text-light);
-    line-height: 1.6;
-    margin-bottom: 2rem;
+  &__intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
   }
-}
 
-.workshop-features {
-  margin-bottom: 2rem;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  text-align: left;
-  color: var(--text-dark);
-}
-
-.feature-icon {
-  font-size: 1.1rem;
-  color: var(--primary-color);
-}
-
-.cta-buttons-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.workshop-cta-primary {
-  @extend .cta-primary;
-}
-
-.workshop-cta-secondary {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  padding: 0.75rem;
-
-  &:hover {
-    color: var(--secondary-color);
+  &__headline {
+    font-family: var(--font-display);
+    font-size: clamp(var(--fs-2xl), 4vw, var(--fs-4xl));
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-tight);
+    color: var(--c-ink);
+    margin: 0;
   }
-}
 
-.pricing-note {
-  color: var(--text-light);
-  font-size: 0.9rem;
-  margin: 0;
+  &__lede {
+    font-family: var(--font-body);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-loose);
+    color: var(--c-text);
+    margin: 0 0 var(--s-3);
+    max-width: 56ch;
+  }
+
+  &__types {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-3);
+
+    @media (min-width: 560px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__type {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-3) var(--s-4);
+    background: var(--c-paper);
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-md);
+    font-weight: 600;
+    color: var(--c-ink);
+    box-shadow: 4px 4px 0 0 var(--c-ink);
+
+    &[data-tone='cobalt']   .private-workshops__type-icon { background: var(--c-cobalt);   color: var(--c-cream); }
+    &[data-tone='fuchsia']  .private-workshops__type-icon { background: var(--c-fuchsia);  color: var(--c-cream); }
+    &[data-tone='marigold'] .private-workshops__type-icon { background: var(--c-marigold); color: var(--c-ink); }
+    &[data-tone='mint']     .private-workshops__type-icon { background: var(--c-mint);     color: var(--c-ink); }
+  }
+
+  &__type-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-sm);
+    flex-shrink: 0;
+  }
+
+  &__cta {
+    align-self: start;
+  }
+
+  &__features {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-3) 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--s-3);
+      color: var(--c-ink);
+      font-weight: 500;
+    }
+  }
+
+  &__feature-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--c-mint);
+    color: var(--c-ink);
+    flex-shrink: 0;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    align-items: stretch;
+  }
+
+  &__email {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    color: var(--c-cobalt);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    text-decoration: none;
+
+    &:hover { color: var(--c-fuchsia); text-decoration: underline; }
+  }
 }
 </style>

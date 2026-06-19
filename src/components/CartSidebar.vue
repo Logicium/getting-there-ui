@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CartItem } from '@/types/store';
 import { formatPrice } from '@/utils/formatUtils';
+import { BookOpen, Download } from 'lucide-vue-next';
 
 interface Props {
   isOpen: boolean;
@@ -32,7 +33,7 @@ const handleCheckout = () => emit('checkout');
 
     <div class="therapy-cart-items">
       <div v-if="cart.length === 0" class="therapy-empty-cart">
-        <div class="empty-cart-icon">📱</div>
+        <div class="empty-cart-icon"><BookOpen :size="48" :stroke-width="1.75" /></div>
         <p>Your digital library is empty</p>
         <p>Add some books to begin your journey!</p>
       </div>
@@ -41,7 +42,7 @@ const handleCheckout = () => emit('checkout');
         <div v-for="(item, index) in cart" :key="item.id" class="therapy-cart-item">
           <div class="therapy-cart-item-image">
             <img v-if="item.imageUrl" :src="`https://getting-there-cms.onrender.com${item.imageUrl}`" alt="Book cover" class="cart-item-cover" />
-            <div v-else class="cart-item-fallback">📱</div>
+            <div v-else class="cart-item-fallback"><BookOpen :size="28" :stroke-width="1.75" /></div>
           </div>
           <div class="therapy-cart-item-details">
             <div class="therapy-cart-item-title">{{ item.title }}</div>
@@ -59,7 +60,9 @@ const handleCheckout = () => emit('checkout');
         <span>{{ formatPrice(cartTotal) }}</span>
       </div>
       <button class="therapy-checkout-btn" @click="handleCheckout">Proceed to Checkout</button>
-      <p class="therapy-cart-note">📱 Instant download • 30-day money-back guarantee</p>
+      <p class="therapy-cart-note">
+        <Download :size="14" :stroke-width="2" /> Instant download • 30-day money-back guarantee
+      </p>
     </div>
   </div>
 </template>

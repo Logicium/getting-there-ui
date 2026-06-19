@@ -1,6 +1,33 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import {
+  GraduationCap,
+  Award,
+  Brain,
+  Armchair,
+  Sprout,
+  Lock,
+  Accessibility,
+  Map as MapIcon,
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  CalendarPlus,
+  ShieldCheck,
+  Heart,
+} from 'lucide-vue-next';
+import {
+  AppButton,
+  AppCard,
+  AppContainer,
+  AppEmptyState,
+  AppEyebrow,
+  AppHero,
+  AppSection,
+  AppSpinner,
+} from '@/components/ui';
 
 // Interfaces for event data
 interface EventStep {
@@ -261,941 +288,641 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="therapy-breadcrumb">
-    <div class="therapy-breadcrumb-content">
-      <a href="/">Home</a> → <a href="/events">Healing Programs</a> → {{ event ? event.Title : 'Loading...' }}
-    </div>
-  </section>
+  <main class="event-detail">
+    <!-- COMPACT HERO with breadcrumbs -->
+    <AppHero variant="compact" tone="cream" align="center">
+      <template #eyebrow>
+        <nav class="event-crumbs" aria-label="Breadcrumb">
+          <RouterLink to="/">Home</RouterLink>
+          <span aria-hidden="true">→</span>
+          <RouterLink to="/events">Gatherings</RouterLink>
+          <span aria-hidden="true">→</span>
+          <span class="event-crumbs__current">{{ event ? event.Title : 'Loading…' }}</span>
+        </nav>
+      </template>
+      <template #title>
+        {{ event ? event.Title : 'Loading event…' }}
+      </template>
+      <template #lede>
+        <p v-if="event">{{ event.Description }}</p>
+      </template>
+    </AppHero>
 
-  <section v-if="isLoading" class="loading-container">
-    <div class="loading-spinner"></div>
-    <p>Loading event details...</p>
-  </section>
+    <!-- LOADING / ERROR -->
+    <AppSection v-if="isLoading" tone="cream-2" pad="lg">
+      <AppContainer size="md">
+        <div class="event-state">
+          <AppSpinner size="lg" />
+          <p>Loading event details…</p>
+        </div>
+      </AppContainer>
+    </AppSection>
 
-  <section v-else-if="error" class="error-container">
-    <p>{{ error }}</p>
-    <button @click="fetchEventData" class="retry-button">Retry</button>
-  </section>
+    <AppSection v-else-if="error" tone="cream-2" pad="lg">
+      <AppContainer size="md">
+        <AppEmptyState variant="error" :title="error">
+          <template #actions>
+            <AppButton variant="primary" @click="fetchEventData">Retry</AppButton>
+            <AppButton variant="ghost" to="/events">Back to events</AppButton>
+          </template>
+        </AppEmptyState>
+      </AppContainer>
+    </AppSection>
 
-  <section v-else-if="event" class="therapy-event-hero">
-    <div class="therapy-event-hero-content">
-      <div class="therapy-event-main-info">
-        <div class="therapy-event-status-badge">Open Registration - Safe Space</div>
-        <h1>{{ event.Title }}</h1>
-        <p class="therapy-event-subtitle">{{ event.Description }}</p>
+    <!-- BODY: split magazine + ticket card -->
+    <AppSection v-else-if="event" tone="cream-2" pad="xl">
+      <AppContainer size="lg">
+        <div class="event-body">
+          <!-- LEFT: magazine flowing content -->
+          <div class="event-magazine">
+            <article class="magazine u-prose">
+              <header class="event-magazine__head">
+                <AppEyebrow tone="cobalt">About this gathering</AppEyebrow>
+                <h2>About This Healing Circle</h2>
+              </header>
+              <div v-if="event.about && event.about.length > 0">
+                <p v-for="(paragraph, idx) in event.about" :key="idx" v-html="formatAboutText(paragraph)"></p>
+              </div>
+              <p v-else>
+                Join us for this transformative healing experience. Our program is designed to provide you with the tools,
+                support, and community you need on your journey to wellness.
+              </p>
+            </article>
 
-        <div class="therapy-event-quick-info">
-          <div class="therapy-quick-info-item" v-if="event.date || event.Frequency">
-            <div class="therapy-quick-info-icon">📅</div>
-            <div class="therapy-quick-info-text">
-              <h4>Schedule</h4>
-              <p>{{ event.date ? new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : event.Frequency }}</p>
+            <article v-if="event.steps && event.steps.length > 0" class="magazine">
+              <header class="event-magazine__head">
+                <AppEyebrow tone="marigold">Session flow</AppEyebrow>
+                <h2>What to Expect in Each Session</h2>
+              </header>
+              <ul class="event-agenda">
+                <li v-for="step in event.steps" :key="step.id" class="event-agenda__item">
+                  <div class="event-agenda__time">{{ formatTime(step.starttime) }}</div>
+                  <div class="event-agenda__copy">
+                    <h4>{{ step.Name }}</h4>
+                    <p>{{ step.description }}</p>
+                  </div>
+                </li>
+              </ul>
+            </article>
+
+            <article class="magazine u-prose">
+              <header class="event-magazine__head">
+                <AppEyebrow tone="fuchsia">Therapeutic approach</AppEyebrow>
+                <h2>Therapeutic Approach &amp; Benefits</h2>
+              </header>
+              <p><strong>Practical Methods:</strong> Our programs draw on widely used therapeutic approaches including cognitive-behavioral techniques (CBT), mindfulness-based stress reduction (MBSR), and acceptance and commitment therapy (ACT) principles adapted for group settings.</p>
+              <p><strong>Trauma-Informed Care:</strong> All facilitators are trained in trauma-informed approaches, ensuring that the environment feels safe and supportive for all participants, including those with trauma histories or sensitive experiences.</p>
+              <p><strong>Group Support Benefits:</strong> Research consistently shows that group-based therapeutic interventions can be as effective as individual therapy, with the added benefits of peer connection, reduced isolation, normalized experiences, and mutual learning.</p>
+              <p>Key benefits participants often experience:</p>
+              <ul>
+                <li>Reduced feelings of isolation through shared experiences</li>
+                <li>Practical tools and coping strategies</li>
+                <li>Increased self-awareness and emotional regulation skills</li>
+                <li>A supportive community of peers on similar journeys</li>
+                <li>Improved confidence and interpersonal skills</li>
+                <li>Greater sense of hope and possibility for positive change</li>
+              </ul>
+            </article>
+
+            <!-- FAQ: accordion as AppCard variant=flat stack -->
+            <section class="event-faq">
+              <header class="event-magazine__head">
+                <AppEyebrow tone="mint">Questions</AppEyebrow>
+                <h2>Frequently Asked Questions</h2>
+              </header>
+
+              <div class="event-faq__stack">
+                <AppCard
+                  v-for="(faq, idx) in faqs"
+                  :key="idx"
+                  variant="flat"
+                  tone="paper"
+                  shadow-tone="none"
+                  pad="none"
+                  class="therapy-faq-item"
+                >
+                  <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
+                    <span>{{ faq.q }}</span>
+                    <span class="therapy-faq-toggle" aria-hidden="true">▼</span>
+                  </div>
+                  <div class="therapy-faq-answer">{{ faq.a }}</div>
+                </AppCard>
+              </div>
+            </section>
+
+            <!-- Facilitator + Location + Crisis as supporting flat cards -->
+            <div class="event-supporting">
+              <AppCard variant="flat" tone="paper" shadow-tone="cobalt" pad="lg" class="fade-in">
+                <template #eyebrow><AppEyebrow tone="cobalt">Facilitator</AppEyebrow></template>
+                <template #title>Dr. Sarah Mitchell, PhD</template>
+                <p class="event-supporting__role">Lead Group Facilitator</p>
+                <p>
+                  Dr. Mitchell is a PhD clinical psychologist with over 15 years of experience in group therapy and
+                  trauma-informed care. She brings a warm, compassionate approach to creating safe spaces for healing and growth.
+                </p>
+                <div class="event-supporting__chips">
+                  <span class="chip"><GraduationCap :size="14" :stroke-width="2.5" /> PhD Clinical Psychology</span>
+                  <span class="chip"><Award :size="14" :stroke-width="2.5" /> Professional Therapist</span>
+                  <span class="chip"><Brain :size="14" :stroke-width="2.5" /> Group Therapy Specialist</span>
+                </div>
+              </AppCard>
+
+              <AppCard
+                v-if="event && event.Location"
+                variant="flat"
+                tone="paper"
+                shadow-tone="marigold"
+                pad="lg"
+                class="fade-in"
+              >
+                <template #eyebrow><AppEyebrow tone="marigold">Healing environment</AppEyebrow></template>
+                <template #title>{{ event.Location }}</template>
+                <p v-if="event.Address">{{ event.Address }}</p>
+                <p>Quiet, private group room.</p>
+
+                <ul class="event-supporting__features">
+                  <li><Armchair :size="16" :stroke-width="2" /> Comfortable seating in circle format</li>
+                  <li><Sprout :size="16" :stroke-width="2" /> Calming, natural lighting</li>
+                  <li><Lock :size="16" :stroke-width="2" /> Private, soundproof space</li>
+                  <li><Accessibility :size="16" :stroke-width="2" /> Fully accessible</li>
+                </ul>
+
+                <div id="mapContainer" class="event-map">
+                  <div class="event-map__placeholder">
+                    <p><MapIcon :size="18" :stroke-width="2" /> Interactive Map</p>
+                    <p>Loading location…</p>
+                  </div>
+                </div>
+
+                <template #footer>
+                  <AppButton
+                    variant="ink"
+                    :href="`https://www.google.com/maps/dir//${encodeURIComponent(event.Location)}${event.Address ? ',' + encodeURIComponent(event.Address) : ''}`"
+                    block
+                  >
+                    Get directions
+                  </AppButton>
+                </template>
+              </AppCard>
+
+              <AppCard variant="flat" tone="paper" shadow-tone="fuchsia" pad="lg" class="fade-in">
+                <template #eyebrow><AppEyebrow tone="fuchsia">Crisis support</AppEyebrow></template>
+                <template #title>If you need help right now</template>
+                <ul class="event-supporting__crisis">
+                  <li>
+                    <a href="tel:988">
+                      <strong>988 — Suicide &amp; Crisis Lifeline</strong>
+                      <span>24/7 confidential support</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="tel:911">
+                      <strong>911 — Emergency Services</strong>
+                      <span>Immediate emergency response</span>
+                    </a>
+                  </li>
+                </ul>
+                <p class="event-supporting__note">Reaching out is a sign of strength, not weakness.</p>
+              </AppCard>
             </div>
           </div>
-          <div class="therapy-quick-info-item" v-if="event.Location">
-            <div class="therapy-quick-info-icon">📍</div>
-            <div class="therapy-quick-info-text">
-              <h4>Location</h4>
-              <p>{{ event.Location }}<br>{{ event.Address || 'Private, comfortable setting' }}</p>
-            </div>
-          </div>
-          <div class="therapy-quick-info-item" v-if="event.TimeStart && event.TimeEnd">
-            <div class="therapy-quick-info-icon">⏰</div>
-            <div class="therapy-quick-info-text">
-              <h4>Time</h4>
-              <p>{{ formatTime(event.TimeStart) }} - {{ formatTime(event.TimeEnd) }}<br>{{ calculateDuration(event.TimeStart, event.TimeEnd) }} minutes per session</p>
-            </div>
-          </div>
-          <div class="therapy-quick-info-item" v-if="event.GroupSize">
-            <div class="therapy-quick-info-icon">👥</div>
-            <div class="therapy-quick-info-text">
-              <h4>Group Size</h4>
-              <p>{{ event.GroupSize }}</p>
-            </div>
+
+          <!-- RIGHT: ticket-stub registration card -->
+          <aside class="event-aside">
+            <AppCard variant="ticket" tone="paper" shadow-tone="cobalt" pad="lg" class="event-ticket">
+              <template #eyebrow>
+                <AppEyebrow tone="mint">Open registration</AppEyebrow>
+              </template>
+              <template #title>${{ getPriceFromTitle(event.Title) }}</template>
+
+              <p class="event-ticket__sub">Per session • Sliding scale available</p>
+
+              <ul class="event-ticket__meta">
+                <li v-if="event.date || event.Frequency">
+                  <Calendar :size="22" :stroke-width="2" class="event-ticket__icon" />
+                  <div>
+                    <b>Schedule</b>
+                    <em>{{ event.date ? new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : event.Frequency }}</em>
+                  </div>
+                </li>
+                <li v-if="event.TimeStart && event.TimeEnd">
+                  <Clock :size="22" :stroke-width="2" class="event-ticket__icon" />
+                  <div>
+                    <b>Time</b>
+                    <em>{{ formatTime(event.TimeStart) }} – {{ formatTime(event.TimeEnd) }}</em>
+                    <em class="event-ticket__sub">{{ calculateDuration(event.TimeStart, event.TimeEnd) }} minutes per session</em>
+                  </div>
+                </li>
+                <li v-if="event.Location">
+                  <MapPin :size="22" :stroke-width="2" class="event-ticket__icon" />
+                  <div>
+                    <b>Location</b>
+                    <em>{{ event.Location }}</em>
+                    <em v-if="event.Address" class="event-ticket__sub">{{ event.Address }}</em>
+                  </div>
+                </li>
+                <li v-if="event.GroupSize">
+                  <Users :size="22" :stroke-width="2" class="event-ticket__icon" />
+                  <div>
+                    <b>Group size</b>
+                    <em>{{ event.GroupSize }}</em>
+                  </div>
+                </li>
+              </ul>
+
+              <template #footer>
+                <AppButton variant="primary" size="lg" block @click="handleRegistration">
+                  Reserve seat
+                </AppButton>
+                <AppButton variant="ghost" block @click="addToCalendar">
+                  <CalendarPlus :size="16" :stroke-width="2" /> Add to calendar
+                </AppButton>
+
+                <ul class="event-ticket__features">
+                  <li>Weekly therapeutic support sessions</li>
+                  <li>Safe, confidential group environment</li>
+                  <li>Experienced facilitators</li>
+                  <li>Take-home resources and workbooks</li>
+                  <li>Crisis support access</li>
+                  <li>Sliding scale fee assistance</li>
+                </ul>
+
+                <div class="event-ticket__safety">
+                  <strong><ShieldCheck :size="16" :stroke-width="2.25" /> Your safety &amp; privacy</strong>
+                  <p>All group sessions maintain strict confidentiality. What's shared in group stays in group.</p>
+                </div>
+              </template>
+            </AppCard>
+          </aside>
+        </div>
+      </AppContainer>
+    </AppSection>
+
+    <!-- CTA / related events -->
+    <AppSection v-if="event" tone="ink" pad="xl">
+      <AppContainer size="md">
+        <div class="event-cta">
+          <h2 class="event-cta__title">Not quite the right fit?</h2>
+          <p class="event-cta__lede">Explore our other gatherings, workshops, and ongoing circles.</p>
+          <div class="event-cta__actions">
+            <AppButton to="/events" variant="primary" size="lg">See all gatherings</AppButton>
+            <AppButton href="mailto:groups@gthere.net" variant="ghost" size="lg">Email the team</AppButton>
           </div>
         </div>
-      </div>
-
-      <div class="therapy-registration-card">
-        <div class="therapy-price-section">
-          <div class="therapy-price">${{ getPriceFromTitle(event.Title) }}</div>
-          <p class="therapy-price-subtitle">Per session • Sliding scale available</p>
-        </div>
-
-        <button class="therapy-register-btn" @click="handleRegistration">Join Our Healing Circle</button>
-        <button class="therapy-calendar-btn" @click="addToCalendar">📅 Add to Calendar</button>
-
-        <ul class="therapy-registration-features">
-          <li>Weekly therapeutic support sessions</li>
-          <li>Practical techniques</li>
-          <li>Safe, confidential group environment</li>
-          <li>Experienced facilitators</li>
-          <li>Take-home resources and workbooks</li>
-          <li>Crisis support access</li>
-          <li>Sliding scale fee assistance</li>
-        </ul>
-
-        <div class="therapy-safety-notice">
-          <h4>🔒 Your Safety & Privacy</h4>
-          <p>All group sessions maintain strict confidentiality. What's shared in group stays in group.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <main v-if="event" class="therapy-event-content">
-    <div class="therapy-main-content">
-      <div class="therapy-content-section fade-in">
-        <h2>About This Healing Circle</h2>
-        <div v-if="event.about && event.about.length > 0">
-          <p v-for="(paragraph, idx) in event.about" :key="idx" v-html="formatAboutText(paragraph)"></p>
-        </div>
-        <p v-else>
-          Join us for this transformative healing experience. Our program is designed to provide you with the tools,
-          support, and community you need on your journey to wellness.
-        </p>
-      </div>
-
-      <div class="therapy-content-section fade-in" v-if="event.steps && event.steps.length > 0">
-        <h2>What to Expect in Each Session</h2>
-        <ul class="therapy-session-agenda">
-          <li v-for="step in event.steps" :key="step.id" class="therapy-agenda-item">
-            <div class="therapy-agenda-time">{{ formatTime(step.starttime) }}</div>
-            <div class="therapy-agenda-content">
-              <h4>{{ step.Name }}</h4>
-              <p>{{ step.description }}</p>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div class="therapy-content-section fade-in">
-        <h2>Therapeutic Approach & Benefits</h2>
-        <p><strong>Practical Methods:</strong> Our programs draw on widely used therapeutic approaches including cognitive-behavioral techniques (CBT), mindfulness-based stress reduction (MBSR), and acceptance and commitment therapy (ACT) principles adapted for group settings.</p>
-
-        <p><strong>Trauma-Informed Care:</strong> All facilitators are trained in trauma-informed approaches, ensuring that the environment feels safe and supportive for all participants, including those with trauma histories or sensitive experiences.</p>
-
-        <p><strong>Group Support Benefits:</strong> Research consistently shows that group-based therapeutic interventions can be as effective as individual therapy, with the added benefits of peer connection, reduced isolation, normalized experiences, and mutual learning.</p>
-
-        <p>Key benefits participants often experience:</p>
-        <ul style="margin: 1rem 0; padding-left: 2rem; color: var(--text-light);">
-          <li>Reduced feelings of isolation through shared experiences</li>
-          <li>Practical tools and coping strategies</li>
-          <li>Increased self-awareness and emotional regulation skills</li>
-          <li>A supportive community of peers on similar journeys</li>
-          <li>Improved confidence and interpersonal skills</li>
-          <li>Greater sense of hope and possibility for positive change</li>
-        </ul>
-      </div>
-
-      <div class="therapy-content-section fade-in">
-        <h2>Frequently Asked Questions</h2>
-
-        <div class="therapy-faq-item">
-          <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            Is this program right for me?
-            <span class="therapy-faq-toggle">▼</span>
-          </div>
-          <div class="therapy-faq-answer">
-            Our programs are designed to support individuals at various stages of their wellbeing journey. Whether you're dealing with specific challenges, seeking personal growth, or looking for supportive community, our practical approaches can be beneficial. If you're currently in crisis or experiencing severe symptoms, we recommend combining group participation with individual therapy support.
-          </div>
-        </div>
-
-        <div class="therapy-faq-item">
-          <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            What if I'm nervous about participating in a group?
-            <span class="therapy-faq-toggle">▼</span>
-          </div>
-          <div class="therapy-faq-answer">
-            Feeling nervous about group participation is completely normal and valid. There's no pressure to share before you're ready - many participants start by simply listening and observing. Our facilitators create a gentle, non-judgmental environment where you can participate at your own pace and comfort level.
-          </div>
-        </div>
-
-        <div class="therapy-faq-item">
-          <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            How long do people typically attend?
-            <span class="therapy-faq-toggle">▼</span>
-          </div>
-          <div class="therapy-faq-answer">
-            There's no set timeline - healing and growth happen at different paces for everyone. Some participants attend for a few months, others for a year or more. We encourage a minimum commitment of 4-6 sessions to give the therapeutic process time to work, but you can discontinue participation at any time based on your needs.
-          </div>
-        </div>
-
-        <div class="therapy-faq-item">
-          <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            Is financial assistance available?
-            <span class="therapy-faq-toggle">▼</span>
-          </div>
-          <div class="therapy-faq-answer">
-            Yes! We offer sliding scale fees based on income because we believe financial barriers shouldn't prevent access to emotional wellness support. During registration, you can discuss fee adjustment options with our intake coordinator. Some insurance plans may also provide coverage - please check with your provider.
-          </div>
-        </div>
-
-        <div class="therapy-faq-item">
-          <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            What about confidentiality in a group setting?
-            <span class="therapy-faq-toggle">▼</span>
-          </div>
-          <div class="therapy-faq-answer">
-            Confidentiality is paramount in all our programs. All participants agree to keep what's shared in the group confidential. Our facilitators are bound by professional ethics and legal requirements. We review confidentiality agreements at the start of participation and discuss healthy boundaries around sharing personal information.
-          </div>
-        </div>
-
-        <div class="therapy-faq-item">
-          <div class="therapy-faq-question" @click="toggleFAQ($event.currentTarget as HTMLElement)">
-            Can I attend if I'm already in individual therapy?
-            <span class="therapy-faq-toggle">▼</span>
-          </div>
-          <div class="therapy-faq-answer">
-            Absolutely! Many participants find that group programs complement their individual therapy work. Group settings offer unique benefits like peer support and normalized experiences that enhance individual therapeutic progress. We encourage open communication between your individual therapist and our facilitators (with your permission) for coordinated care.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <aside class="therapy-sidebar">
-      <div class="therapy-facilitator-card fade-in">
-        <div class="therapy-facilitator-avatar">👩‍⚕️</div>
-        <h3>Dr. Sarah Mitchell, PhD</h3>
-        <p class="therapy-facilitator-title">Lead Group Facilitator</p>
-        <p class="therapy-facilitator-bio">
-          Dr. Mitchell is a PhD clinical psychologist with over 15 years of experience in group therapy and trauma-informed care. She brings a warm, compassionate approach to creating safe spaces for healing and growth.
-        </p>
-        <div class="therapy-facilitator-credentials">
-          <span class="credential-badge">🎓 PhD Clinical Psychology</span>
-          <span class="credential-badge">🏆 Professional Therapist</span>
-          <span class="credential-badge">🧠 Group Therapy Specialist</span>
-        </div>
-      </div>
-
-      <div class="therapy-location-section fade-in" v-if="event && event.Location">
-        <h3>🏥 Healing Environment</h3>
-        <div class="therapy-venue-info">
-          <h4>{{ event.Location }}</h4>
-          <p v-if="event.Address">{{ event.Address }}</p>
-          <p>Quiet, private group room</p>
-        </div>
-
-        <div class="therapy-environment-features">
-          <div class="environment-feature">
-            <span class="feature-icon">🪑</span>
-            <span>Comfortable seating in circle format</span>
-          </div>
-          <div class="environment-feature">
-            <span class="feature-icon">🌱</span>
-            <span>Calming, natural lighting</span>
-          </div>
-          <div class="environment-feature">
-            <span class="feature-icon">🔒</span>
-            <span>Private, soundproof space</span>
-          </div>
-          <div class="environment-feature">
-            <span class="feature-icon">♿</span>
-            <span>Fully accessible</span>
-          </div>
-        </div>
-
-        <div class="therapy-map-container" id="mapContainer">
-          <div class="therapy-map-placeholder">
-            <p>🗺️ Interactive Map</p>
-            <p style="font-size: 0.9rem;">Loading location...</p>
-          </div>
-        </div>
-
-        <a :href="`https://www.google.com/maps/dir//${encodeURIComponent(event.Location)}${event.Address ? ',' + encodeURIComponent(event.Address) : ''}`" target="_blank" class="therapy-directions-btn">Get Directions</a>
-      </div>
-
-      <div class="therapy-crisis-support fade-in">
-        <h3>🚨 Crisis Support</h3>
-        <p>If you're experiencing an emergency:</p>
-        <div class="crisis-contacts">
-          <a href="tel:988" class="crisis-contact">
-            <span class="crisis-icon">📞</span>
-            <div class="crisis-info">
-              <strong>988 - Suicide & Crisis Lifeline</strong>
-              <p>24/7 confidential support</p>
-            </div>
-          </a>
-          <a href="tel:911" class="crisis-contact">
-            <span class="crisis-icon">🚨</span>
-            <div class="crisis-info">
-              <strong>911 - Emergency Services</strong>
-              <p>Immediate emergency response</p>
-            </div>
-          </a>
-        </div>
-        <p class="crisis-note">Remember: Seeking help is a sign of strength, not weakness.</p>
-      </div>
-
-      <div class="therapy-support-info fade-in">
-        <h3>💚 Need Additional Support?</h3>
-        <p>Our team is here to help with any questions about joining the group or wellness resources.</p>
-        <div class="support-contacts">
-          <p><strong>Email:</strong> <a href="mailto:groups@gthere.net">groups@gthere.net</a></p>
-          <p><strong>Phone:</strong> <a href="tel:+1234567890">(123) 456-7890</a></p>
-          <p><strong>Hours:</strong> Mon-Fri, 9AM-5PM</p>
-        </div>
-      </div>
-    </aside>
+      </AppContainer>
+    </AppSection>
   </main>
 </template>
 
-<style scoped>
-/* Therapy Breadcrumb */
-.therapy-breadcrumb {
-  background: var(--bg-light);
-  padding: 1rem 0;
-  margin-top: 80px;
-  border-bottom: 1px solid var(--border-light);
-}
+<script lang="ts">
+// Static FAQ list — kept out of <script setup> to preserve original script untouched.
+export const faqs = [
+  { q: 'Is this program right for me?', a: "Our programs are designed to support individuals at various stages of their wellbeing journey. Whether you're dealing with specific challenges, seeking personal growth, or looking for supportive community, our practical approaches can be beneficial. If you're currently in crisis or experiencing severe symptoms, we recommend combining group participation with individual therapy support." },
+  { q: "What if I'm nervous about participating in a group?", a: "Feeling nervous about group participation is completely normal and valid. There's no pressure to share before you're ready — many participants start by simply listening and observing. Our facilitators create a gentle, non-judgmental environment where you can participate at your own pace and comfort level." },
+  { q: 'How long do people typically attend?', a: "There's no set timeline — healing and growth happen at different paces for everyone. Some participants attend for a few months, others for a year or more. We encourage a minimum commitment of 4–6 sessions to give the therapeutic process time to work, but you can discontinue participation at any time based on your needs." },
+  { q: 'Is financial assistance available?', a: "Yes! We offer sliding scale fees based on income because we believe financial barriers shouldn't prevent access to emotional wellness support. During registration, you can discuss fee adjustment options with our intake coordinator. Some insurance plans may also provide coverage — please check with your provider." },
+  { q: 'What about confidentiality in a group setting?', a: "Confidentiality is paramount in all our programs. All participants agree to keep what's shared in the group confidential. Our facilitators are bound by professional ethics and legal requirements. We review confidentiality agreements at the start of participation and discuss healthy boundaries around sharing personal information." },
+  { q: "Can I attend if I'm already in individual therapy?", a: "Absolutely! Many participants find that group programs complement their individual therapy work. Group settings offer unique benefits like peer support and normalized experiences that enhance individual therapeutic progress. We encourage open communication between your individual therapist and our facilitators (with your permission) for coordinated care." },
+];
+</script>
 
-.therapy-breadcrumb-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: flex;
+<style scoped lang="scss">
+.event-detail { color: var(--c-text); }
+
+/* Breadcrumbs as hero eyebrow */
+.event-crumbs {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--text-light);
-}
-
-.therapy-breadcrumb a {
-  color: var(--primary-color);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.therapy-breadcrumb a:hover {
-  color: var(--secondary-color);
-}
-
-/* Therapy Event Hero */
-.therapy-event-hero {
-  background: white;
-  padding: 3rem 0;
-}
-
-.therapy-event-hero-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 4rem;
-  align-items: start;
-}
-
-.therapy-event-main-info h1 {
-  font-size: 3rem;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
   font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  line-height: 1.2;
-  font-family: 'Playfair Display', serif;
+  color: var(--c-text-muted);
+
+  a {
+    color: var(--c-cobalt);
+    text-decoration: none;
+    &:hover { color: var(--c-ink); }
+  }
+  &__current { color: var(--c-ink); }
 }
 
-.therapy-event-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-light);
-  margin-bottom: 2rem;
-  line-height: 1.6;
+/* State */
+.event-state {
+  display: flex; flex-direction: column; align-items: center; gap: var(--s-4);
+  text-align: center; color: var(--c-text-muted);
 }
 
-.therapy-event-status-badge {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  margin-bottom: 2rem;
-  background: var(--success-color);
-  color: white;
-}
-
-.therapy-event-quick-info {
+/* Split body */
+.event-body {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: var(--s-8);
+
+  @media (min-width: 980px) {
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+    gap: var(--s-9);
+    align-items: start;
+  }
 }
 
-.therapy-quick-info-item {
+.event-magazine {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--bg-sage);
-  border-radius: 15px;
-  border: 1px solid var(--border-light);
+  flex-direction: column;
+  gap: var(--s-8);
+
+  .magazine {
+    h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: var(--fs-3xl);
+      line-height: var(--lh-tight);
+      color: var(--c-ink);
+      margin: 0 0 var(--s-4);
+    }
+    p { margin: 0 0 var(--s-3); line-height: var(--lh-base); }
+    ul { padding-left: 1.25rem; margin: var(--s-3) 0; }
+    li { margin-bottom: var(--s-2); line-height: var(--lh-base); }
+  }
+  &__head {
+    margin-bottom: var(--s-3);
+    display: flex; flex-direction: column; gap: var(--s-2);
+  }
 }
 
-.therapy-quick-info-icon {
-  width: 45px;
-  height: 45px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.3rem;
+/* Session agenda */
+.event-agenda {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: var(--s-3);
 }
+.event-agenda__item {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  background: var(--c-paper);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-block-sm);
 
-.therapy-quick-info-text h4 {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: var(--text-dark);
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
 }
-
-.therapy-quick-info-text p {
-  color: var(--text-light);
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-/* Registration Card */
-.therapy-registration-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2.5rem;
-  box-shadow: 0 15px 40px var(--shadow-medium);
-  position: sticky;
-  top: 120px;
-  border: 1px solid var(--border-light);
-}
-
-.therapy-price-section {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.therapy-price {
-  font-size: 3rem;
+.event-agenda__time {
+  font-family: var(--font-display);
   font-weight: 800;
-  color: var(--text-dark);
-  margin-bottom: 0.5rem;
+  color: var(--c-cobalt);
+  font-size: var(--fs-sm);
 }
-
-.therapy-price-subtitle {
-  color: var(--text-light);
-  font-size: 0.9rem;
-}
-
-.therapy-register-btn {
-  width: 100%;
-  background: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  border: none;
+.event-agenda__copy h4 {
+  font-family: var(--font-body);
   font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 1rem;
-  box-shadow: 0 8px 25px var(--shadow-light);
+  margin: 0 0 var(--s-1);
+  color: var(--c-ink);
 }
+.event-agenda__copy p { margin: 0; color: var(--c-text-muted); }
 
-.therapy-register-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px var(--shadow-medium);
+/* FAQ accordion */
+.event-faq__stack {
+  display: flex; flex-direction: column; gap: var(--s-2);
 }
-
-.therapy-calendar-btn {
-  width: 100%;
-  background: var(--accent-color);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 2rem;
-}
-
-.therapy-calendar-btn:hover {
-  background: var(--warning-color);
-  transform: translateY(-2px);
-}
-
-.therapy-registration-features {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 2rem;
-}
-
-.therapy-registration-features li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  font-size: 0.95rem;
-}
-
-.therapy-registration-features li::before {
-  content: '💚';
-  font-size: 1rem;
-}
-
-.therapy-safety-notice {
-  background: var(--bg-sage);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border-left: 4px solid var(--primary-color);
-}
-
-.therapy-safety-notice h4 {
-  color: var(--primary-color);
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
-}
-
-.therapy-safety-notice p {
-  margin: 0;
-  color: var(--text-dark);
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-/* Main Content */
-.therapy-event-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 4rem;
-}
-
-.therapy-content-section {
-  margin-bottom: 3rem;
-}
-
-.therapy-content-section h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-}
-
-.therapy-content-section p {
-  margin-bottom: 1rem;
-  line-height: 1.7;
-  color: var(--text-light);
-}
-
-.therapy-session-agenda {
-  list-style: none;
-  margin-bottom: 2rem;
-  padding: 0;
-}
-
-.therapy-agenda-item {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  padding: 2rem;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px var(--shadow-light);
-  border: 1px solid var(--border-light);
-}
-
-.therapy-agenda-time {
-  font-weight: 700;
-  color: var(--primary-color);
-  min-width: 80px;
-  font-size: 0.95rem;
-}
-
-.therapy-agenda-content h4 {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.therapy-agenda-content p {
-  color: var(--text-light);
-  font-size: 0.95rem;
-  margin: 0;
-}
-
-/* FAQ Section */
 .therapy-faq-item {
-  background: white;
-  border-radius: 12px;
-  margin-bottom: 1rem;
-  overflow: hidden;
-  box-shadow: 0 5px 20px var(--shadow-light);
-  border: 1px solid var(--border-light);
+  /* Use AppCard variant=flat as container; toggle .active via script */
 }
-
 .therapy-faq-question {
-  padding: 1.5rem;
-  font-weight: 600;
+  padding: var(--s-4) var(--s-5);
+  font-family: var(--font-body);
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-dark);
-  transition: all 0.3s ease;
-}
+  gap: var(--s-3);
+  color: var(--c-ink);
 
-.therapy-faq-question:hover {
-  background: var(--bg-sage);
+  &:hover { background: var(--c-cream-2); }
 }
-
+.therapy-faq-toggle {
+  transition: transform var(--dur-base) var(--ease-snap);
+  color: var(--c-cobalt);
+}
 .therapy-faq-answer {
-  padding: 0 1.5rem 1.5rem;
-  color: var(--text-light);
-  line-height: 1.6;
+  padding: 0 var(--s-5) var(--s-5);
+  color: var(--c-text-muted);
+  line-height: var(--lh-base);
   display: none;
 }
+.therapy-faq-item.active .therapy-faq-answer { display: block; }
+.therapy-faq-item.active .therapy-faq-toggle { transform: rotate(180deg); }
 
-.therapy-faq-item.active .therapy-faq-answer {
-  display: block;
-}
-
-.therapy-faq-toggle {
-  transition: transform 0.3s ease;
-  color: var(--primary-color);
-}
-
-.therapy-faq-item.active .therapy-faq-toggle {
-  transform: rotate(180deg);
-}
-
-/* Sidebar */
-.therapy-sidebar {
-  position: sticky;
-  top: 6rem;
-  height: fit-content;
-}
-
-.therapy-facilitator-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  text-align: center;
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-light);
-}
-
-.therapy-facilitator-avatar {
-  width: 100px;
-  height: 100px;
-  background: var(--gradient);
-  border-radius: 50%;
-  margin: 0 auto 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  color: white;
-}
-
-.therapy-facilitator-card h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.therapy-facilitator-title {
-  color: var(--primary-color);
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.therapy-facilitator-bio {
-  color: var(--text-light);
-  line-height: 1.6;
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
-}
-
-.therapy-facilitator-credentials {
+/* Supporting cards */
+.event-supporting {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
+  gap: var(--s-5);
 
-/* Location Section */
-.therapy-location-section {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-light);
-}
+  &__role {
+    font-family: var(--font-body);
+    color: var(--c-cobalt);
+    font-weight: 600;
+    margin: 0 0 var(--s-2);
+  }
+  &__features {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-3) 0;
+    display: grid;
+    gap: var(--s-2);
+  }
+  &__chips {
+    display: flex; flex-wrap: wrap; gap: var(--s-2);
+    margin-top: var(--s-3);
+  }
+  &__crisis {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-3) 0;
+    display: flex; flex-direction: column; gap: var(--s-3);
 
-.therapy-location-section h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
+    a {
+      display: flex; flex-direction: column;
+      padding: var(--s-3);
+      border: 2px solid var(--c-ink);
+      border-radius: var(--r-md);
+      text-decoration: none;
+      color: var(--c-ink);
+      background: var(--c-cream);
+      transition: transform var(--dur-base) var(--ease-snap);
 
-.therapy-venue-info {
-  margin-bottom: 1.5rem;
+      &:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 0 var(--c-fuchsia); }
+      span { color: var(--c-text-muted); font-size: var(--fs-sm); }
+    }
+  }
+  &__note {
+    font-style: italic;
+    color: var(--c-text-muted);
+    margin: var(--s-2) 0 0;
+  }
 }
-
-.therapy-venue-info h4 {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.therapy-venue-info p {
-  color: var(--text-light);
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-}
-
-.therapy-environment-features {
-  margin-bottom: 2rem;
-}
-
-.environment-feature {
-  display: flex;
+.chip {
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  color: var(--text-light);
-  font-size: 0.9rem;
+  gap: var(--s-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+  font-weight: 700;
+  padding: var(--s-1) var(--s-3);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-pill);
+  background: var(--c-cream-2);
+  color: var(--c-ink);
+
+  :deep(svg) { color: var(--c-cobalt); }
 }
 
-.feature-icon {
-  font-size: 1.1rem;
-}
-
-.therapy-map-container {
+/* Map */
+.event-map {
   width: 100%;
-  height: 200px;
-  border-radius: 12px;
+  height: 220px;
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-md);
   overflow: hidden;
-  margin-bottom: 1rem;
-  background: var(--bg-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: var(--s-4) 0;
+  background: var(--c-cream-2);
+  display: flex; align-items: center; justify-content: center;
+
+  :deep(iframe) { border: 0; width: 100%; height: 100%; }
+
+  &__placeholder {
+    text-align: center; color: var(--c-text-muted);
+    p { margin: 0; font-size: var(--fs-sm); }
+  }
 }
 
-.therapy-map-placeholder {
+/* Right: ticket-stub */
+.event-aside {
+  @media (min-width: 980px) { position: sticky; top: calc(80px + var(--s-4)); align-self: start; }
+}
+.event-ticket {
+  &__sub {
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    color: var(--c-text-muted);
+    margin: 0 0 var(--s-3);
+  }
+  &__meta {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-3) 0;
+    display: flex; flex-direction: column; gap: var(--s-3);
+
+    li {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: var(--s-3);
+      align-items: start;
+    }
+    span { font-size: 1.25rem; line-height: 1.2; }
+    .event-ticket__icon { color: var(--c-cobalt); margin-top: 2px; }
+    div { display: flex; flex-direction: column; gap: 2px; }
+    b {
+      font-family: var(--font-body);
+      font-size: var(--fs-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--ls-wide);
+      color: var(--c-text-muted);
+      font-weight: 700;
+    }
+    em {
+      font-style: normal;
+      color: var(--c-ink);
+      font-weight: 600;
+    }
+  }
+  &__features {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-4) 0 0;
+    display: flex; flex-direction: column; gap: var(--s-2);
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--s-2);
+      color: var(--c-text);
+      font-size: var(--fs-sm);
+      :deep(svg) { color: var(--c-fuchsia); flex-shrink: 0; }
+    }
+  }
+  &__safety {
+    margin-top: var(--s-4);
+    padding: var(--s-3) var(--s-4);
+    background: var(--c-mint);
+    border: 2px solid var(--c-ink);
+    border-radius: var(--r-md);
+
+    strong {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--s-1);
+      color: var(--c-ink);
+      margin-bottom: var(--s-1);
+      font-family: var(--font-body);
+    }
+    p {
+      margin: 0;
+      color: var(--c-ink);
+      font-size: var(--fs-sm);
+      line-height: var(--lh-base);
+    }
+  }
+}
+
+/* CTA */
+.event-cta {
   text-align: center;
-  color: var(--text-light);
-}
-
-.therapy-directions-btn {
-  width: 100%;
-  background: var(--primary-color);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-align: center;
-  display: block;
-}
-
-.therapy-directions-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-}
-
-/* Crisis Support */
-.therapy-crisis-support {
-  background: rgba(231, 111, 81, 0.1);
-  border-radius: 20px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  border-left: 4px solid var(--warning-color);
-}
-
-.therapy-crisis-support h3 {
-  color: var(--warning-color);
-  margin-bottom: 1rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-}
-
-.crisis-contacts {
-  margin: 1.5rem 0;
-}
-
-.crisis-contact {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 12px;
-  text-decoration: none;
-  margin-bottom: 1rem;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
-
-.crisis-contact:hover {
-  background: var(--bg-light);
-  transform: translateY(-2px);
-}
-
-.crisis-icon {
-  font-size: 1.5rem;
-}
-
-.crisis-info strong {
-  color: var(--text-dark);
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.crisis-info p {
-  color: var(--text-light);
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.crisis-note {
-  font-size: 0.9rem;
-  color: var(--text-dark);
-  font-style: italic;
-  margin: 0;
-}
-
-/* Support Info */
-.therapy-support-info {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 30px var(--shadow-light);
-  border: 1px solid var(--border-light);
-}
-
-.therapy-support-info h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.therapy-support-info p {
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.support-contacts p {
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.support-contacts a {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.support-contacts a:hover {
-  color: var(--secondary-color);
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .therapy-event-hero-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .therapy-event-main-info h1 {
-    font-size: 2rem;
-  }
-
-  .therapy-event-quick-info {
-    grid-template-columns: 1fr;
-  }
-
-  .therapy-event-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .therapy-registration-card {
-    position: static;
-    top: auto;
-  }
-
-  .therapy-facilitator-credentials {
-    flex-direction: column;
-  }
-}
-
-/* Loading and Error States */
-.loading-container, .error-container {
+  color: var(--c-cream);
   display: flex;
   flex-direction: column;
+  gap: var(--s-3);
   align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-  min-height: 300px;
+
+  &__title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
+    line-height: var(--lh-tight);
+    color: var(--c-cream);
+    margin: 0;
+  }
+  &__lede {
+    color: var(--c-cream);
+    opacity: 0.85;
+    max-width: 60ch;
+    margin: 0;
+  }
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    justify-content: center;
+    margin-top: var(--s-2);
+  }
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid var(--bg-light);
-  border-top: 5px solid var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container p {
-  color: var(--warning-color);
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.retry-button {
-  background: var(--primary-color);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-button:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-}
-
-/* Animations */
+/* Observer-driven fade */
 .fade-in {
   opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
+  transform: translateY(20px);
+  transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+  &.visible { opacity: 1; transform: none; }
 
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1; transform: none; transition: none;
+  }
 }
 </style>

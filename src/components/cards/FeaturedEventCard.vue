@@ -1,220 +1,144 @@
 <script setup lang="ts">
-import type { Event } from '@/types/event';
-import { formatTime, formatDate, formatPrice } from '@/utils/formatUtils';
+import type { Event } from '@/types/event'
+import { formatTime, formatDate, formatPrice } from '@/utils/formatUtils'
+import { AppCard, AppBadge, AppEyebrow, AppButton } from '@/components/ui'
 
-interface Props {
-  event: Event;
-}
+interface Props { event: Event }
+const props = defineProps<Props>()
 
-defineProps<Props>();
+const status = (() => {
+  const s = props.event.availabilityStatus
+  if (s === 'filling')  return { label: 'Filling fast', tone: 'fuchsia' as const }
+  if (s === 'waitlist') return { label: 'Waitlist',     tone: 'plum' as const }
+  return { label: 'Open', tone: 'mint' as const }
+})()
+
+const priceLabel =
+  props.event.Price === null ? 'TBD' :
+  props.event.Price && props.event.Price > 0 ? `${formatPrice(props.event.Price)} / session` :
+  'Free'
 </script>
 
 <template>
-  <div class="featured-therapy-event fade-in">
-    <div class="featured-wellness-badge">Featured Program</div>
-    <div class="therapy-event-status featured-event-status" 
-         :class="{
-           'status-available': event.availabilityStatus === 'available',
-           'status-filling': event.availabilityStatus === 'filling',
-           'status-waitlist': event.availabilityStatus === 'waitlist'
-         }">
-      {{ event.availabilityStatus === 'available' ? 'Open' : 
-         event.availabilityStatus === 'filling' ? 'Filling' : 
-         event.availabilityStatus === 'waitlist' ? 'Waitlist' : 'Open' }}
-    </div>
-    <div class="featured-therapy-image">
-      <img v-if="event.Image && event.Image.formats && event.Image.formats.large"
-           :src="'https://getting-there-cms.onrender.com' + event.Image.formats.large.url"
-           :alt="event.Title"
-           class="featured-event-img">
-      <div v-else class="featured-visual-icon">🌱</div>
-    </div>
-    <div class="featured-therapy-content">
-      <h2 class="featured-therapy-title">{{ event.Title }}</h2>
-      <p class="featured-therapy-description">
-        {{ event.Description }}
-      </p>
-      <div class="featured-therapy-details">
-        <div v-if="event.date || event.Frequency" class="therapy-event-detail">
-          <span class="therapy-event-detail-icon">📅</span>
-          <span>{{ event.date ? formatDate(event.date) : event.Frequency }}</span>
-        </div>
-        <div v-if="event.Location" class="therapy-event-detail">
-          <span class="therapy-event-detail-icon">📍</span>
-          <span>{{ event.Location }}</span>
-        </div>
-        <div v-if="event.TimeStart && event.TimeEnd" class="therapy-event-detail">
-          <span class="therapy-event-detail-icon">⏰</span>
-          <span>{{ formatTime(event.TimeStart) }} - {{ formatTime(event.TimeEnd) }}</span>
-        </div>
-        <div v-if="event.GroupSize" class="therapy-event-detail">
-          <span class="therapy-event-detail-icon">👥</span>
-          <span>{{ event.GroupSize }}</span>
-        </div>
+  <AppCard
+    variant="postcard"
+    tone="cream"
+    shadow-tone="cobalt"
+    pad="lg"
+    class="featured-event"
+  >
+    <template #media>
+      <div class="featured-event__media">
+        <img
+          v-if="event.Image?.formats?.large"
+          :src="'https://getting-there-cms.onrender.com' + event.Image.formats.large.url"
+          :alt="event.Title"
+        />
+        <div v-else class="featured-event__art">✦</div>
+        <AppBadge tone="marigold" size="lg" class="featured-event__featured">Featured</AppBadge>
+        <AppBadge :tone="status.tone" size="md" class="featured-event__status">{{ status.label }}</AppBadge>
       </div>
-      <div class="featured-therapy-price" v-if="event.Price !== null && event.Price > 0">{{ formatPrice(event.Price) }}/session</div>
-      <div class="featured-therapy-price" v-else-if="event.Price === null">TBD</div>
-      <div class="featured-therapy-price" v-else>Free</div>
-<!--      <router-link :to="`/events/${event.documentId}`" class="featured-therapy-btn">Learn More</router-link>-->
-    </div>
-  </div>
+    </template>
+
+    <template #eyebrow>
+      <AppEyebrow tone="fuchsia">Signature program</AppEyebrow>
+    </template>
+
+    <template #title>{{ event.Title }}</template>
+
+    <p class="featured-event__desc">{{ event.Description }}</p>
+
+    <ul class="featured-event__meta">
+      <li v-if="event.date || event.Frequency"><b>When</b>{{ event.date ? formatDate(event.date) : event.Frequency }}</li>
+      <li v-if="event.Location"><b>Where</b>{{ event.Location }}</li>
+      <li v-if="event.TimeStart && event.TimeEnd"><b>Time</b>{{ formatTime(event.TimeStart) }} – {{ formatTime(event.TimeEnd) }}</li>
+      <li v-if="event.GroupSize"><b>Size</b>{{ event.GroupSize }}</li>
+    </ul>
+
+    <template #footer>
+      <div class="featured-event__price">{{ priceLabel }}</div>
+      <AppButton :to="`/events/${event.documentId}`" variant="accent" size="md">Hold a seat →</AppButton>
+    </template>
+  </AppCard>
 </template>
 
 <style scoped lang="scss">
-@import '@/assets/common.scss';
-
-.featured-therapy-event {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 15px 40px var(--shadow-medium);
-  margin-bottom: 4rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  position: relative;
-  border: 1px solid var(--border-light);
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.featured-wellness-badge {
-  position: absolute;
-  top: 2rem;
-  left: 2rem;
-  background: var(--accent-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 15px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  z-index: 2;
-}
-
-.featured-therapy-image {
-  background: var(--gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  min-height: 350px;
-}
-
-.featured-visual-icon {
-  font-size: 5rem;
-  opacity: 0.8;
-  color: white;
-}
-
-.featured-event-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.featured-therapy-content {
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  @media (max-width: 768px) {
-    padding: 2rem;
-  }
-}
-
-.featured-therapy-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  font-family: 'Playfair Display', serif;
-}
-
-.featured-therapy-description {
-  font-size: 1.1rem;
-  color: var(--text-light);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.featured-therapy-details {
-  @extend .grid-two;
-  gap: 1rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.therapy-event-detail {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--text-light);
-  font-size: 0.9rem;
-}
-
-.therapy-event-detail-icon {
-  width: 20px;
-  text-align: center;
-}
-
-.featured-therapy-price {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 1.5rem;
-}
-
-.featured-event-status {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  z-index: 2;
-  padding: 0.5rem 1.5rem;
-  border-radius: 15px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.therapy-event-status {
-  &.status-available {
-    background: var(--success-color);
-    color: white;
+.featured-event {
+  margin-bottom: var(--s-8);
+  // Use grid for media + body side-by-side on wide screens
+  :deep(.app-card__body) {
+    padding: var(--s-7);
   }
 
-  &.status-filling {
-    background: var(--warning-color);
-    color: white;
+  @media (min-width: 880px) {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    align-items: stretch;
+
+    :deep(.app-card__media) {
+      border-right: 2px solid var(--c-ink);
+      border-bottom: none;
+    }
   }
 
-  &.status-waitlist {
-    background: var(--text-light);
-    color: white;
+  &__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--c-marigold-soft);
+
+    img { width: 100%; height: 100%; object-fit: cover; }
   }
-}
 
-.featured-therapy-btn {
-  background: var(--accent-color);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  text-align: center;
-  box-shadow: 0 8px 25px rgba(244, 162, 97, 0.3);
+  &__art {
+    position: absolute;
+    inset: 0;
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-size: 7rem;
+    color: var(--c-ink);
+  }
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(244, 162, 97, 0.4);
+  &__featured { position: absolute; top: var(--s-4); left: var(--s-4); }
+  &__status   { position: absolute; top: var(--s-4); right: var(--s-4); }
+
+  &__desc {
+    font-family: var(--font-body);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-base);
+    color: var(--c-text-muted);
+    margin: 0;
+  }
+
+  &__meta {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-3) 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+
+    li {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: var(--fs-sm);
+      color: var(--c-text);
+      b {
+        font-family: var(--font-body);
+        font-size: var(--fs-xs);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: var(--ls-shout);
+        color: var(--c-text-muted);
+      }
+    }
+  }
+
+  &__price {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-2xl);
+    color: var(--c-ink);
   }
 }
 </style>

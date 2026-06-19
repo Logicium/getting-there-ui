@@ -44,7 +44,7 @@ export function calculateCartTotals(cart: CartItem[]): { count: number; total: n
  */
 export function showAddedToCartFeedback(button: HTMLElement): void {
   const originalText = button.textContent;
-  button.textContent = 'Added! ✓';
+  button.textContent = 'Added';
   button.style.background = 'var(--success-color)';
 
   setTimeout(() => {
