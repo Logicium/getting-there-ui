@@ -28,7 +28,7 @@ interface InfoCardCMS { id: number; title: string; description: string; icon: Cm
 interface HowItWorks { id: number; title: string; infocards: InfoCardCMS[] }
 interface ServiceCardCMS { id: number; title: string; description: string | null; linkLocation: string | null; icon: CmsImage | null }
 interface ServicesComponent { id: number; title: string; servicecards: ServiceCardCMS[] }
-interface ResourceCardCMS { id: number; title: string; description: string; icon: CmsImage | null }
+interface ResourceCardCMS { id: number; title: string; description: string; icon: CmsImage | null; linkLocation: string | null }
 interface ResourcesComponent { id: number; title: string; resourcecards: ResourceCardCMS[] }
 interface CTAComponent { id: number; actiontext: string; buttontext: string }
 
@@ -56,6 +56,12 @@ const cmsIcon = (icon: CmsImage | null | undefined) => {
   if (!icon) return null
   const path = icon.formats?.small?.url ?? icon.url
   return path ? `${CMS_BASE}${path}` : null
+}
+
+// Map a CMS linkLocation enum (home | about | videos | ... | none) to a route path.
+const resourceRoute = (link: string | null | undefined) => {
+  if (!link || link === 'none') return null
+  return link === 'home' ? '/' : `/${link}`
 }
 
 const fetchPageData = async () => {
@@ -142,7 +148,7 @@ onMounted(fetchPageData)
         <div class="home-manifesto">
           <aside class="home-manifesto__aside">
             <AppEyebrow tone="fuchsia">How it works</AppEyebrow>
-            <h2 class="home-manifesto__title">{{ howItWorksData.title }}</h2>
+            <h2 class="home-section-title home-manifesto__title">{{ howItWorksData.title }}</h2>
             <p class="home-manifesto__count">
               <span>{{ howItWorksData.infocards.length.toString().padStart(2, '0') }}</span> steps
             </p>
@@ -156,11 +162,10 @@ onMounted(fetchPageData)
             >
               <span class="home-manifesto__num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
               <div class="home-manifesto__art" aria-hidden="true">
-                <img
+                <span
                   v-if="cmsIcon(card.icon)"
-                  :src="cmsIcon(card.icon) ?? ''"
-                  :alt="''"
-                  loading="lazy"
+                  class="home-manifesto__icon"
+                  :style="{ '--icon-src': `url('${cmsIcon(card.icon)}')` }"
                 />
               </div>
               <div class="home-manifesto__copy">
@@ -178,7 +183,7 @@ onMounted(fetchPageData)
       <AppContainer size="lg">
         <header class="home-spread__head">
           <AppEyebrow tone="marigold">What we offer</AppEyebrow>
-          <h2 class="home-spread__title">{{ servicesData.title }}</h2>
+          <h2 class="home-section-title home-spread__title">{{ servicesData.title }}</h2>
         </header>
 
         <ul class="home-spread">
@@ -189,11 +194,10 @@ onMounted(fetchPageData)
             :data-tone="(['marigold', 'cobalt', 'fuchsia', 'mint'] as const)[i % 4]"
           >
             <div class="home-spread__art" aria-hidden="true">
-              <img
+              <span
                 v-if="cmsIcon(card.icon)"
-                :src="cmsIcon(card.icon) ?? ''"
-                :alt="''"
-                loading="lazy"
+                class="home-spread__icon"
+                :style="{ '--icon-src': `url('${cmsIcon(card.icon)}')` }"
               />
             </div>
             <div class="home-spread__copy">
@@ -230,44 +234,52 @@ onMounted(fetchPageData)
 
     <AppSquiggle tone="cobalt" />
 
-    <!-- RESOURCES — FULL-BLEED STRIP SPREAD -->
-    <AppSection v-if="resourcesData" tone="cream-2" pad="xl" class="home-resources-section">
-      <div class="home-resources-fullbleed">
-        <header class="home-resources-intro">
+    <!-- RESOURCES — FULL-BLEED COLOR STRIPS WITH BIG TYPE -->
+    <AppSection v-if="resourcesData" tone="cream" pad="none" class="home-resources-section">
+      <!-- Header: the single image lives up here, paired with the title -->
+      <div class="home-resources-head">
+        <div class="home-resources-head__copy">
           <AppEyebrow tone="marigold">Free resources</AppEyebrow>
-          <h2 class="u-display u-display--md home-resources-intro__title">{{ resourcesData.title }}</h2>
-          <p class="home-resources-intro__lede">Guides, prompts, and practical tools to help you keep moving with care.</p>
-        </header>
-
-        <div class="home-resources-stage">
-          <ol class="home-toc">
-            <li
-              v-for="(card, i) in resourcesData.resourcecards"
-              :key="card.id"
-              class="home-toc__row"
-              :data-tone="(['marigold', 'cobalt', 'fuchsia', 'mint'] as const)[i % 4]"
-            >
-              <div class="home-toc__icon" aria-hidden="true">
-                <img
-                  v-if="cmsIcon(card.icon)"
-                  :src="cmsIcon(card.icon) ?? ''"
-                  :alt="''"
-                  loading="lazy"
-                />
-                <span v-else>{{ String(i + 1).padStart(2, '0') }}</span>
-              </div>
-              <div class="home-toc__body">
-                <h3 class="home-toc__title">{{ card.title }}</h3>
-                <p class="home-toc__dek">{{ card.description }}</p>
-              </div>
-            </li>
-          </ol>
-
-          <figure class="home-resources-float">
-            <img src="/picture-1.jpg" alt="Getting There community" />
-          </figure>
+          <h2 class="home-section-title home-resources-head__title">{{ resourcesData.title }}</h2>
+          <p class="home-resources-head__lede">
+            Guides, prompts, and practical tools to help you keep moving with care.
+          </p>
         </div>
+        <figure class="home-resources-head__figure">
+          <AppDots tone="cobalt" class="home-resources-head__dots" />
+          <img src="/picture-1.jpg" alt="Getting There community" />
+        </figure>
       </div>
+
+      <!-- Full-bleed color strips: one resource per band, big type -->
+      <ol class="home-strips">
+        <li
+          v-for="(card, i) in resourcesData.resourcecards"
+          :key="card.id"
+          class="home-strip"
+          :class="{ 'home-strip--link': resourceRoute(card.linkLocation) }"
+          :data-tone="(['marigold', 'cobalt', 'fuchsia', 'mint'] as const)[i % 4]"
+        >
+          <component
+            :is="resourceRoute(card.linkLocation) ? 'RouterLink' : 'div'"
+            :to="resourceRoute(card.linkLocation) || undefined"
+            class="home-strip__inner"
+          >
+            <span class="home-strip__index" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
+            <div class="home-strip__copy">
+              <h3 class="home-strip__title">{{ card.title }}</h3>
+              <p class="home-strip__dek">{{ card.description }}</p>
+            </div>
+            <ArrowUpRight
+              v-if="resourceRoute(card.linkLocation)"
+              class="home-strip__arrow"
+              :size="44"
+              :stroke-width="1.75"
+              aria-hidden="true"
+            />
+          </component>
+        </li>
+      </ol>
     </AppSection>
 
     <!-- CTA — COVER LINE (centered) -->
@@ -275,7 +287,7 @@ onMounted(fetchPageData)
       <AppContainer size="md">
         <div class="home-cta">
           <p class="home-cta__kicker">· Vol. 01 · The invitation</p>
-          <h2 class="home-cta__title">{{ ctaData.actiontext }}</h2>
+          <h2 class="home-section-title home-cta__title">{{ ctaData.actiontext }}</h2>
           <div class="home-cta__rule" aria-hidden="true" />
           <div class="home-cta__buttons">
             <AppButton :to="'/events'" variant="primary" size="lg">{{ ctaData.buttontext }}</AppButton>
@@ -382,6 +394,15 @@ onMounted(fetchPageData)
   gap: var(--s-3);
 }
 
+/* Every section heading on the home page reads at one shared size */
+.home-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  margin: 0;
+}
+
 .home-state {
   display: flex;
   flex-direction: column;
@@ -422,13 +443,8 @@ onMounted(fetchPageData)
 }
 
 .home-manifesto__title {
-  font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-tight);
   color: var(--c-ink);
-  margin: 0;
 }
 
 .home-manifesto__count {
@@ -501,12 +517,16 @@ onMounted(fetchPageData)
     width: 96px;
     height: 96px;
   }
+}
 
-  img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
+// Icon masked + filled with the section's text color (ink)
+.home-manifesto__icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--c-ink);
+  -webkit-mask: var(--icon-src) center / contain no-repeat;
+  mask: var(--icon-src) center / contain no-repeat;
 }
 
 .home-manifesto__copy {
@@ -550,13 +570,8 @@ onMounted(fetchPageData)
 }
 
 .home-spread__title {
-  font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(var(--fs-3xl), 5vw, var(--fs-5xl));
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-tight);
   color: var(--c-cream);
-  margin: 0;
 }
 
 .home-spread {
@@ -569,61 +584,66 @@ onMounted(fetchPageData)
   border-top: 1.5px solid rgba(255, 255, 255, 0.18);
 
   @media (min-width: 720px) {
+    position: relative;
     grid-template-columns: 1fr 1fr;
-    column-gap: var(--s-8);
+    column-gap: 0;
+
+    // Vertical rule up the middle, between the two columns
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1.5px;
+      background: rgba(255, 255, 255, 0.18);
+      pointer-events: none;
+    }
   }
 }
 
 .home-spread__row {
+  --art-col: clamp(96px, 12vw, 148px);
+  position: relative;
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: var(--art-col) minmax(0, 1fr);
   column-gap: var(--s-5);
   align-items: start;
-  padding: var(--s-5) 0;
+  padding: var(--s-6) 0;
+  // Full-width row rule — left and right cells meet at the center line
   border-bottom: 1.5px solid rgba(255, 255, 255, 0.18);
 
   @media (min-width: 720px) {
-    padding: var(--s-6) 0;
+    padding: var(--s-7) 0;
+
+    // Gutter around the center rule (replaces the old column-gap)
+    &:nth-child(odd)  { padding-right: var(--s-8); }
+    &:nth-child(even) { padding-left: var(--s-8); }
   }
 
-  &[data-tone='marigold'] {
-    --service-tone: var(--c-marigold);
-    --service-icon-filter: invert(74%) sepia(43%) saturate(792%) hue-rotate(355deg) brightness(102%) contrast(97%);
-  }
-
-  &[data-tone='cobalt'] {
-    --service-tone: var(--c-cobalt);
-    --service-icon-filter: invert(33%) sepia(70%) saturate(1412%) hue-rotate(193deg) brightness(94%) contrast(92%);
-  }
-
-  &[data-tone='fuchsia'] {
-    --service-tone: var(--c-fuchsia);
-    --service-icon-filter: invert(39%) sepia(56%) saturate(1280%) hue-rotate(293deg) brightness(93%) contrast(98%);
-  }
-
-  &[data-tone='mint'] {
-    --service-tone: var(--c-mint-deep);
-    --service-icon-filter: invert(62%) sepia(31%) saturate(542%) hue-rotate(108deg) brightness(90%) contrast(90%);
-  }
+  &[data-tone='marigold'] { --service-tone: var(--c-marigold); }
+  &[data-tone='cobalt']   { --service-tone: var(--c-cobalt); }
+  &[data-tone='fuchsia']  { --service-tone: var(--c-fuchsia); }
+  &[data-tone='mint']     { --service-tone: var(--c-mint-deep); }
 }
 
 .home-spread__art {
-  width: 88px;
-  height: 88px;
+  width: var(--art-col);
+  align-self: stretch;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--service-tone, var(--c-marigold)) 24%, var(--c-cream));
-  border: 2px solid color-mix(in srgb, var(--service-tone, var(--c-marigold)) 58%, var(--c-ink));
-  border-radius: var(--r-md);
-  padding: var(--s-2);
+}
 
-  img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    filter: var(--service-icon-filter, none) drop-shadow(0 1px 0 rgba(255, 255, 255, 0.2));
-  }
+// Bare icon — masked so it takes the exact same tone as the card's button & tag
+.home-spread__icon {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--service-tone, var(--c-marigold));
+  -webkit-mask: var(--icon-src) center / contain no-repeat;
+  mask: var(--icon-src) center / contain no-repeat;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.28));
 }
 
 .home-spread__copy {
@@ -638,7 +658,7 @@ onMounted(fetchPageData)
   font-size: var(--fs-xs);
   letter-spacing: var(--ls-shout);
   text-transform: uppercase;
-  color: var(--c-marigold);
+  color: var(--service-tone, var(--c-marigold));
   font-variant-numeric: tabular-nums;
 }
 
@@ -661,24 +681,31 @@ onMounted(fetchPageData)
 }
 
 .home-spread__cta {
+  align-self: start; // contained chip, not a full-width line
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  margin-top: var(--s-2);
+  margin-top: var(--s-3);
+  padding: 0.5rem 1.1rem;
   font-family: var(--font-body);
   font-weight: 600;
   font-size: var(--fs-sm);
   letter-spacing: var(--ls-wide);
-  color: var(--c-marigold);
+  color: var(--service-tone, var(--c-marigold));
   text-decoration: none;
-  padding-bottom: 3px;
-  border-bottom: 1.5px solid var(--c-marigold);
-  transition: color var(--dur-fast) var(--ease-snap), gap var(--dur-fast) var(--ease-snap);
+  background: transparent;
+  border: 1.5px solid color-mix(in srgb, var(--service-tone, var(--c-marigold)) 60%, transparent);
+  border-radius: var(--r-pill);
+  transition: background var(--dur-fast) var(--ease-snap),
+    color var(--dur-fast) var(--ease-snap),
+    border-color var(--dur-fast) var(--ease-snap),
+    gap var(--dur-fast) var(--ease-snap);
 
   &:hover,
   &:focus-visible {
-    color: var(--c-cream);
-    border-bottom-color: var(--c-cream);
+    background: var(--service-tone, var(--c-marigold));
+    border-color: var(--service-tone, var(--c-marigold));
+    color: var(--c-ink);
     gap: var(--s-3);
   }
 }
@@ -738,155 +765,47 @@ onMounted(fetchPageData)
 }
 
 /* ------------------------------------------------------------------ */
-/* RESOURCES: full-bleed single-color strip spread                    */
+/* RESOURCES: full-bleed color strips + big type; image with header   */
 /* ------------------------------------------------------------------ */
 .home-resources-section {
   overflow: hidden;
 }
 
-.home-resources-fullbleed {
-  width: min(1400px, 100%);
+/* Header — copy on the left, the single image paired beside the title */
+.home-resources-head {
+  width: min(var(--container-wide), 100%);
   margin-inline: auto;
-  padding-inline: clamp(var(--s-4), 3.2vw, var(--s-8));
+  padding: var(--s-9) clamp(var(--s-4), 4vw, var(--s-8)) var(--s-8);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-7);
+  align-items: end;
+
+  @media (min-width: 880px) {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: var(--s-9);
+  }
 }
 
-.home-resources-intro {
-  max-width: 42ch;
+.home-resources-head__copy {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  margin-bottom: var(--s-6);
-
-  &__title {
-    margin: 0;
-  }
-
-  &__lede {
-    margin: 0;
-    font-family: var(--font-body);
-    color: var(--c-text-muted);
-    line-height: var(--lh-base);
-  }
+  max-width: 32ch;
 }
 
-.home-resources-stage {
-  position: relative;
-  min-height: clamp(460px, 56vw, 760px);
-}
-
-.home-toc {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border: 2px solid var(--c-ink);
-}
-
-.home-toc__row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 86px minmax(0, 1fr);
-  gap: var(--s-4);
-  align-items: center;
-  min-height: clamp(104px, 10vw, 140px);
-  padding: var(--s-4) max(50vw, 420px) var(--s-4) var(--s-6);
-  background: var(--c-cobalt);
-  border-bottom: 2px solid var(--c-ink);
-
-  &[data-tone='marigold'] {
-    background: var(--c-marigold);
-  }
-
-  &[data-tone='cobalt'] {
-    background: var(--c-cobalt);
-  }
-
-  &[data-tone='fuchsia'] {
-    background: var(--c-fuchsia);
-  }
-
-  &[data-tone='mint'] {
-    background: var(--c-mint);
-  }
-
-  &:last-child {
-    border-bottom: 0;
-  }
-
-  @media (max-width: 920px) {
-    grid-template-columns: 64px minmax(0, 1fr);
-    padding: var(--s-4) var(--s-4) var(--s-4) var(--s-4);
-  }
-
-  @media (max-width: 560px) {
-    grid-template-columns: 56px minmax(0, 1fr);
-    padding: var(--s-3) var(--s-3) var(--s-3) var(--s-3);
-  }
-}
-
-.home-toc__icon {
-  width: 64px;
-  height: 64px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in srgb, white 28%, transparent);
-  border: 2px solid rgba(0, 0, 0, 0.45);
-  border-radius: var(--r-sm);
-
-  img {
-    max-width: 84%;
-    max-height: 84%;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
-    opacity: 0.95;
-  }
-
-  span {
-    font-family: var(--font-accent);
-    font-size: var(--fs-2xl);
-    line-height: 1;
-    color: color-mix(in srgb, var(--c-paper) 92%, white);
-  }
-
-  @media (max-width: 560px) {
-    width: 50px;
-    height: 50px;
-  }
-}
-
-.home-toc__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-}
-
-.home-toc__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(var(--fs-lg), 2.1vw, var(--fs-2xl));
-  line-height: var(--lh-tight);
-  color: color-mix(in srgb, var(--c-paper) 95%, white);
-}
-
-.home-toc__dek {
+.home-resources-head__lede {
   margin: 0;
   font-family: var(--font-body);
-  font-size: var(--fs-md);
+  font-size: var(--fs-lg);
   line-height: var(--lh-base);
-  color: color-mix(in srgb, var(--c-paper) 82%, white);
-  max-width: 52ch;
+  color: var(--c-text-muted);
 }
 
-.home-resources-float {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  right: clamp(14px, 2.4vw, 34px);
-  transform: translateY(-50%);
-  width: min(52%, 760px);
-  max-height: 106%;
+.home-resources-head__figure {
+  position: relative;
   margin: 0;
+  aspect-ratio: 5 / 4;
 
   img {
     width: 100%;
@@ -897,16 +816,129 @@ onMounted(fetchPageData)
     box-shadow: var(--shadow-block);
   }
 
-  @media (max-width: 920px) {
-    position: relative;
-    top: auto;
-    right: auto;
-    transform: none;
-    width: 100%;
-    max-height: none;
-    margin-top: var(--s-4);
-    aspect-ratio: 16 / 10;
+  @media (min-width: 880px) {
+    aspect-ratio: 4 / 3;
   }
+}
+
+.home-resources-head__dots {
+  position: absolute;
+  z-index: 2;
+  top: -18px;
+  left: -18px;
+  width: 76px;
+  height: 76px;
+  pointer-events: none;
+}
+
+/* Strips — full-bleed color bands, edge to edge */
+.home-strips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 3px solid var(--c-ink);
+}
+
+.home-strip {
+  --strip-fg: var(--c-ink);
+  --strip-bg: var(--c-marigold);
+  background: var(--strip-bg);
+  color: var(--strip-fg);
+  border-bottom: 3px solid var(--c-ink);
+  transition: filter var(--dur-base) var(--ease-out);
+
+  // Ink text on every strip — reads well across all four background tones
+  &[data-tone='marigold'] { --strip-bg: var(--c-marigold); --strip-fg: var(--c-ink); }
+  &[data-tone='cobalt']   { --strip-bg: var(--c-cobalt);   --strip-fg: var(--c-ink); }
+  &[data-tone='fuchsia']  { --strip-bg: var(--c-fuchsia);  --strip-fg: var(--c-ink); }
+  &[data-tone='mint']     { --strip-bg: var(--c-mint);     --strip-fg: var(--c-ink); }
+
+  &--link:hover { filter: brightness(1.03); }
+}
+
+.home-strip__inner {
+  width: min(var(--container-wide), 100%);
+  margin-inline: auto;
+  padding: clamp(var(--s-5), 4vw, var(--s-8)) clamp(var(--s-4), 4vw, var(--s-8));
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(var(--s-4), 3vw, var(--s-7));
+  color: inherit;
+  text-decoration: none;
+}
+
+// The whole strip is the click target when a destination exists
+.home-strip--link .home-strip__inner {
+  cursor: pointer;
+}
+
+.home-strip--link .home-strip__inner:focus-visible {
+  outline: 3px solid var(--strip-fg);
+  outline-offset: -6px;
+}
+
+/* Giant outlined index numeral — quiet watermark art element */
+.home-strip__index {
+  font-family: var(--font-accent);
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--strip-fg);
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-strip__copy {
+  min-width: 0;
+}
+
+/* Big type is the hero of each strip */
+.home-strip__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(var(--fs-2xl), 4.6vw, var(--fs-5xl));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--strip-fg);
+}
+
+.home-strip__dek {
+  margin: var(--s-2) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--strip-fg);
+  opacity: 0.82;
+  max-width: 60ch;
+}
+
+.home-strip__arrow {
+  flex: none;
+  color: var(--strip-fg);
+  transition: transform var(--dur-base) var(--ease-snap);
+}
+
+.home-strip:hover .home-strip__arrow,
+.home-strip:focus-within .home-strip__arrow {
+  transform: translate(6px, -6px);
+}
+
+@media (max-width: 640px) {
+  .home-strip__inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'index arrow'
+      'copy copy';
+    row-gap: var(--s-3);
+    align-items: center;
+  }
+
+  .home-strip__index { grid-area: index; }
+  .home-strip__arrow { grid-area: arrow; justify-self: end; }
+  .home-strip__copy  { grid-area: copy; }
 }
 
 /* ------------------------------------------------------------------ */
@@ -930,13 +962,8 @@ onMounted(fetchPageData)
   }
 
   &__title {
-    font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(var(--fs-3xl), 5.5vw, var(--fs-5xl));
-    line-height: 1.05;
-    letter-spacing: var(--ls-tight);
     color: var(--c-cream);
-    margin: 0;
     max-width: 22ch;
   }
 

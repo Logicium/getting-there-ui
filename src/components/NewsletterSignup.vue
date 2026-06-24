@@ -65,17 +65,19 @@ async function submit() {
     <p v-if="description" class="newsletter-description">{{ description }}</p>
 
     <form v-if="!success" class="newsletter-form" @submit.prevent="submit">
-      <input
-        v-model="email"
-        type="email"
-        class="newsletter-input"
-        placeholder="Your email address"
-        aria-label="Email address"
-        :disabled="submitting"
-      />
-      <button type="submit" class="newsletter-btn" :disabled="submitting">
-        {{ submitting ? 'Subscribing...' : buttonText }}
-      </button>
+      <div class="newsletter-field">
+        <input
+          v-model="email"
+          type="email"
+          class="newsletter-input"
+          placeholder="Your email address"
+          aria-label="Email address"
+          :disabled="submitting"
+        />
+        <button type="submit" class="newsletter-btn" :disabled="submitting">
+          {{ submitting ? 'Subscribing...' : buttonText }}
+        </button>
+      </div>
       <p v-if="error" class="newsletter-error">{{ error }}</p>
       <p class="privacy-note">No spam. Unsubscribe any time.</p>
     </form>
@@ -114,6 +116,12 @@ async function submit() {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+/* Transparent to layout by default — other variants keep their stacked form.
+   The CTA variant overrides this into a pill that holds the button inside. */
+.newsletter-field {
+  display: contents;
 }
 
 .newsletter-input {
@@ -203,16 +211,50 @@ async function submit() {
     max-width: 520px;
   }
 
+  /* Pill enclosure that holds the button inside the input */
+  .newsletter-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 5px 5px 5px 8px;
+    background: var(--c-paper);
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--r-pill);
+    box-shadow: var(--shadow-soft);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus-within {
+      border-color: var(--c-fuchsia);
+      box-shadow: 0 0 0 4px rgba(251, 138, 171, 0.3);
+    }
+  }
+
   .newsletter-input {
-    border-color: rgba(255, 255, 255, 0.4);
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    border-radius: var(--r-pill);
+    padding: 0.7rem 0.5rem 0.7rem 0.75rem;
+
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
   }
 
   .newsletter-btn {
-    background: white;
-    color: var(--primary-color);
+    flex: 0 0 auto;
+    background: var(--c-fuchsia);
+    color: var(--c-cream);
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--r-pill);
+    white-space: nowrap;
 
     &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.92);
+      background: var(--c-fuchsia-deep);
+      transform: none;
     }
   }
 
