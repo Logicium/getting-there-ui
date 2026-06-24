@@ -20,6 +20,10 @@ const authStore = useAuthStore()
 const isLoggingIn = ref(false)
 const error = ref('')
 
+// Must match the backend's GOOGLE_CLIENT_ID, otherwise Google rejects the
+// ID token with "payload audience != requiredAudience".
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
 const mode = ref<'login' | 'signup'>('login')
 const email = ref('')
 const password = ref('')
@@ -74,9 +78,15 @@ async function handleGoogleLogin() {
     return
   }
 
+  if (!GOOGLE_CLIENT_ID) {
+    error.value = 'Google Sign-In is not configured. Please contact support.'
+    isLoggingIn.value = false
+    return
+  }
+
   try {
     google.accounts.id.initialize({
-      client_id: '644476907638-dn549s61bk17abp32bdtbf8gh3094uqj.apps.googleusercontent.com',
+      client_id: GOOGLE_CLIENT_ID,
       callback: async (response: any) => {
         if (response.credential) {
           const result = await authStore.loginWithGoogle(response.credential)
